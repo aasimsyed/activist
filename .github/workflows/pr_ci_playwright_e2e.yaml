@@ -53,28 +53,11 @@ jobs:
           sudo yarn playwright install --with-deps
 
       - name: Wait for web server to be ready
-        working-directory: ./frontend
-        run: |
-          MAX_ATTEMPTS=3
-          WAIT_TIME=30
-          ATTEMPT=1
-          while [[ $ATTEMPT -le $MAX_ATTEMPTS ]]
-          do
-            echo "Attempt $ATTEMPT of $MAX_ATTEMPTS"
-            yarn wait-on http://localhost:3000 --timeout ${WAIT_TIME}000
-            if [[ $? -eq 0 ]]; then
-              echo "Server is ready!"
-              break
-            else
-              echo "Server not ready, retrying..."
-              ATTEMPT=$((ATTEMPT + 1))
-              if [[ $ATTEMPT -gt $MAX_ATTEMPTS ]]; then
-                echo "Server failed to start after $MAX_ATTEMPTS attempts."
-                exit 1
-              fi
-              sleep 1
-            fi
-          done
+        uses: nick-fields/retry@v3
+        with:
+          timeout_seconds: 15
+          max_attempts: 3
+          command: cd frontend; yarn wait-on http://localhost:3000
 
       - name: Run Playwright tests
         working-directory: ./frontend
