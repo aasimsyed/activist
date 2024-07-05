@@ -62,8 +62,9 @@ jobs:
           while [[ $ATTEMPT -le $MAX_ATTEMPTS ]]; do
             echo "Attempt $ATTEMPT of $MAX_ATTEMPTS"
             yarn wait-on http://localhost:3000 --timeout ${WAIT_TIME}000
+            STATUS=$?
 
-            if [[ $? -eq 0 ]]; then
+            if [[ $STATUS -eq 0 ]]; then
               echo "Server is ready!"
               break
             else
