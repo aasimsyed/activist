@@ -1,5 +1,5 @@
 <template>
-  <Menu as="div" class="relative inline-block text-left">
+  <Menu :id="id" as="div" class="relative inline-block text-left">
     <div>
       <MenuButton
         @focus="expandOnFocus"
@@ -90,6 +90,7 @@ import { IconMap } from "~/types/icon-map";
 import { DropdownLocation } from "~/types/location";
 
 const props = defineProps<{
+  id?: string;
   location?: DropdownLocation;
   menuButtonAriaLabel: string;
   menuButtonIcon: string;

@@ -10,10 +10,12 @@
       :key="opt.id"
       :to="opt.routeURL"
       :selected="opt.selected"
+      :htmlId="opt.htmlId"
       :isAddStyles="false"
     >
       <MenuItem v-slot="{ active }" class="flex">
         <MenuItemLabel
+          :id="opt.htmlId"
           :isSideLeftMenu="isSideLeftMenu"
           :isButton="false"
           :label="$t(`${opt.label}`)"

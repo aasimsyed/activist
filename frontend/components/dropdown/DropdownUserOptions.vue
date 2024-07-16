@@ -1,5 +1,6 @@
 <template>
   <DropdownBase
+    id="user-options"
     :location="location"
     :menuButtonIcon="IconMap.CIRCLE_PERSON"
     :menuButtonLabel="
@@ -30,6 +31,7 @@ defineProps<{
 
 const userOptionsSignedIn: MenuSelector[] = [
   {
+    htmlId: "your-profile",
     id: 1,
     label: "components.dropdown-user-options.your-profile",
     routeURL: "/",
@@ -37,6 +39,7 @@ const userOptionsSignedIn: MenuSelector[] = [
     selected: false,
   },
   {
+    htmlId: "your-events",
     id: 2,
     label: "components.dropdown-user-options.your-events",
     routeURL: "/",
@@ -44,6 +47,7 @@ const userOptionsSignedIn: MenuSelector[] = [
     selected: false,
   },
   {
+    htmlId: "your-orgs",
     id: 3,
     label: "components.dropdown-user-options.your-orgs",
     routeURL: "/",
@@ -51,6 +55,7 @@ const userOptionsSignedIn: MenuSelector[] = [
     selected: false,
   },
   {
+    htmlId: "notifications",
     id: 4,
     label: "_global.notifications",
     routeURL: "/",
@@ -58,6 +63,7 @@ const userOptionsSignedIn: MenuSelector[] = [
     selected: false,
   },
   {
+    htmlId: "settings",
     id: 5,
     label: "_global.settings",
     routeURL: "/",
@@ -65,6 +71,7 @@ const userOptionsSignedIn: MenuSelector[] = [
     selected: false,
   },
   {
+    htmlId: "sign-out",
     id: 6,
     label: "components.dropdown-user-options.sign-out",
     routeURL: "/",
@@ -75,6 +82,7 @@ const userOptionsSignedIn: MenuSelector[] = [
 
 const userOptionsSignedOut: MenuSelector[] = [
   {
+    htmlId: "sign-up",
     id: 1,
     label: "_global.sign-up",
     routeURL: "/auth/sign-up",
@@ -82,6 +90,7 @@ const userOptionsSignedOut: MenuSelector[] = [
     selected: false,
   },
   {
+    htmlId: "sign-in",
     id: 1,
     label: "_global.sign-in",
     routeURL: "/auth/sign-in",

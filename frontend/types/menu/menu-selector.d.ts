@@ -4,6 +4,7 @@ export interface MenuSelector {
   routeURL: string;
   iconURL: string;
   selected: boolean;
+  htmlId?: string;
 }
 
 export interface BarMenu {
