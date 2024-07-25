@@ -1,5 +1,6 @@
 import type { Page, Locator } from "@playwright/test";
-import { isMobile } from "../utils/utils";
+import { isMobile } from "../utils/pageUtils";
+
 export default abstract class BasePage {
   protected readonly pageName: string;
   protected readonly pageURL: string;

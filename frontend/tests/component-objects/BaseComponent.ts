@@ -1,5 +1,5 @@
 import type { Page, Locator } from "@playwright/test";
-import { isMobile } from "../utils/utils";
+import { isMobile } from "../utils/pageUtils";
 
 export default abstract class BaseComponent {
   protected readonly page: Page;

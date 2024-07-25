@@ -33,4 +33,16 @@ test.describe("Home Page", () => {
     await homePage.topicsDropdown.closeTopicsDropdown();
     await expect(homePage.topicsDropdown.topicsOptions).toBeHidden();
   });
+
+  // MARK: Desktop
+  test("The sidebar should be visible on desktop", async ({ homePage }) => {
+    await expect(homePage.sidebarLeft.component).toBeVisible();
+  });
+
+  test("The sidebar should expand and collapse when hovered over", async ({ homePage }) => {
+    await homePage.sidebarLeft.hoverOutsideSidebar();
+    expect(homePage.sidebarLeft.isSidebarLeftCollapsed()).toBe(true);
+    await homePage.sidebarLeft.hoverIntoSidebarLeft();
+    expect(homePage.sidebarLeft.isSidebarLeftCollapsed()).toBe(false);
+  });
 });
