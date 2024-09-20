@@ -12,7 +12,6 @@ services:
       python manage.py loaddata fixtures/superuser.json &&
       python manage.py loaddata fixtures/status_types.json &&
       python manage.py loaddata fixtures/iso_code_map.json &&
-      python manage.py populate_db --users 10 --orgs 10 --groups 10 --events 10 &&
       python manage.py runserver 0.0.0.0:${BACKEND_PORT}"
     ports:
       - "${BACKEND_PORT}:${BACKEND_PORT}"
@@ -40,12 +39,15 @@ services:
     build:
       context: ./frontend
     container_name: nuxt_frontend
-    command: sh -c "yarn install && yarn dev --port ${FRONTEND_PORT}"
+    command: sh -c "yarn install && NODE_OPTIONS='--max-old-space-size=4096' yarn dev --port ${FRONTEND_PORT}"
     volumes:
-      - ./frontend:/app
+      - ./frontend:/app:delegated
     ports:
       - "${FRONTEND_PORT}:${FRONTEND_PORT}"
       - "24678:24678"
+    environment:
+    - HOST=0.0.0.0
+    - CHOKIDAR_USEPOLLING=true
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:${FRONTEND_PORT}/ || exit 1"]
       interval: 10s

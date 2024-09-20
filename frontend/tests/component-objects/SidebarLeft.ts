@@ -1,15 +1,14 @@
 import type { Page, Locator } from "@playwright/test";
-import BaseComponent from "./BaseComponent";
+import { PageObjectBase } from "../utils/PageObjectBase";
 
-export default class SidebarLeft extends BaseComponent {
-  public static readonly locators = {
-    SIDEBAR_LEFT: "#sidebar-left",
-    SIDEBAR_LEFT_TOGGLE: "#sidebar-left-toggle",
-  };
+const locators = {
+  SIDEBAR_LEFT: "#sidebar-left",
+  SIDEBAR_LEFT_TOGGLE: "#sidebar-left-toggle",
+};
 
+export class SidebarLeft extends PageObjectBase {
   constructor(page: Page) {
-    super(page);
-    this.setLocators(SidebarLeft.locators);
+    super(page, locators);
   }
 
   get component(): Locator {

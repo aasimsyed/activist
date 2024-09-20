@@ -1,6 +1,6 @@
 import { test as baseTest } from "@playwright/test";
-import LandingPage from "../page-objects/LandingPage";
-import HomePage from "../page-objects/HomePage";
+import { LandingPage } from "../page-objects/LandingPage";
+import { HomePage } from "../page-objects/HomePage";
 
 export const test = baseTest.extend<{
   landingPage: LandingPage;

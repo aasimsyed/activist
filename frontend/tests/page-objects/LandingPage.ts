@@ -1,26 +1,30 @@
 import type { Locator, Page } from "@playwright/test";
-import HeaderWebsite from "../component-objects/HeaderWebsite";
-import BasePage from "./BasePage";
+import { PageObjectBase } from "../utils/PageObjectBase";
+import { HeaderWebsite } from "../component-objects/HeaderWebsite";
 
-export default class LandingPage extends BasePage {
-  public static readonly locators = {
-    LANDING_SPLASH: "#landing-splash-header",
-    REQUEST_ACCESS_LINK: "#request-access",
-    GET_ACTIVE_BUTTON: "#btn-get-active",
-    GET_ORGANIZED_BUTTON: "#btn-get-organized",
-    GROW_ORGANIZATION_BUTTON: "#btn-grow-organization",
-    ABOUT_BUTTON: "#btn-activist",
-    BECOME_SUPPORTER_BUTTON: "#btn-become-supporter",
-    OUR_SUPPORTERS_BUTTON: "#btn-our-supporters",
-  };
+// Centralized locator management
+const locators = {
+  LANDING_SPLASH: "#landing-splash-header",
+  REQUEST_ACCESS_LINK: "#request-access",
+  GET_ACTIVE_BUTTON: "#btn-get-active",
+  GET_ORGANIZED_BUTTON: "#btn-get-organized",
+  GROW_ORGANIZATION_BUTTON: "#btn-grow-organization",
+  ABOUT_BUTTON: "#btn-activist",
+  BECOME_SUPPORTER_BUTTON: "#btn-become-supporter",
+  OUR_SUPPORTERS_BUTTON: "#btn-our-supporters",
+};
 
+export class LandingPage extends PageObjectBase {
   readonly header: HeaderWebsite;
 
   constructor(page: Page) {
-    super(page, "Landing Page", "/");
+    super(page, locators, "Landing Page", "/");
     this.header = new HeaderWebsite(page);
-    this.setLocators(LandingPage.locators);
   }
+
+  public static readonly urls = {
+    REQUEST_ACCESS_URL: "https://app.formbricks.com/s/clvn9ywe21css8wqpt1hee57a",
+  };
 
   get landingSplash(): Locator {
     return this.getLocator("LANDING_SPLASH");

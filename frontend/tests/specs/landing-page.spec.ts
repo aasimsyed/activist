@@ -6,13 +6,12 @@ test.describe("Landing Page", () => {
   // Initialize page before each test, wait for the landing splash to be visible.
   test.beforeEach(async ({ landingPage }) => {
     await landingPage.goto("/en");
-    const { landingSplash } = landingPage;
+    const landingSplash = landingPage.landingSplash;
     await landingSplash.waitFor({ state: "visible" });
   });
 
   // MARK: Accessibility
 
-  // Test accessibility of the landing page (skip this test for now).
   // Note: Check to make sure that this is eventually done for light and dark modes.
   test("There are no detectable accessibility issues", async ({
     landingPage,
@@ -108,7 +107,7 @@ test.describe("Landing Page", () => {
   test("Splash should contain the request access link", async ({
     landingPage,
   }) => {
-    const { requestAccessLink } = landingPage;
+    const requestAccessLink = await landingPage.requestAccessLink;
     expect(await requestAccessLink.getAttribute("href")).toBe(
       LandingPage.urls.REQUEST_ACCESS_URL
     );
@@ -118,13 +117,13 @@ test.describe("Landing Page", () => {
   test("All important links should be visible on the landing page", async ({
     landingPage,
   }) => {
-    await expect(landingPage.landingSplash).toBeVisible();
-    await expect(landingPage.requestAccessLink).toBeVisible();
-    await expect(landingPage.getActiveButton).toBeVisible();
-    await expect(landingPage.getOrganizedButton).toBeVisible();
-    await expect(landingPage.growOrganizationButton).toBeVisible();
-    await expect(landingPage.aboutButton).toBeVisible();
-    await expect(landingPage.becomeSupportersButton).toBeVisible();
-    await expect(landingPage.ourSupportersButton).toBeVisible();
+    expect(await landingPage.landingSplash).toBeVisible();
+    expect(await landingPage.requestAccessLink).toBeVisible();
+    expect(await landingPage.getActiveButton).toBeVisible();
+    expect(await landingPage.getOrganizedButton).toBeVisible();
+    expect(await landingPage.growOrganizationButton).toBeVisible();
+    expect(await landingPage.aboutButton).toBeVisible();
+    expect(await landingPage.becomeSupportersButton).toBeVisible();
+    expect(await landingPage.ourSupportersButton).toBeVisible();
   });
 });

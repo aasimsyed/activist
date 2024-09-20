@@ -1,26 +1,23 @@
 import type { Page, Locator } from "@playwright/test";
-import BaseComponent from "./BaseComponent";
+import { PageObjectBase } from "../utils/PageObjectBase";
 
-export default class HeaderWebsite extends BaseComponent {
-  public static readonly locators = {
-    MOBILE_HEADER: "#mobile-header",
-    DESKTOP_HEADER: "#desktop-header",
-    ROADMAP_BUTTON: "#desktop-header #btn-roadmap",
-    GET_IN_TOUCH_BUTTON:
-      "#btn-get-in-touch-large:visible, #btn-get-in-touch-medium:visible",
-    HAMBURGER: "#sidebar-right-hamburger:visible",
-    SIDEBAR: "#drawer-navigation",
-    THEME_DROPDOWN: ".dropdown-theme:visible",
-    SELECTED_LANGUAGE: ".dropdown-language:visible .selected-option",
-    LANGUAGE_DROPDOWN: ".dropdown-language:visible",
-    LANGUAGE_MENU: ".dropdown-language:visible ul",
-    LANGUAGE_OPTIONS:
-      ".dropdown-language:visible .dropdown-language-list-items",
-  };
+const locators = {
+  MOBILE_HEADER: "#mobile-header",
+  DESKTOP_HEADER: "#desktop-header",
+  ROADMAP_BUTTON: "#desktop-header #btn-roadmap",
+  GET_IN_TOUCH_BUTTON: "#btn-get-in-touch-large:visible, #btn-get-in-touch-medium:visible",
+  HAMBURGER: "#sidebar-right-hamburger:visible",
+  SIDEBAR: "#drawer-navigation",
+  THEME_DROPDOWN: ".dropdown-theme:visible",
+  SELECTED_LANGUAGE: ".dropdown-language:visible .selected-option",
+  LANGUAGE_DROPDOWN: ".dropdown-language:visible",
+  LANGUAGE_MENU: ".dropdown-language:visible ul",
+  LANGUAGE_OPTIONS: ".dropdown-language:visible .dropdown-language-list-items",
+};
 
+export class HeaderWebsite extends PageObjectBase {
   constructor(page: Page) {
-    super(page);
-    this.setLocators(HeaderWebsite.locators);
+    super(page, locators);
   }
 
   get mobileHeader(): Locator {
@@ -107,13 +104,9 @@ export default class HeaderWebsite extends BaseComponent {
 
   async getSelectedLanguage(): Promise<string> {
     await this.openLanguageDropdown();
-    return (
-      await this.page
-        .locator(HeaderWebsite.locators.SELECTED_LANGUAGE)
-        .innerText()
-    )
-      .trim()
-      .toLowerCase();
+    const selectedLanguageElement = this.getLocator("SELECTED_LANGUAGE");
+    const text = await selectedLanguageElement.innerText();
+    return text.trim().toLowerCase();
   }
 
   async getLanguageOptions(): Promise<Locator[]> {

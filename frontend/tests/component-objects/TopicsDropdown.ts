@@ -1,15 +1,14 @@
 import type { Page, Locator } from "@playwright/test";
-import BaseComponent from "./BaseComponent";
+import { PageObjectBase } from "../utils/PageObjectBase";
 
-export default class TopicsDropdown extends BaseComponent {
-  public static readonly locators = {
-    TOPICS_DROPDOWN: "#topics-dropdown",
-    TOPICS_OPTIONS: "#topics-dropdown ul#isVisibleElement",
-  };
+const locators = {
+  TOPICS_DROPDOWN: "#topics-dropdown",
+  TOPICS_OPTIONS: "#topics-dropdown ul#isVisibleElement",
+};
 
+export class TopicsDropdown extends PageObjectBase {
   constructor(page: Page) {
-    super(page);
-    this.setLocators(TopicsDropdown.locators);
+    super(page, locators);
   }
 
   get topicsDropdown(): Locator {
