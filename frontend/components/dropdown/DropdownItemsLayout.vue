@@ -8,6 +8,7 @@
     <MenuLinkWrapper
       v-for="opt in options"
       :key="opt.id"
+      :id="getSelectorId(opt.label)"
       :to="opt.routeURL"
       :selected="opt.selected"
       :isAddStyles="false"
@@ -42,4 +43,23 @@ const isSideLeftMenu = computed(() => {
 const isSideMenu = computed(() => {
   return props.location === DropdownLocation.SIDE_MENU;
 });
+
+const getSelectorId = (label: string) => {
+  const idMap: Record<string, string> = {
+    help: 'sidebar-left-help',
+    doc: 'sidebar-left-docs',
+    legal: 'sidebar-left-legal',
+    profile: 'sidebar-left-profile',
+    events: 'sidebar-left-events',
+    orgs: 'sidebar-left-organizations',
+    notifications: 'sidebar-left-notifications',
+    settings: 'sidebar-left-settings',
+    'sign_out': 'sidebar-left-sign-out',
+    'sign_up': 'sidebar-left-sign-up',
+    'sign_in': 'sidebar-left-sign-in'
+  };
+
+  const key = Object.keys(idMap).find(k => label.includes(k));
+  return key ? idMap[key] : undefined;
+};
 </script>

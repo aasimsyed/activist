@@ -10,14 +10,17 @@
     >
       <DropdownCreate
         v-if="userIsSignedIn"
+        id="sidebar-left-create"
         class="w-full"
         :location="DropdownLocation.SIDE_LEFT_MENU"
       />
       <DropdownInfo
+        id="sidebar-left-info"
         class="w-full"
         :location="DropdownLocation.SIDE_LEFT_MENU"
       />
       <DropdownUserOptions
+        id="sidebar-left-user-options"
         class="w-full"
         :location="DropdownLocation.SIDE_LEFT_MENU"
         :userIsSignedIn="userIsSignedIn"
