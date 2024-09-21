@@ -8,12 +8,12 @@ const locators = {
 };
 
 export class HomePage extends PageObjectBase {
-  readonly topicsDropdown: TopicsDropdown;
+  readonly topics: TopicsDropdown;
   readonly sidebarLeft: SidebarLeft;
 
   constructor(page: Page) {
     super(page, locators, "Home Page", "/home");
-    this.topicsDropdown = new TopicsDropdown(page);
+    this.topics = new TopicsDropdown(page);
     this.sidebarLeft = new SidebarLeft(page);
   }
 

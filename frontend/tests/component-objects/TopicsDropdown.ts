@@ -11,22 +11,22 @@ export class TopicsDropdown extends PageObjectBase {
     super(page, locators);
   }
 
-  get topicsDropdown(): Locator {
+  get dropdown(): Locator {
     return this.getLocator("TOPICS_DROPDOWN");
   }
-  get topicsOptions(): Locator {
+  get options(): Locator {
     return this.getLocator("TOPICS_OPTIONS");
   }
 
   async openTopicsDropdown(): Promise<void> {
-    if (!(await this.topicsOptions.isVisible())) {
-      await this.topicsDropdown.click();
+    if (!(await this.options.isVisible())) {
+      await this.dropdown.click();
     }
   }
 
   async closeTopicsDropdown(): Promise<void> {
-    if (await this.topicsOptions.isVisible()) {
-      await this.topicsDropdown.click();
+    if (await this.options.isVisible()) {
+      await this.dropdown.click();
     }
   }
 }

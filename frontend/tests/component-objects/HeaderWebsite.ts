@@ -127,8 +127,4 @@ export class HeaderWebsite extends PageObjectBase {
     }
     return undefined;
   }
-
-  async navigateTo(link: Locator): Promise<void> {
-    await link.click();
-  }
 }

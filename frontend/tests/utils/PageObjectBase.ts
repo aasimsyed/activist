@@ -25,6 +25,11 @@ export class PageObjectBase {
   // Forward all methods from Page to this.page
   [key: string]: any;
 
+  public async navigateTo(path: string): Promise<void> {
+    await this.page.goto(path);
+    await this.page.waitForLoadState('networkidle');
+  }
+
   // Common utility methods
   public async isMobile(): Promise<boolean> {
     const viewportSize = this.page.viewportSize();
@@ -43,10 +48,11 @@ export class PageObjectBase {
     return (await this.page.locator("html").getAttribute("class")) ?? "";
   }
 
-  public getLocator(selector: string | keyof typeof this.locators): Locator {
-    if (typeof selector === 'string') {
-      return this.page.locator(selector);
-    }
+  public getLocator(selector: keyof typeof this.locators): Locator {
     return this.page.locator(this.locators[selector]);
+  }
+
+  public getPage(): Page {
+    return this.page;
   }
 }

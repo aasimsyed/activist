@@ -3,20 +3,13 @@ import locales from "../../locales";
 import { LandingPage, expect, test } from "../fixtures/page-fixtures";
 
 test.describe("Landing Page", () => {
-  // Initialize page before each test, wait for the landing splash to be visible.
-  test.beforeEach(async ({ landingPage }) => {
-    await landingPage.goto("/en");
-    const landingSplash = landingPage.landingSplash;
-    await landingSplash.waitFor({ state: "visible" });
-  });
-
   // MARK: Accessibility
 
   // Note: Check to make sure that this is eventually done for light and dark modes.
   test("There are no detectable accessibility issues", async ({
     landingPage,
   }, testInfo) => {
-    const results = await new AxeBuilder({ page: landingPage.getPage })
+    const results = await new AxeBuilder({ page: landingPage.getPage() })
       .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
       .analyze();
 
@@ -48,7 +41,7 @@ test.describe("Landing Page", () => {
       await expect(landingPage.header.roadmapButton).toBeVisible();
       await landingPage.header.navigateToRoadmap();
       await landingPage.waitForUrlChange("**/about/roadmap");
-      expect(landingPage.getPage.url()).toContain("/about/roadmap");
+      expect(landingPage.url()).toContain("/about/roadmap");
     } else {
       await expect(landingPage.header.roadmapButton).toBeHidden();
     }
@@ -60,7 +53,7 @@ test.describe("Landing Page", () => {
       await expect(landingPage.header.getInTouchButton).toBeVisible();
       await landingPage.header.getInTouchButton.click();
       await landingPage.waitForUrlChange("**/contact");
-      expect(landingPage.getPage.url()).toContain("/contact");
+      expect(landingPage.url()).toContain("/contact");
     } else {
       await expect(landingPage.header.getInTouchButton).toBeHidden();
     }
@@ -99,7 +92,7 @@ test.describe("Landing Page", () => {
 
   // Test that the title of the landing page contains "activist".
   test('Title should contain "activist"', async ({ landingPage }) => {
-    const pageTitle = await landingPage.getPage.title();
+    const pageTitle = await landingPage.title();
     expect(pageTitle).toContain("activist");
   });
 
