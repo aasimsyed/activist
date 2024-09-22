@@ -100,7 +100,7 @@ test.describe("Landing Page", () => {
   test("Splash should contain the request access link", async ({
     landingPage,
   }) => {
-    const requestAccessLink = await landingPage.requestAccessLink;
+    const requestAccessLink = landingPage.requestAccessLink;
     expect(await requestAccessLink.getAttribute("href")).toBe(
       LandingPage.urls.REQUEST_ACCESS_URL
     );
@@ -110,13 +110,13 @@ test.describe("Landing Page", () => {
   test("All important links should be visible on the landing page", async ({
     landingPage,
   }) => {
-    expect(await landingPage.landingSplash).toBeVisible();
-    expect(await landingPage.requestAccessLink).toBeVisible();
-    expect(await landingPage.getActiveButton).toBeVisible();
-    expect(await landingPage.getOrganizedButton).toBeVisible();
-    expect(await landingPage.growOrganizationButton).toBeVisible();
-    expect(await landingPage.aboutButton).toBeVisible();
-    expect(await landingPage.becomeSupportersButton).toBeVisible();
-    expect(await landingPage.ourSupportersButton).toBeVisible();
+    expect(landingPage.landingSplash).toBeVisible();
+    expect(landingPage.requestAccessLink).toBeVisible();
+    expect(landingPage.getActiveButton).toBeVisible();
+    expect(landingPage.getOrganizedButton).toBeVisible();
+    expect(landingPage.growOrganizationButton).toBeVisible();
+    expect(landingPage.aboutButton).toBeVisible();
+    expect(landingPage.becomeSupportersButton).toBeVisible();
+    expect(landingPage.ourSupportersButton).toBeVisible();
   });
 });
