@@ -12,7 +12,7 @@ import { defineConfig, devices } from "@playwright/test";
 
 // Environment configurations
 const environments = {
-  local: "http://127.0.0.1:3000",
+  local: "http://localhost:3000",
   prod: "https://activist.org",
 };
 
@@ -35,6 +35,11 @@ export default defineConfig({
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
     baseURL: environments[ENV],
+
+    bypassCSP: true,
+    launchOptions: {
+      args: ['--disable-web-security'],
+    },
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer. */
     trace: "on-first-retry",
