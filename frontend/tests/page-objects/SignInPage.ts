@@ -9,6 +9,8 @@ const locators = {
   FORGOT_PASSWORD_BUTTON: "#sign-in-forgot-password",
   SIGN_UP_LINK: "#sign-in-signup-link",
   PASSWORD_STRENGTH_INDICATOR: "#sign-in-password-strength",
+  PASSWORD_STRENGTH_TEXT: "#sign-in-password-strength-text",
+  PASSWORD_STRENGTH_PROGRESS: "#password-strength-indicator-progress",
   FRIENDLY_CAPTCHA: "#sign-in-captcha",
 };
 
@@ -43,6 +45,14 @@ export class SignInPage extends PageObjectBase {
 
   get passwordStrengthIndicator(): Locator {
     return this.getLocator("PASSWORD_STRENGTH_INDICATOR");
+  }
+
+  get passwordStrengthText(): Locator {
+    return this.getLocator("PASSWORD_STRENGTH_TEXT");
+  }
+
+  get passwordStrengthProgress(): Locator {
+    return this.getLocator("PASSWORD_STRENGTH_PROGRESS");
   }
 
   get friendlyCaptcha(): Locator {
@@ -80,6 +90,41 @@ export class SignInPage extends PageObjectBase {
 
   async isPasswordStrengthIndicatorVisible(): Promise<boolean> {
     return await this.page.isVisible(this.locators.PASSWORD_STRENGTH_INDICATOR);
+  }
+
+  async isPasswordStrengthTextVisible(): Promise<boolean> {
+    return await this.page.isVisible(this.locators.PASSWORD_STRENGTH_TEXT);
+  }
+
+  async isPasswordStrengthProgressVisible(): Promise<boolean> {
+    return await this.page.isVisible(this.locators.PASSWORD_STRENGTH_PROGRESS);
+  }
+
+  async getPasswordStrengthText(): Promise<string> {
+    const text =  await this.page.textContent(this.locators.PASSWORD_STRENGTH_TEXT) || '';
+    const strengthRegex = /Password strength: (.*)/;
+    const match = text.match(strengthRegex);
+    return match ? match[1] : '';
+  }
+
+  async getPasswordStrengthProgress(): Promise<string> {
+    const style = await this.page.getAttribute(this.locators.PASSWORD_STRENGTH_PROGRESS, 'style') || '';
+    const widthRegex = /width:\s*(\d+(\.\d+)?%)/;
+    const match = style.match(widthRegex);
+    return match ? match[1] : '0%';
+  }
+
+  async getPasswordStrengthIndicatorColor(): Promise<string> {
+    const style = await this.page.getAttribute(this.locators.PASSWORD_STRENGTH_PROGRESS, 'class') || '';
+    const colorRegex = /bg-\[(.*?)\]|bg-light-text|dark:bg-dark-text/;
+    const match = style.match(colorRegex);
+    if (match) {
+      if (match[0] === 'bg-light-text' || match[0] === 'dark:bg-dark-text') {
+        return match[0];
+      }
+      return match[1] || '';
+    }
+    return '';
   }
 
   async isFriendlyCaptchaVisible(): Promise<boolean> {
