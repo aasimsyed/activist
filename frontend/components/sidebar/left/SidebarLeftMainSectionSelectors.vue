@@ -25,8 +25,8 @@ const isActive = (routeURL: string) => {
 
 const getSelectorId = (label: string) => {
   const idMap: Record<string, string> = {
-    organizations: 'sidebar-left-organizations',
-    events: 'sidebar-left-events'
+    organizations: 'organizations',
+    events: 'events'
   };
 
   const key = Object.keys(idMap).find(k => label.includes(k));

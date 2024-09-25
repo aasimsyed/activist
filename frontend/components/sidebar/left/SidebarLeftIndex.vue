@@ -60,6 +60,7 @@
         />
       </div>
       <ul
+        id="submenu"
         class="mb-1 flex w-full flex-col px-1"
         :class="{
           'mt-4':
@@ -74,6 +75,10 @@
             : menuEntriesState.eventEntry.value"
         >
           <SidebarLeftSelector
+            :id="
+              (sidebarType === SidebarType.ORGANIZATION_PAGE ? 'org-' : 'event-')
+              + menuEntry.label.split('.').pop()
+            "
             :label="menuEntry.label"
             :routeURL="menuEntry.routeURL"
             :iconURL="menuEntry.iconURL"

@@ -2,9 +2,9 @@ import type { Page, Locator } from "@playwright/test";
 import { PageObjectBase } from "../utils/PageObjectBase";
 
 const locators = {
-  SEARCH_BAR: "#input-search",
-  SEARCH_ICON: "icon[name='search']",
-  EXPANDED_SEARCH_INPUT: "#expanded-search-input",
+  SEARCH: "#search",
+  SEARCH_TOGGLE: "#search-toggle",
+  SEARCH_INPUT: "#input-search",
   SEARCH_MODAL: "#search-modal",
   CLOSE_SEARCH_MODAL: "#search-modal button",
 };
@@ -14,12 +14,16 @@ export class SearchBar extends PageObjectBase {
     super(page, locators);
   }
 
-  get searchInput(): Locator {
-    return this.getLocator("SEARCH_BAR");
+  get search(): Locator {
+    return this.getLocator("SEARCH");
   }
 
-  get searchIcon(): Locator {
-    return this.getLocator("SEARCH_ICON");
+  get searchInput(): Locator {
+    return this.getLocator("SEARCH_INPUT");
+  }
+
+  get searchToggle(): Locator {
+    return this.getLocator("SEARCH_TOGGLE");
   }
 
   get searchModal(): Locator {
@@ -28,10 +32,6 @@ export class SearchBar extends PageObjectBase {
 
   async fillSearchInput(text: string): Promise<void> {
     await this.searchInput.fill(text);
-  }
-
-  async clickSearchIcon(): Promise<void> {
-    await this.searchIcon.click();
   }
 
   async isSearchInputFocused(): Promise<boolean> {
@@ -63,11 +63,27 @@ export class SearchBar extends PageObjectBase {
     await this.getLocator("CLOSE_SEARCH_MODAL").click();
   }
 
-  async isExpandedSearchInputVisible(): Promise<boolean> {
+  async isSearchModalVisible(): Promise<boolean> {
     return this.searchModal.isVisible();
   }
 
-  async fillExpandedSearchInput(text: string): Promise<void> {
+  async fillSearchModalInput(text: string): Promise<void> {
     await this.searchModal.fill(text);
+  }
+
+  async openSearchInput(): Promise<void> {
+    if (await this.isMobile() && !(await this.isSearchInputVisible())) {
+      await this.searchToggle.click();
+    } else if (!(await this.isMobile()) && !(await this.isSearchInputVisible())) {
+      await this.search.click();
+    }
+  }
+
+  async closeSearchInput(): Promise<void> {
+    if (await this.isMobile() && (await this.isSearchInputVisible())) {
+      await this.searchToggle.click();
+    } else if (!(await this.isMobile()) && (await this.isSearchInputVisible())) {
+      await this.page.click("#home-header");
+    }
   }
 }

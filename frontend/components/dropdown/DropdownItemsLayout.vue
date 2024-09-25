@@ -46,17 +46,21 @@ const isSideMenu = computed(() => {
 
 const getSelectorId = (label: string) => {
   const idMap: Record<string, string> = {
-    help: 'sidebar-left-help',
-    doc: 'sidebar-left-docs',
-    legal: 'sidebar-left-legal',
-    profile: 'sidebar-left-profile',
-    events: 'sidebar-left-events',
-    orgs: 'sidebar-left-organizations',
-    notifications: 'sidebar-left-notifications',
-    settings: 'sidebar-left-settings',
-    'sign_out': 'sidebar-left-sign-out',
-    'sign_up': 'sidebar-left-sign-up',
-    'sign_in': 'sidebar-left-sign-in'
+    help: 'help',
+    doc: 'docs',
+    legal: 'legal',
+    profile: 'profile',
+    events: 'your-events',
+    orgs: 'your-organizations',
+    notifications: 'notifications',
+    settings: 'settings',
+    sign_out: 'sign-out',
+    sign_up: 'sign-up',
+    sign_in: 'sign-in',
+    new_event: 'create-new-event',
+    new_organization: 'create-new-organization',
+    new_group: 'create-new-group',
+    new_resource: 'create-new-resource'
   };
 
   const key = Object.keys(idMap).find(k => label.includes(k));

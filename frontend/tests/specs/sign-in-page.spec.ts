@@ -1,12 +1,7 @@
-import { SignInPage, expect, test } from "../fixtures/page-fixtures";
+import { SignInPage, expect, test } from "../fixtures/test-fixtures";
 import AxeBuilder from "@axe-core/playwright";
 
 test.describe("Sign In Page", () => {
-
-  test.beforeEach(async ({ signInPage }) => {
-    test.setTimeout(600000);
-    await signInPage.navigateTo("/auth/sign-in");
-  });
 
   test("should have no detectable accessibility issues", async ({ signInPage }, testInfo) => {
     const results = await new AxeBuilder({ page: signInPage.getPage() })

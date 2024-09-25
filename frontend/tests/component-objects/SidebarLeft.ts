@@ -1,26 +1,17 @@
 import type { Page, Locator } from "@playwright/test";
 import { PageObjectBase } from "../utils/PageObjectBase";
-import { SearchBar } from "./SearchBar";
+import { Navigation } from "./Navigation";
 
 const locators = {
   SIDEBAR_LEFT: "#sidebar-left",
   SIDEBAR_LEFT_TOGGLE: "#sidebar-left-toggle",
-  SIDEBAR_LEFT_EVENTS: "#sidebar-left-events",
-  SIDEBAR_LEFT_ORGANIZATIONS: "#sidebar-left-organizations",
-  SIDEBAR_LEFT_CREATE: "#sidebar-left-create button",
-  SIDEBAR_LEFT_HELP: "#sidebar-left-help",
-  SIDEBAR_LEFT_DOCS: "#sidebar-left-docs",
-  SIDEBAR_LEFT_LEGAL: "#sidebar-left-legal",
-  SIDEBAR_LEFT_SIGN_IN: "#sidebar-left-sign-in",
-  SIDEBAR_LEFT_SIGN_UP: "#sidebar-left-sign-up",
-  SIDEBAR_LEFT_INFO: "#sidebar-left-info button",
-  SIDEBAR_LEFT_USER_OPTIONS: "#sidebar-left-user-options button",
+  SIDEBAR_LEFT_INFO: "#info button",
 };
 
 export class SidebarLeft extends PageObjectBase {
   constructor(page: Page) {
     super(page, locators);
-    this.searchBar = new SearchBar(page);
+    this.nav = new Navigation(page);
   }
 
   get component(): Locator {
@@ -28,46 +19,6 @@ export class SidebarLeft extends PageObjectBase {
   }
   get sidebarLeftToggle(): Locator {
     return this.getLocator("SIDEBAR_LEFT_TOGGLE");
-  }
-
-  get sidebarLeftEvents(): Locator {
-    return this.getLocator("SIDEBAR_LEFT_EVENTS");
-  }
-
-  get sidebarLeftOrganizations(): Locator {
-    return this.getLocator("SIDEBAR_LEFT_ORGANIZATIONS");
-  }
-
-  get sidebarLeftCreate(): Locator {
-    return this.getLocator("SIDEBAR_LEFT_CREATE");
-  }
-
-  get sidebarLeftInfo(): Locator {
-    return this.getLocator("SIDEBAR_LEFT_INFO");
-  }
-
-  get sidebarLeftHelp(): Locator {
-    return this.getLocator("SIDEBAR_LEFT_HELP");
-  }
-
-  get sidebarLeftDocs(): Locator {
-    return this.getLocator("SIDEBAR_LEFT_DOCS");
-  }
-
-  get sidebarLeftLegal(): Locator {
-    return this.getLocator("SIDEBAR_LEFT_LEGAL");
-  }
-
-  get sidebarLeftUserOptions(): Locator {
-    return this.getLocator("SIDEBAR_LEFT_USER_OPTIONS");
-  }
-
-  get sidebarLeftSignIn(): Locator {
-    return this.getLocator("SIDEBAR_LEFT_SIGN_IN");
-  }
-
-  get sidebarLeftSignUp(): Locator {
-    return this.getLocator("SIDEBAR_LEFT_SIGN_UP");
   }
 
   // click on the sidebar left toggle
@@ -85,6 +36,15 @@ export class SidebarLeft extends PageObjectBase {
   async isSidebarLeftToggleCollapsed(): Promise<boolean> {
     const toggleClass = await this.sidebarLeftToggle.getAttribute("class");
     return toggleClass?.includes("pb-1 pl-0.5") ?? false;
+  }
+
+  async collapseSidebar(): Promise<void> {
+    const isExpanded = await this.isSidebarLeftToggleExpanded();
+    if (isExpanded) {
+      await this.clickSidebarLeftToggle();
+      await this.hoverOutsideSidebar();
+      await this.page.waitForSelector('#sidebar-left.w-16', { state: 'attached' });
+    }
   }
 
   // hover over the sidebar left
@@ -120,13 +80,5 @@ export class SidebarLeft extends PageObjectBase {
   // is sidebar collapsed (has class w-16)
   async isSidebarCollapsed(): Promise<boolean> {
     return (await this.component.getAttribute("class"))?.includes("w-16") ?? false;
-  }
-
-  async searchFor(text: string): Promise<void> {
-    await this.searchBar.fillSearchInput(text);
-  }
-
-  async isSearchBarVisible(): Promise<boolean> {
-    return this.searchBar.isSearchInputVisible();
   }
 }

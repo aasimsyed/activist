@@ -1,5 +1,7 @@
-import { PageObjectBase } from "../utils/PageObjectBase";
 import type { Page, Locator } from "@playwright/test";
+import { PageObjectBase } from "../utils/PageObjectBase";
+import { HeaderWebsite } from "../component-objects/HeaderWebsite";
+
 
 const locators = {
   USERNAME_INPUT: "#sign-in-username input",
@@ -15,8 +17,11 @@ const locators = {
 };
 
 export class SignInPage extends PageObjectBase {
+  readonly header: HeaderWebsite;
+
   constructor(page: Page) {
     super(page, locators, "Sign In", "/auth/sign-in");
+    this.header = new HeaderWebsite(page);
   }
 
   get usernameInput(): Locator {
