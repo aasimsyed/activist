@@ -12,7 +12,7 @@ test.describe("Home Page", () => {
 
   // Test accessibility of the home page (skip this test for now).
   // Note: Check to make sure that this is eventually done for light and dark modes.
-  test.skip("There are no detectable accessibility issues", async ({
+  test("There are no detectable accessibility issues", async ({
     homePage,
   }, testInfo) => {
     const results = await new AxeBuilder({ page: homePage.getPage })
