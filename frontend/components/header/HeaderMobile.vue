@@ -35,13 +35,13 @@
               :location="DropdownLocation.SIDE_MENU"
             />
             <DropdownInfo
-              class="w-full"
               id="info"
+              class="w-full"
               :location="DropdownLocation.SIDE_MENU"
             />
             <DropdownUserOptions
-              class="w-full"
               id="user-options"
+              class="w-full"
               :location="DropdownLocation.SIDE_MENU"
               :userIsSignedIn="userIsSignedIn"
             />

@@ -20,7 +20,7 @@ export class SignInPage extends PageObjectBase {
   readonly header: HeaderWebsite;
 
   constructor(page: Page) {
-    super(page, locators, "Sign In", "/auth/sign-in");
+    super(page, locators, "Sign In Page", "/auth/sign-in");
     this.header = new HeaderWebsite(page);
   }
 

@@ -1,25 +1,21 @@
-import AxeBuilder from "@axe-core/playwright";
 import { HomePage, expect, test } from "../fixtures/test-fixtures";
+import { runAccessibilityTest } from "../utils/accessibilityTesting";
 
 test.describe("Home Page", () => {
   // MARK: Accessibility
 
   // Test accessibility of the home page (skip this test for now).
   // Note: Check to make sure that this is eventually done for light and dark modes.
-  test("There are no detectable accessibility issues", async ({
+  test("Home Page has no detectable accessibility issues", async ({
     homePage,
     isAccessibilityTest
   }, testInfo) => {
-    const results = await new AxeBuilder({ page: homePage.getPage() })
-      .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
-      .analyze();
+    const violations = await runAccessibilityTest(homePage, testInfo);
+    expect.soft(violations, 'Accessibility violations found:').toHaveLength(0);
 
-    await testInfo.attach("accessibility-scan-results", {
-      body: JSON.stringify(results, null, 2),
-      contentType: "application/json",
-    });
-
-    expect(results.violations).toEqual([]);
+    if (violations.length > 0) {
+      console.log('Accessibility violations:', JSON.stringify(violations, null, 2));
+    }
   });
 
   test("The topics dropdown should be functional", async ({ homePage }) => {

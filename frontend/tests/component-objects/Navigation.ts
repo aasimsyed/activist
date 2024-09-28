@@ -12,10 +12,12 @@ const locators = {
   CREATE_EVENT: "#create-event",
   CREATE_ORGANIZATION: "#create-organization",
   INFO: "#info button",
+  INFO_DROPDOWN: "#info ul",
   HELP: "#help",
   DOCS: "#docs",
   LEGAL: "#legal",
   USER_OPTIONS: "#user-options button",
+  USER_OPTIONS_DROPDOWN: "#user-options ul",
   SIGN_IN: "#sign-in",
   SIGN_UP: "#sign-up",
 }
@@ -56,6 +58,10 @@ export class Navigation extends PageObjectBase {
     return this.getLocator("INFO");
   }
 
+  get infoDropdown(): Locator {
+    return this.getLocator("INFO_DROPDOWN");
+  }
+
   get help(): Locator {
     return this.getLocator("HELP");
   }
@@ -72,11 +78,29 @@ export class Navigation extends PageObjectBase {
     return this.getLocator("USER_OPTIONS");
   }
 
+  get userOptionsDropdown(): Locator {
+    return this.getLocator("USER_OPTIONS_DROPDOWN");
+  }
+
   get signIn(): Locator {
     return this.getLocator("SIGN_IN");
   }
 
   get signUp(): Locator {
     return this.getLocator("SIGN_UP");
+  }
+
+  async openInfo(): Promise<void> {
+    if (!(await this.infoDropdown.isVisible())) {
+      await this.info.click();
+      await this.infoDropdown.isVisible();
+    }
+  }
+
+  async openUserOptions(): Promise<void> {
+    if (!(await this.userOptionsDropdown.isVisible())) {
+      await this.userOptions.click();
+      await this.userOptionsDropdown.isVisible();
+    }
   }
 }

@@ -1,6 +1,8 @@
 import type { Page, Locator } from "@playwright/test";
 
 export class PageObjectBase {
+  [key: string]: any;
+
   protected readonly page: Page;
   protected readonly pageName?: string;
   protected readonly pageURL?: string;
@@ -9,31 +11,32 @@ export class PageObjectBase {
   constructor(page: Page, locators: Record<string, string>, pageName?: string, pageURL?: string) {
     this.page = page;
     this.locators = locators;
-    this.forwardPageMethods();
     this.pageName = pageName;
     this.pageURL = pageURL;
+    return new Proxy(this, {
+      get: (target: PageObjectBase, prop: string | symbol) => {
+        if (prop in target) {
+          return (target as any)[prop];
+        }
+        return (target.page as any)[prop];
+      },
+    }) as PageObjectBase & Page;
   }
 
-  private forwardPageMethods() {
-    Object.getOwnPropertyNames(Object.getPrototypeOf(this.page)).forEach((method) => {
-      if (!(method in this) && typeof this.page[method as keyof Page] === 'function') {
-        (this as any)[method] = (...args: any[]) => (this.page as any)[method](...args);
-      }
-    });
+  public async getPageName(): Promise<string> {
+    return this.pageName ?? "Unknown Page";
   }
 
-  // Forward all methods from Page to this.page
-  [key: string]: any;
+  public async isMobile(): Promise<boolean> {
+    const viewportSize = this.page.viewportSize();
+    const isMobileViewport = viewportSize !== null && viewportSize.width < 768;
+    const isMobileEmulation = await this.page.evaluate(() => 'ontouchstart' in window);
+    return isMobileViewport && isMobileEmulation;
+  }
 
   public async navigateTo(path: string): Promise<void> {
     await this.page.goto(path);
     await this.page.waitForLoadState('networkidle');
-  }
-
-  // Common utility methods
-  public async isMobile(): Promise<boolean> {
-    const viewportSize = this.page.viewportSize();
-    return viewportSize !== null && viewportSize.width < 768;
   }
 
   public async waitForUrlChange(
@@ -51,8 +54,6 @@ export class PageObjectBase {
   public getLocator(selector: keyof typeof this.locators): Locator {
     return this.page.locator(this.locators[selector]);
   }
-
-  public getPage(): Page {
-    return this.page;
-  }
 }
+
+export interface PageObjectBase extends Page {}

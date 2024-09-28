@@ -8,7 +8,8 @@ import { Navigation } from "../component-objects/Navigation";
 const locators = {
   LANDING_SPLASH: "#landing-splash-header",
   REQUEST_ACCESS_LINK: "#request-access",
-  GET_ACTIVE_BUTTON: "#btn-get-active",
+  VIEW_ORGANIZATIONS_BUTTON: "#view-organizations",
+  VIEW_EVENTS_BUTTON: "#view-events",
   GET_ORGANIZED_BUTTON: "#btn-get-organized",
   GROW_ORGANIZATION_BUTTON: "#btn-grow-organization",
   ABOUT_BUTTON: "#btn-activist",
@@ -38,8 +39,12 @@ export class LandingPage extends PageObjectBase {
     return this.getLocator("REQUEST_ACCESS_LINK");
   }
 
-  get getActiveButton(): Locator {
-    return this.getLocator("GET_ACTIVE_BUTTON");
+  get viewOrganizationsButton(): Locator {
+    return this.getLocator("VIEW_ORGANIZATIONS_BUTTON");
+  }
+
+  get viewEventsButton(): Locator {
+    return this.getLocator("VIEW_EVENTS_BUTTON");
   }
 
   get getOrganizedButton(): Locator {
@@ -65,8 +70,8 @@ export class LandingPage extends PageObjectBase {
   async getImportantLinks(): Promise<Locator[]> {
     return [
       this.landingSplash,
-      this.requestAccessLink,
-      this.getActiveButton,
+      this.viewOrganizationsButton,
+      this.viewEventsButton,
       this.getOrganizedButton,
       this.growOrganizationButton,
       this.aboutButton,
@@ -135,5 +140,66 @@ export class LandingPage extends PageObjectBase {
     }
 
     return visibleOptions;
+  }
+
+  async isViewOrganizationsButtonVisible(): Promise<boolean> {
+    return this.viewOrganizationsButton.isVisible();
+  }
+
+  async isViewEventsButtonVisible(): Promise<boolean> {
+    return this.viewEventsButton.isVisible();
+  }
+
+  async navigateToViewOrganizations(): Promise<void> {
+    await this.viewOrganizationsButton.click();
+    await this.waitForUrlChange("**/organizations");
+  }
+
+  async navigateToViewEvents(): Promise<void> {
+    await this.viewEventsButton.click();
+    await this.waitForUrlChange("**/events");
+  }
+
+  async isSignInButtonVisible(): Promise<boolean> {
+    if (await this.isMobile()) {
+      await this.navigation.mobileNav.openDrawer();
+      await this.navigation.openUserOptions();
+      return await this.navigation.signIn.isVisible();
+    } else {
+      return await this.header.isSignInButtonVisible();
+    }
+  }
+
+  async navigateToSignIn(): Promise<void> {
+    if (await this.isMobile()) {
+      await this.navigation.mobileNav.openDrawer();
+      await this.navigation.openUserOptions();
+      await this.navigation.signIn.isVisible();
+      await this.navigation.signIn.click();
+    } else {
+      await this.header.clickSignInButton();
+    }
+    await this.waitForUrlChange("**/auth/sign-in");
+  }
+
+  async isSignUpButtonVisible(): Promise<boolean> {
+    if (await this.isMobile()) {
+      await this.navigation.mobileNav.openDrawer();
+      await this.navigation.openUserOptions();
+      return await this.navigation.signUp.isVisible();
+    } else {
+      return await this.header.isSignUpButtonVisible();
+    }
+  }
+
+  async navigateToSignUp(): Promise<void> {
+    if (await this.isMobile()) {
+      await this.navigation.mobileNav.openDrawer();
+      await this.navigation.openUserOptions();
+      await this.navigation.signUp.click();
+    } else {
+      await this.header.clickSignUpButton();
+    }
+    await this.waitForUrlChange("**/auth/sign-up");
   }
 }

@@ -1,19 +1,18 @@
 import { SignInPage, expect, test } from "../fixtures/test-fixtures";
-import AxeBuilder from "@axe-core/playwright";
+import { runAccessibilityTest } from "../utils/accessibilityTesting";
 
 test.describe("Sign In Page", () => {
 
-  test("should have no detectable accessibility issues", async ({ signInPage }, testInfo) => {
-    const results = await new AxeBuilder({ page: signInPage.getPage() })
-      .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
-      .analyze();
+  test("Sign In Page has no detectable accessibility issues", async ({
+    signInPage,
+    isAccessibilityTest
+  }, testInfo) => {
+    const violations = await runAccessibilityTest(signInPage, testInfo);
+    expect.soft(violations, 'Accessibility violations found:').toHaveLength(0);
 
-    await testInfo.attach("accessibility-scan-results", {
-      body: JSON.stringify(results, null, 2),
-      contentType: "application/json",
-    });
-
-    expect(results.violations).toEqual([]);
+    if (violations.length > 0) {
+      console.log('Accessibility violations:', JSON.stringify(violations, null, 2));
+    }
   });
 
   test("should display all necessary elements", async ({ signInPage }) => {

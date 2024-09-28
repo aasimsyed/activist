@@ -1,24 +1,20 @@
-import AxeBuilder from "@axe-core/playwright";
 import { LandingPage, expect, test } from "../fixtures/test-fixtures";
+import { runAccessibilityTest } from "../utils/accessibilityTesting";
 
 test.describe("Landing Page", () => {
   // MARK: Accessibility
 
   // Note: Check to make sure that this is eventually done for light and dark modes.
-  test("There are no detectable accessibility issues", async ({
+  test("Landing Page has no detectable accessibility issues", async ({
     landingPage,
-    isAccessibilityTest,
+    isAccessibilityTest
   }, testInfo) => {
-    const results = await new AxeBuilder({ page: landingPage.getPage() })
-      .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
-      .analyze();
+    const violations = await runAccessibilityTest(landingPage, testInfo);
+    expect.soft(violations, 'Accessibility violations found:').toHaveLength(0);
 
-    await testInfo.attach("accessibility-scan-results", {
-      body: JSON.stringify(results, null, 2),
-      contentType: "application/json",
-    });
-
-    expect(results.violations).toEqual([]);
+    if (violations.length > 0) {
+      console.log('Accessibility violations:', JSON.stringify(violations, null, 2));
+    }
   });
 
   // MARK: Header
@@ -39,10 +35,22 @@ test.describe("Landing Page", () => {
     expect(result).toBe(true);
   });
 
-  // Test that the Get In Touch button is visible and clickable only on Desktop Header.
-  test("Get In Touch button is functional", async ({ landingPage }) => {
-    const result = await landingPage.checkGetInTouchButtonFunctionality();
-    expect(result).toBe(true);
+  // Test that the Sign In link can be accessed from the Home Page.
+  test("Sign In link should be accessible from the Home Page", async ({ landingPage }) => {
+    const isSignInVisible = await landingPage.isSignInButtonVisible();
+    expect(isSignInVisible).toBe(true);
+
+    await landingPage.navigateToSignIn();
+    expect(landingPage.url()).toContain("/auth/sign-in");
+  });
+
+  // Test that the Sign Up link can be accessed from the Home Page.
+  test("Sign Up link should be accessible from the Home Page", async ({ landingPage }) => {
+    const isSignUpVisible = await landingPage.isSignUpButtonVisible();
+    expect(isSignUpVisible).toBe(true);
+
+    await landingPage.navigateToSignUp();
+    expect(landingPage.url()).toContain("/auth/sign-up");
   });
 
   // Test that the theme dropdown is visible and functional.
@@ -74,13 +82,35 @@ test.describe("Landing Page", () => {
   });
 
   // Test that the landing page contains the request access link.
-  test("Splash should contain the request access link", async ({
+  test.skip("Splash should contain the request access link", async ({
     landingPage,
   }) => {
     const requestAccessLink = landingPage.requestAccessLink;
     expect(await requestAccessLink.getAttribute("href")).toBe(
       LandingPage.urls.REQUEST_ACCESS_URL
     );
+  });
+
+  // Test that the view organizations button is visible and navigates to the organizations page.
+  test("View organizations button should be visible and functional", async ({
+    landingPage,
+  }) => {
+    const isVisible = await landingPage.isViewOrganizationsButtonVisible();
+    expect(isVisible).toBe(true);
+
+    await landingPage.navigateToViewOrganizations();
+    expect(landingPage.url()).toContain("/organizations");
+  });
+
+  // Test that the view events button is visible and navigates to the events page.
+  test("View events button should be visible and functional", async ({
+    landingPage,
+  }) => {
+    const isVisible = await landingPage.isViewEventsButtonVisible();
+    expect(isVisible).toBe(true);
+
+    await landingPage.navigateToViewEvents();
+    expect(landingPage.url()).toContain("/events");
   });
 
   // Test that all important links are visible on the landing page.

@@ -7,6 +7,8 @@ const locators = {
   DESKTOP_HEADER: "#desktop-header",
   ROADMAP_BUTTON: "#desktop-header #btn-roadmap",
   GET_IN_TOUCH_BUTTON: "#btn-get-in-touch-large:visible, #btn-get-in-touch-medium:visible",
+  SIGN_IN_BUTTON: "#btn-sign-in-large:visible, #btn-sign-in-medium:visible",
+  SIGN_UP_BUTTON: "#btn-sign-up-large:visible, #btn-sign-up-medium:visible",
   THEME_DROPDOWN: ".dropdown-theme:visible",
   SELECTED_LANGUAGE: ".dropdown-language:visible .selected-option",
   LANGUAGE_DROPDOWN: ".dropdown-language:visible",
@@ -40,6 +42,14 @@ export class HeaderWebsite extends PageObjectBase {
 
   get getInTouchButton(): Locator {
     return this.getLocator("GET_IN_TOUCH_BUTTON");
+  }
+
+  get signInButton(): Locator {
+    return this.getLocator("SIGN_IN_BUTTON");
+  }
+
+  get signUpButton(): Locator {
+    return this.getLocator("SIGN_UP_BUTTON");
   }
 
   async selectDropdownOption(
@@ -110,5 +120,21 @@ export class HeaderWebsite extends PageObjectBase {
 
   async isSearchBarVisible(): Promise<boolean> {
     return this.searchBar.isSearchInputVisible();
+  }
+
+  async isSignInButtonVisible(): Promise<boolean> {
+    return this.signInButton.isVisible();
+  }
+
+  async clickSignInButton(): Promise<void> {
+    await this.signInButton.click();
+  }
+
+  async isSignUpButtonVisible(): Promise<boolean> {
+    return this.signUpButton.isVisible();
+  }
+
+  async clickSignUpButton(): Promise<void> {
+    await this.signUpButton.click();
   }
 }

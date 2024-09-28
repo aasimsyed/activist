@@ -33,7 +33,7 @@ export default defineConfig({
   reporter: [
     ['html'],
     ['list'],
-    ['./tests/utils/axe-reporter.ts']
+    ['./tests/utils/axe-reporter.ts', { outputDir: 'frontend/test-results/accessibility-results' }]
   ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
@@ -43,7 +43,7 @@ export default defineConfig({
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer. */
     trace: "on-first-retry",
     screenshot: {
-      mode: "only-on-failure",
+      mode: 'only-on-failure',
       fullPage: true,
     },
   },
