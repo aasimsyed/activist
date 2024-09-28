@@ -31,7 +31,7 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters. */
   reporter: [
-    ['html'],
+    ['html', { open: 'never' }],
     ['list'],
     ['./tests/utils/axe-reporter.ts', { outputDir: 'frontend/test-results/accessibility-results' }]
   ],
