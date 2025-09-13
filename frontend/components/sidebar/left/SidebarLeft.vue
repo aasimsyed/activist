@@ -10,7 +10,7 @@
     "
     ref="sidebarWrapper"
     id="sidebar-left"
-    role="menu"
+    role="navigation"
     tabindex="0"
     class="elem-shadow-sm focus-brand absolute z-40 block h-full flex-col border-r border-section-div bg-layer-1 transition-all duration-500 md:flex"
     :class="{

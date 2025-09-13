@@ -25,7 +25,11 @@ export const usePointerMap = () => {
     const marker = new maplibregl.Marker({
       color: pointer.color,
     });
-    marker.getElement().id = `pointer-${pointer.id}`;
+    const markerElement = marker.getElement();
+    markerElement.id = `pointer-${pointer.id}`;
+    markerElement.setAttribute("role", "button");
+    markerElement.setAttribute("aria-label", "Map marker");
+    markerElement.setAttribute("tabindex", "0");
     marker.addClassName("cursor-pointer");
     marker.setLngLat([
       parseFloat(pointer.location.lon),
