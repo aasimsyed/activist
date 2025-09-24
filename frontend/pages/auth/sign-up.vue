@@ -194,7 +194,7 @@ const signUpSchema = z
     userName: z.string().min(1, t("i18n.pages.auth._global.required")),
     password: z.string(),
     confirmPassword: z.string(),
-    email: z.string().email(t("i18n.pages.auth.sign_up.invalid_email")),
+    email: z.string().email(t("i18n.pages.auth._global.invalid_email")),
     hasRead: z.boolean().refine((val) => val, {
       message: "i18n.pages.auth._global.required",
     }),

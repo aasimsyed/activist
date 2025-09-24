@@ -78,8 +78,8 @@ const page = computed(() => {
       btnAriaLabel: "i18n._global.sign_in_aria_label",
       btnLabel: "i18n._global.sign_in",
       btnLink: "/auth/sign-in",
-      message: "i18n.layouts.auth.set_new_password",
-      title: "i18n.layouts.auth.set_new_password",
+      message: "i18n._global.auth.set_new_password",
+      title: "i18n._global.auth.set_new_password",
     },
   ];
 

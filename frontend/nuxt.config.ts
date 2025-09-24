@@ -28,6 +28,16 @@ export default defineNuxtConfig({
         signOut: { path: "v1/auth/sign_out", method: "post" },
         signUp: { path: "/v1/auth/sign_up", method: "post" },
         getSession: { path: "v1/auth/sessions", method: "get" },
+        passwordResetRequest: {
+          path: "v1/auth/password-reset-request",
+          method: "post",
+        },
+        passwordReset: { path: "v1/auth/password-reset", method: "post" },
+        validateResetToken: {
+          path: "v1/auth/validate-reset-token",
+          method: "get",
+        },
+        setPassword: { path: "v1/auth/set-password", method: "post" },
       },
       refresh: {
         isEnabled: true,
