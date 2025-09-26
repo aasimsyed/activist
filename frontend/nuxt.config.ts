@@ -86,7 +86,7 @@ export default defineNuxtConfig({
     "@": resolve(__dirname, "./"),
   },
 
-  plugins: ["~/plugins/i18n-head.ts"],
+  plugins: ["~/plugins/lang-attribute.ts", "~/plugins/i18n-head.ts"],
 
   imports: {
     dirs: ["./stores"],
