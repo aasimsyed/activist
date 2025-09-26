@@ -7,7 +7,9 @@ export default defineNuxtPlugin((nuxtApp) => {
 
   // Set initial lang attribute.
   const setLangAttribute = (locale: string) => {
-    document.documentElement.setAttribute("lang", locale);
+    if (import.meta.client) {
+      document.documentElement.setAttribute("lang", locale);
+    }
   };
 
   // Set initial locale - default to 'en' if i18n is not available.
@@ -19,4 +21,11 @@ export default defineNuxtPlugin((nuxtApp) => {
     const locale = (to.params.locale as string) || "en";
     setLangAttribute(locale);
   });
+
+  // Ensure lang attribute is set on mount
+  if (import.meta.client) {
+    nuxtApp.hook("app:mounted", () => {
+      setLangAttribute("en");
+    });
+  }
 });
