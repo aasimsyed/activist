@@ -6,7 +6,7 @@ export default defineNuxtPlugin(() => {
   if (import.meta.client) {
     // Set it immediately
     document.documentElement.setAttribute("lang", "en");
-    
+
     // Also set it after a short delay to ensure it's applied
     setTimeout(() => {
       if (!document.documentElement.hasAttribute("lang")) {

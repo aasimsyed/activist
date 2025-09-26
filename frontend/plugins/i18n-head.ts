@@ -22,10 +22,15 @@ export default defineNuxtPlugin((nuxtApp) => {
     setLangAttribute(locale);
   });
 
-  // Ensure lang attribute is set on mount
+  // Ensure lang attribute is set on mount and after hydration
   if (import.meta.client) {
     nuxtApp.hook("app:mounted", () => {
       setLangAttribute("en");
     });
+
+    // Also set it immediately when the plugin runs
+    setTimeout(() => {
+      setLangAttribute("en");
+    }, 0);
   }
 });
