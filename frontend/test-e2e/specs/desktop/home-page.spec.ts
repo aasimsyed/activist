@@ -7,49 +7,74 @@ import { newMainNavOptions } from "~/test-e2e/component-objects/MainNavOptions";
 import { newSearchbar } from "~/test-e2e/component-objects/Searchbar";
 import { newSidebarLeft } from "~/test-e2e/component-objects/SidebarLeft";
 import { newSignInMenu } from "~/test-e2e/component-objects/SignInMenu";
+import { logTestPath, withTestStep } from "~/test-e2e/utils/testTraceability";
 
-test.beforeEach(async ({ page }) => {
-  await page.goto("/home");
+test.beforeEach(async ({ page }, testInfo) => {
+  logTestPath(testInfo);
+  await withTestStep(
+    testInfo,
+    "Navigate to home page and verify sidebar",
+    async () => {
+      await page.goto("/home");
 
-  // SidebarLeft automatically expands because the mouse starts in the top left.
-  const sidebar = newSidebarLeft(page);
-  await expect(sidebar.root).toBeVisible();
+      // SidebarLeft automatically expands because the mouse starts in the top left.
+      const sidebar = newSidebarLeft(page);
+      await expect(sidebar.root).toBeVisible();
+    }
+  );
 });
 
 test.describe("Home Page", { tag: "@desktop" }, () => {
-  test("User can open searchbar", async ({ page }) => {
+  test("User can open searchbar", async ({ page }, testInfo) => {
+    logTestPath(testInfo);
     const sidebarLeft = newSidebarLeft(page);
     const searchbar = newSearchbar(page);
 
-    await sidebarLeft.mouseEnter();
-    await expect(searchbar.input).toHaveAttribute("placeholder", /search/i);
+    await withTestStep(testInfo, "Open searchbar by hovering", async () => {
+      await sidebarLeft.mouseEnter();
+      await expect(searchbar.input).toHaveAttribute("placeholder", /search/i);
+    });
 
-    await sidebarLeft.close();
-    await expect(searchbar.input).not.toBeAttached();
+    await withTestStep(testInfo, "Close searchbar", async () => {
+      await sidebarLeft.close();
+      await expect(searchbar.input).not.toBeAttached();
+    });
   });
 
-  test("User can open searchbar with CTRL+'/'", async ({ page }) => {
+  test("User can open searchbar with CTRL+'/'", async ({ page }, testInfo) => {
+    logTestPath(testInfo);
     const sidebarLeft = newSidebarLeft(page);
     const searchbar = newSearchbar(page);
 
-    await sidebarLeft.close();
-    await sidebarLeft.expectIsCollapsed();
-
-    await pressControlKey(page, "/");
-    await sidebarLeft.expectIsExpanded("CTRL+'/' should expand left sidebar");
-    await sidebarLeft.expectIsLockedOpen(
-      "CTRL+'/' should lock left sidebar open"
+    await withTestStep(
+      testInfo,
+      "Close sidebar and verify collapsed state",
+      async () => {
+        await sidebarLeft.close();
+        await sidebarLeft.expectIsCollapsed();
+      }
     );
-    await expect(searchbar.input).toBeFocused();
 
-    await sidebarLeft.lockToggle.click();
-    await sidebarLeft.mouseLeave();
-    await expect(searchbar.input).not.toBeAttached();
+    await withTestStep(testInfo, "Open searchbar with CTRL+/", async () => {
+      await pressControlKey(page, "/");
+      await sidebarLeft.expectIsExpanded("CTRL+'/' should expand left sidebar");
+      await sidebarLeft.expectIsLockedOpen(
+        "CTRL+'/' should lock left sidebar open"
+      );
+      await expect(searchbar.input).toBeFocused();
+    });
+
+    await withTestStep(testInfo, "Close searchbar and verify", async () => {
+      await sidebarLeft.lockToggle.click();
+      await sidebarLeft.mouseLeave();
+      await expect(searchbar.input).not.toBeAttached();
+    });
   });
 
   test("Navigation main options: Events and Organizations", async ({
     page,
-  }) => {
+  }, testInfo) => {
+    logTestPath(testInfo);
     const { eventsLink, organizationsLink } = newMainNavOptions(page);
 
     const links = [
@@ -58,12 +83,15 @@ test.describe("Home Page", { tag: "@desktop" }, () => {
     ];
 
     for (const { link, path } of links) {
-      await link.click();
+      await withTestStep(testInfo, `Navigate to ${path}`, async () => {
+        await link.click();
+        await page.waitForURL(`**${path}`);
+        expect(page.url()).toContain(path);
+      });
 
-      await page.waitForURL(`**${path}`);
-      expect(page.url()).toContain(path);
-
-      await page.goto("/home");
+      await withTestStep(testInfo, "Return to home page", async () => {
+        await page.goto("/home");
+      });
     }
   });
 

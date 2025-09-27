@@ -6,25 +6,35 @@ import { newMainNavOptions } from "~/test-e2e/component-objects/MainNavOptions";
 import { newSearchbar } from "~/test-e2e/component-objects/Searchbar";
 import { newSidebarRight } from "~/test-e2e/component-objects/SidebarRight";
 import { newSignInMenu } from "~/test-e2e/component-objects/SignInMenu";
+import { logTestPath, withTestStep } from "~/test-e2e/utils/testTraceability";
 
-test.beforeEach(async ({ page }) => {
-  await page.goto("/home");
+test.beforeEach(async ({ page }, testInfo) => {
+  logTestPath(testInfo);
+  await withTestStep(testInfo, "Navigate to home page", async () => {
+    await page.goto("/home");
+  });
 });
 
 test.describe("Home Page", { tag: "@mobile" }, () => {
-  test("User can open searchbar", async ({ page }) => {
+  test("User can open searchbar", async ({ page }, testInfo) => {
+    logTestPath(testInfo);
     const searchbar = newSearchbar(page);
 
-    await searchbar.openToggle.click();
-    await expect(searchbar.input).toHaveAttribute("placeholder", /search/i);
+    await withTestStep(testInfo, "Open searchbar", async () => {
+      await searchbar.openToggle.click();
+      await expect(searchbar.input).toHaveAttribute("placeholder", /search/i);
+    });
 
-    await searchbar.openToggle.click();
-    await expect(searchbar.input).not.toBeVisible();
+    await withTestStep(testInfo, "Close searchbar", async () => {
+      await searchbar.openToggle.click();
+      await expect(searchbar.input).not.toBeVisible();
+    });
   });
 
   test("Navigation main options: Home, Events, and Organizations", async ({
     page,
-  }) => {
+  }, testInfo) => {
+    logTestPath(testInfo);
     const { homeLink, eventsLink, organizationsLink } = newMainNavOptions(page);
 
     const links = [
@@ -34,12 +44,15 @@ test.describe("Home Page", { tag: "@mobile" }, () => {
     ];
 
     for (const { link, path } of links) {
-      await link.click();
+      await withTestStep(testInfo, `Navigate to ${path}`, async () => {
+        await link.click();
+        await page.waitForURL(`**${path}`);
+        expect(page.url()).toContain(path);
+      });
 
-      await page.waitForURL(`**${path}`);
-      expect(page.url()).toContain(path);
-
-      await page.goto("/home");
+      await withTestStep(testInfo, "Return to home page", async () => {
+        await page.goto("/home");
+      });
     }
   });
 

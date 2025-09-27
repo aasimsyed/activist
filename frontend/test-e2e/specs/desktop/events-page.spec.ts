@@ -1,11 +1,15 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { expect, test } from "playwright/test";
 
+import { logTestPath, withTestStep } from "~/test-e2e/utils/testTraceability";
 import { getEnglishText } from "~/utils/i18n";
 
-test.beforeEach(async ({ page }) => {
-  await page.goto("/events?view=list");
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText(/events/i);
+test.beforeEach(async ({ page }, testInfo) => {
+  logTestPath(testInfo);
+  await withTestStep(testInfo, "Navigate to events page", async () => {
+    await page.goto("/events?view=list");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(/events/i);
+  });
 });
 
 test.describe("Events Page", { tag: "@desktop" }, () => {

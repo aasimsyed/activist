@@ -2,12 +2,16 @@
 import { expect, test } from "playwright/test";
 
 import { runAccessibilityTest } from "~/test-e2e/accessibility/accessibilityTesting";
+import { logTestPath, withTestStep } from "~/test-e2e/utils/testTraceability";
 
-test.beforeEach(async ({ page }) => {
-  await page.goto("/organizations");
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
-    /organizations/i
-  );
+test.beforeEach(async ({ page }, testInfo) => {
+  logTestPath(testInfo);
+  await withTestStep(testInfo, "Navigate to organizations page", async () => {
+    await page.goto("/organizations");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+      /organizations/i
+    );
+  });
 });
 
 test.describe("Organizations Page", { tag: ["@desktop", "@mobile"] }, () => {

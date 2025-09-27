@@ -25,13 +25,17 @@ import { newSidebarRight } from "~/test-e2e/component-objects/SidebarRight";
 import { newSignInMenu } from "~/test-e2e/component-objects/SignInMenu";
 import { newThemeMenu } from "~/test-e2e/component-objects/ThemeMenu";
 import { newLandingPage } from "~/test-e2e/page-objects/LandingPage";
+import { logTestPath, withTestStep } from "~/test-e2e/utils/testTraceability";
 import { getEnglishText } from "~/utils/i18n";
 
-test.beforeEach(async ({ page }) => {
-  await page.goto("/en");
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
-    new RegExp(getEnglishText("i18n.components.landing_splash.header"), "i")
-  );
+test.beforeEach(async ({ page }, testInfo) => {
+  logTestPath(testInfo);
+  await withTestStep(testInfo, "Navigate to landing page", async () => {
+    await page.goto("/en");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+      new RegExp(getEnglishText("i18n.components.landing_splash.header"), "i")
+    );
+  });
 });
 
 test.describe("Landing Page", { tag: "@mobile" }, () => {

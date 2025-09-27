@@ -25,21 +25,27 @@ import { expectTheme } from "~/test-e2e/assertions";
 import { newLanguageMenu } from "~/test-e2e/component-objects/LanguageMenu";
 import { newThemeMenu } from "~/test-e2e/component-objects/ThemeMenu";
 import { newLandingPage } from "~/test-e2e/page-objects/LandingPage";
+import { logTestPath, withTestStep } from "~/test-e2e/utils/testTraceability";
 import { getEnglishText } from "~/utils/i18n";
 
-test.beforeEach(async ({ page }) => {
-  await page.goto("/en");
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
-    new RegExp(getEnglishText("i18n.components.landing_splash.header"), "i")
-  );
+test.beforeEach(async ({ page }, testInfo) => {
+  logTestPath(testInfo);
+  await withTestStep(testInfo, "Navigate to landing page", async () => {
+    await page.goto("/en");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+      new RegExp(getEnglishText("i18n.components.landing_splash.header"), "i")
+    );
+  });
 });
 
 test.describe("Landing Page", { tag: "@desktop" }, () => {
-  test("User can go to Roadmap on desktop", async ({ page }) => {
-    await page.getByRole("link", { name: ROADMAP_LINK_NAME }).click();
-    await page.waitForURL("**/about/roadmap");
-
-    expect(page.url()).toContain("/about/roadmap");
+  test("User can go to Roadmap on desktop", async ({ page }, testInfo) => {
+    logTestPath(testInfo);
+    await withTestStep(testInfo, "Click roadmap link", async () => {
+      await page.getByRole("link", { name: ROADMAP_LINK_NAME }).click();
+      await page.waitForURL("**/about/roadmap");
+      expect(page.url()).toContain("/about/roadmap");
+    });
   });
 
   test("User can go to Learn More page from Get Active learn more link", async ({

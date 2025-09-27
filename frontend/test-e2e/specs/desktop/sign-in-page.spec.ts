@@ -2,9 +2,13 @@
 import { expect, test } from "playwright/test";
 
 import { newSignInPage } from "~/test-e2e/page-objects/SignInPage";
+import { logTestPath, withTestStep } from "~/test-e2e/utils/testTraceability";
 
-test.beforeEach(async ({ page }) => {
-  await page.goto("/auth/sign-in");
+test.beforeEach(async ({ page }, testInfo) => {
+  logTestPath(testInfo);
+  await withTestStep(testInfo, "Navigate to sign-in page", async () => {
+    await page.goto("/auth/sign-in");
+  });
 });
 
 test.describe("Sign In Page", { tag: "@desktop" }, () => {

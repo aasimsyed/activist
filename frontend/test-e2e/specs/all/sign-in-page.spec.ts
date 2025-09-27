@@ -4,6 +4,7 @@ import { expect, test } from "playwright/test";
 import { runAccessibilityTest } from "~/test-e2e/accessibility/accessibilityTesting";
 import { newPasswordStrength } from "~/test-e2e/component-objects/PasswordStrength";
 import { newSignInPage } from "~/test-e2e/page-objects/SignInPage";
+import { logTestPath, withTestStep } from "~/test-e2e/utils/testTraceability";
 import {
   PASSWORD_STRENGTH_COLOR as COLOR,
   PASSWORD_PROGRESS as PROGRESS,
@@ -115,44 +116,73 @@ test.describe("Sign In Page", { tag: ["@desktop", "@mobile"] }, () => {
     await expect(signInPage.captcha).toBeVisible();
   });
 
-  test("User can sign in and go to home page", async ({ page }) => {
+  test("User can sign in and go to home page", async ({ page }, testInfo) => {
+    logTestPath(testInfo);
     const signInPage = newSignInPage(page);
 
-    await signInPage.usernameInput.fill("admin");
-    await signInPage.passwordInput.fill("admin");
-    await signInPage.signInButton.click();
+    await withTestStep(testInfo, "Fill in credentials", async () => {
+      await signInPage.usernameInput.fill("admin");
+      await signInPage.passwordInput.fill("admin");
+    });
 
-    await page.waitForURL("**/home");
-    expect(page.url()).toContain("/home");
+    await withTestStep(testInfo, "Click sign in button", async () => {
+      await signInPage.signInButton.click();
+    });
+
+    await withTestStep(testInfo, "Wait for redirect to home page", async () => {
+      await page.waitForURL("**/home");
+      expect(page.url()).toContain("/home");
+    });
     // Should be redirected to the home page AND sidebar left should have create button.
   });
 
-  test("Page shows error for invalid credentials", async ({ page }) => {
+  test("Page shows error for invalid credentials", async ({
+    page,
+  }, testInfo) => {
+    logTestPath(testInfo);
     const dialogPromise = page.waitForEvent("dialog");
     const signInPage = newSignInPage(page);
 
-    await signInPage.usernameInput.fill("invaliduser");
-    await signInPage.passwordInput.fill("invaliduser");
-    await signInPage.signInButton.click();
+    await withTestStep(testInfo, "Fill in invalid credentials", async () => {
+      await signInPage.usernameInput.fill("invaliduser");
+      await signInPage.passwordInput.fill("invaliduser");
+    });
 
-    const dialog = await dialogPromise;
-    expect(dialog.message()).toMatch(/invalid sign in credentials/i);
+    await withTestStep(testInfo, "Click sign in button", async () => {
+      await signInPage.signInButton.click();
+    });
 
-    await dialog.dismiss();
-    expect(page.url()).toContain("/auth/sign-in");
+    await withTestStep(testInfo, "Verify error dialog appears", async () => {
+      const dialog = await dialogPromise;
+      expect(dialog.message()).toMatch(/invalid sign in credentials/i);
+      await dialog.dismiss();
+      expect(page.url()).toContain("/auth/sign-in");
+    });
   });
 
-  test("User will have token saved in cookie", async ({ page }) => {
+  test("User will have token saved in cookie", async ({ page }, testInfo) => {
+    logTestPath(testInfo);
     const signInPage = newSignInPage(page);
 
-    await signInPage.usernameInput.fill("admin");
-    await signInPage.passwordInput.fill("admin");
-    await signInPage.signInButton.click();
+    await withTestStep(testInfo, "Fill in credentials", async () => {
+      await signInPage.usernameInput.fill("admin");
+      await signInPage.passwordInput.fill("admin");
+    });
 
-    await page.waitForURL("**/home");
-    const cookies = await page.context().cookies();
-    const sessionCookie = cookies.find((c) => c.name === "auth.token");
-    expect(sessionCookie).toBeDefined();
+    await withTestStep(testInfo, "Click sign in button", async () => {
+      await signInPage.signInButton.click();
+    });
+
+    await withTestStep(
+      testInfo,
+      "Wait for redirect and verify cookie",
+      async () => {
+        await page.waitForURL("**/home");
+        const cookies = await page.context().cookies();
+        const sessionCookie = cookies.find((c) => c.name === "auth.token");
+        expect(sessionCookie).toBeDefined();
+      }
+    );
     // Should be redirected to the home page AND sidebar left should have create button.
   });
 

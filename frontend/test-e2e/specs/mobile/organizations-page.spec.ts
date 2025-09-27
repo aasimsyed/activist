@@ -1,11 +1,16 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { expect, test } from "playwright/test";
 
-test.beforeEach(async ({ page }) => {
-  await page.goto("/organizations");
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
-    /organizations/i
-  );
+import { logTestPath, withTestStep } from "~/test-e2e/utils/testTraceability";
+
+test.beforeEach(async ({ page }, testInfo) => {
+  logTestPath(testInfo);
+  await withTestStep(testInfo, "Navigate to organizations page", async () => {
+    await page.goto("/organizations");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+      /organizations/i
+    );
+  });
 });
 
 test.describe("Organizations Page", { tag: "@mobile" }, () => {
