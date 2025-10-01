@@ -2,20 +2,20 @@
   "cookies": [
     {
       "name": "auth.token",
-      "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU5Mjk0NTA3LCJpYXQiOjE3NTkyOTQyMDcsImp0aSI6ImQ3NmUzM2I1NmM0MDRmNGNiZjg3YmQ3M2RkMTIwYmZlIiwidXNlcl9pZCI6ImQ1OTJjOGIyLWExNmItNGM3YS04YmY1LTg0YWI3NTZlZWE3NiJ9.QoO0RmJZUJxeWlgV9c-gJClMYXTCHcs8QHMFc6nhrTA",
+      "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU5Mjk1ODE0LCJpYXQiOjE3NTkyOTU1MTQsImp0aSI6IjljYjk5ZDhiNTZiMTQyNTg5Mzk5OGUwYWVjZDQ3NzJmIiwidXNlcl9pZCI6ImQ1OTJjOGIyLWExNmItNGM3YS04YmY1LTg0YWI3NTZlZWE3NiJ9.ERZ53tK3TapzCpJ7eIxF2otLXHusNbor9Vg13yQBes0",
       "domain": "localhost",
       "path": "/",
-      "expires": 1759294507.2354,
+      "expires": 1759295814.131371,
       "httpOnly": false,
       "secure": false,
       "sameSite": "Lax"
     },
     {
       "name": "auth.refresh",
-      "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc1OTM4MDYwNywiaWF0IjoxNzU5Mjk0MjA3LCJqdGkiOiJjNjI5Mjk3MDcyYzY0NTUzOTUwYWE3MWRiYTEyNDBhMiIsInVzZXJfaWQiOiJkNTkyYzhiMi1hMTZiLTRjN2EtOGJmNS04NGFiNzU2ZWVhNzYifQ.4-kAtFGNXtLEdPghx5JhbUMR8tLjcrPYmS22ryfr2Rc",
+      "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc1OTM4MTkxNCwiaWF0IjoxNzU5Mjk1NTE0LCJqdGkiOiJhOWViYjVhYTVjYjg0MzM4OWZlMTQyNjBlMDgwYTA0NCIsInVzZXJfaWQiOiJkNTkyYzhiMi1hMTZiLTRjN2EtOGJmNS04NGFiNzU2ZWVhNzYifQ.SgY2feUbytLixe9ESPglDjIMWAE4fGdE8EZRcl3IzYA",
       "domain": "localhost",
       "path": "/",
-      "expires": 1759294507.235567,
+      "expires": 1759295814.131452,
       "httpOnly": false,
       "secure": false,
       "sameSite": "Lax"

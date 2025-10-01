@@ -90,14 +90,31 @@ export default defineConfig({
   /* Configure projects for major desktop browsers. */
   projects: [
     // Unauthenticated tests - NO auth state (testing auth flows and unauthenticated UI)
+    // Desktop unauthenticated
     {
-      name: "unauthenticated",
+      name: "unauthenticated-desktop",
       testMatch: [
         /.*sign-in-page\.spec\.ts/,
         /.*home-page\.spec\.ts/, // Home page has tests that need unauthenticated state
       ],
+      grep: matchDesktop,
       use: {
         ...devices["Desktop Chrome"],
+        storageState: undefined, // Override global storageState for unauthenticated tests
+      },
+    },
+    // Mobile unauthenticated
+    {
+      name: "unauthenticated-mobile",
+      testMatch: [
+        /.*sign-in-page\.spec\.ts/,
+        /.*home-page\.spec\.ts/, // Home page has tests that need unauthenticated state
+      ],
+      grep: matchMobile,
+      use: {
+        ...devices["Pixel 5"],
+        isMobile: true,
+        hasTouch: true,
         storageState: undefined, // Override global storageState for unauthenticated tests
       },
     },

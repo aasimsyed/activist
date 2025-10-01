@@ -8,12 +8,15 @@ import { expect, test } from "~/test-e2e/global-fixtures";
 
 test.beforeEach(async ({ page }) => {
   await page.goto("/home");
+  await page.waitForLoadState("networkidle", { timeout: 20000 });
 });
 
 test.describe("Home Page", { tag: "@mobile" }, () => {
   test("User can open searchbar", async ({ page }) => {
     const searchbar = newSearchbar(page);
 
+    // Wait for search toggle to be visible before clicking
+    await expect(searchbar.openToggle).toBeVisible({ timeout: 10000 });
     await searchbar.openToggle.click();
     await expect(searchbar.input).toHaveAttribute("placeholder", /search/i);
 
