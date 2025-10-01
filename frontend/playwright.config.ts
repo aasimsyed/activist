@@ -28,6 +28,8 @@ const ENV = (process.env.TEST_ENV || "local") as keyof typeof environments;
 
 export default defineConfig({
   testDir: "./test-e2e/specs",
+  /* Global setup to create authenticated session before tests run */
+  globalSetup: require.resolve("./test-e2e/global-setup"),
   /* Run tests in files in parallel. */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
@@ -35,7 +37,7 @@ export default defineConfig({
   /* Retry on both CI and local - helps with flaky tests. */
   retries: 4,
   /* Enhanced parallel execution with test sharding. */
-  workers: process.env.CI ? 4 : 2,
+  workers: process.env.CI ? 4 : 1,
   /* Fail on flaky tests to ensure stability. */
   failOnFlakyTests: !!process.env.CI,
   /* User data directory for browser state persistence */
@@ -70,6 +72,7 @@ export default defineConfig({
     /* Base URL to use in actions like `await page.goto('/')`. */
     baseURL: environments[ENV],
     navigationTimeout: 10000,
+    actionTimeout: process.env.CI ? 5000 : 10000, // Longer timeout for dev mode
 
     /* Enhanced trace configuration for better debugging. */
     trace: {
@@ -86,14 +89,28 @@ export default defineConfig({
 
   /* Configure projects for major desktop browsers. */
   projects: [
-    // Core browsers - always run
+    // Unauthenticated tests - NO auth state (testing auth flows and unauthenticated UI)
+    {
+      name: "unauthenticated",
+      testMatch: [
+        /.*sign-in-page\.spec\.ts/,
+        /.*home-page\.spec\.ts/, // Home page has tests that need unauthenticated state
+      ],
+      use: {
+        ...devices["Desktop Chrome"],
+        storageState: undefined, // Override global storageState for unauthenticated tests
+      },
+    },
+    // Core browsers - always run with authentication
     {
       name: "chromium",
       grep: matchDesktop,
+      testIgnore: [/.*sign-in-page\.spec\.ts/, /.*home-page\.spec\.ts/], // Handled by unauthenticated project
       // Dedicated workers for desktop tests.
       workers: process.env.CI ? 2 : 1,
       use: {
         ...devices["Desktop Chrome"],
+        storageState: "test-e2e/.auth/admin.json", // Reuse authenticated state from global setup
         // Reuse browser state for faster authentication.
         // userDataDir: process.env.CI
         //   ? undefined
@@ -103,12 +120,14 @@ export default defineConfig({
     {
       name: "Mobile Chrome",
       grep: matchMobile,
+      testIgnore: [/.*sign-in-page\.spec\.ts/, /.*home-page\.spec\.ts/], // Handled by unauthenticated project
       // More workers for mobile tests.
       workers: process.env.CI ? 2 : 1,
       use: {
         ...devices["Pixel 5"],
         isMobile: true,
         hasTouch: true,
+        storageState: "test-e2e/.auth/admin.json", // Reuse authenticated state from global setup
         // Reuse browser state for faster authentication.
         // userDataDir: process.env.CI
         //   ? undefined

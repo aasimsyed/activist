@@ -33,6 +33,7 @@ frontend/playwright-report/
 frontend/blob-report/
 frontend/playwright/.cache/
 frontend/.github/
+frontend/test-e2e/.auth/
 
 # Nuxt dev/build outputs
 .output

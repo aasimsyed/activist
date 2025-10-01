@@ -91,7 +91,15 @@ test.describe("Home Page", { tag: "@desktop" }, () => {
 
     for (const { submenu, options } of submenus) {
       for (const { link, path } of options) {
+        // Wait for toggle button to be visible and clickable
+        await expect(submenu.toggleOpenButton).toBeVisible({ timeout: 10000 });
         await submenu.toggleOpenButton.click();
+
+        // Wait for dropdown menu to expand
+        await page.waitForTimeout(500);
+
+        // Wait for the link to be visible before clicking
+        await expect(link).toBeVisible({ timeout: 10000 });
         await link.click();
 
         await page.waitForURL(`**${path}`);

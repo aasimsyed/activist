@@ -1,5 +1,4 @@
 import { runAccessibilityTest } from "~/test-e2e/accessibility/accessibilityTesting";
-import { signInAsAdmin } from "~/test-e2e/actions/authentication";
 import { navigateToOrganizationGroupSubpage } from "~/test-e2e/actions/navigation";
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { expect, test } from "~/test-e2e/global-fixtures";
@@ -9,8 +8,8 @@ import { logTestPath, withTestStep } from "~/test-e2e/utils/testTraceability";
 import { getEnglishText } from "~/utils/i18n";
 
 test.beforeEach(async ({ page }) => {
+  // Already authenticated via storageState from global setup
   // Sign in as admin to access edit functionality
-  await signInAsAdmin(page);
   // Navigate to a group about page within an organization
   await navigateToOrganizationGroupSubpage(page, "about");
 });
