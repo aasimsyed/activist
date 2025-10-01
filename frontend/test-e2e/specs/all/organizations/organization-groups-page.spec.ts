@@ -12,40 +12,44 @@ test.beforeEach(async ({ page }) => {
 
 test.describe(
   "Organization Groups Page",
-  { tag: ["@desktop", "@mobile"] },
+  { tag: ["@desktop", "@mobile", "@org"] },
   () => {
+    // Increase test timeout for slow dev mode loading
+    test.setTimeout(60000);
     // Note: Check to make sure that this is eventually done for light and dark modes.
-    test("Organization Groups Page has no detectable accessibility issues", async ({
-      page,
-    }, testInfo) => {
-      logTestPath(testInfo);
+    test(
+      "Organization Groups Page has no detectable accessibility issues",
+      { tag: "@a11y" },
+      async ({ page }, testInfo) => {
+        logTestPath(testInfo);
 
-      await withTestStep(
-        testInfo,
-        "Wait for lang attribute to be set",
-        async () => {
-          await expect(page.locator("html")).toHaveAttribute(
-            "lang",
-            /^[a-z]{2}(-[A-Z]{2})?$/
-          );
-        }
-      );
-
-      await withTestStep(testInfo, "Run accessibility scan", async () => {
-        const violations = await runAccessibilityTest(
-          "Organization Groups Page",
-          page,
-          testInfo
+        await withTestStep(
+          testInfo,
+          "Wait for lang attribute to be set",
+          async () => {
+            await expect(page.locator("html")).toHaveAttribute(
+              "lang",
+              /^[a-z]{2}(-[A-Z]{2})?$/
+            );
+          }
         );
-        expect
-          .soft(violations, "Accessibility violations found:")
-          .toHaveLength(0);
 
-        if (violations.length > 0) {
-          // Note: For future implementation.
-        }
-      });
-    });
+        await withTestStep(testInfo, "Run accessibility scan", async () => {
+          const violations = await runAccessibilityTest(
+            "Organization Groups Page",
+            page,
+            testInfo
+          );
+          expect
+            .soft(violations, "Accessibility violations found:")
+            .toHaveLength(0);
+
+          if (violations.length > 0) {
+            // Note: For future implementation.
+          }
+        });
+      }
+    );
 
     test("User can view organization groups", async ({ page }) => {
       const organizationPage = newOrganizationPage(page);

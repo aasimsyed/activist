@@ -14,39 +14,43 @@ test.beforeEach(async ({ page }) => {
 
 test.describe(
   "Organization Group FAQ Page",
-  { tag: ["@desktop", "@mobile"] },
+  { tag: ["@desktop", "@mobile", "@group", "@slow", "@nested"] },
   () => {
-    test("Organization Group FAQ Page has no detectable accessibility issues", async ({
-      page,
-    }, testInfo) => {
-      logTestPath(testInfo);
+    // Increase test timeout for slow dev mode loading (group pages load even slower)
+    test.setTimeout(90000);
+    test(
+      "Organization Group FAQ Page has no detectable accessibility issues",
+      { tag: "@a11y" },
+      async ({ page }, testInfo) => {
+        logTestPath(testInfo);
 
-      await withTestStep(
-        testInfo,
-        "Wait for lang attribute to be set",
-        async () => {
-          await expect(page.locator("html")).toHaveAttribute(
-            "lang",
-            /^[a-z]{2}(-[A-Z]{2})?$/
-          );
-        }
-      );
-
-      await withTestStep(testInfo, "Run accessibility scan", async () => {
-        const violations = await runAccessibilityTest(
-          "Organization Group FAQ Page",
-          page,
-          testInfo
+        await withTestStep(
+          testInfo,
+          "Wait for lang attribute to be set",
+          async () => {
+            await expect(page.locator("html")).toHaveAttribute(
+              "lang",
+              /^[a-z]{2}(-[A-Z]{2})?$/
+            );
+          }
         );
-        expect
-          .soft(violations, "Accessibility violations found:")
-          .toHaveLength(0);
 
-        if (violations.length > 0) {
-          // Note: For future implementation.
-        }
-      });
-    });
+        await withTestStep(testInfo, "Run accessibility scan", async () => {
+          const violations = await runAccessibilityTest(
+            "Organization Group FAQ Page",
+            page,
+            testInfo
+          );
+          expect
+            .soft(violations, "Accessibility violations found:")
+            .toHaveLength(0);
+
+          if (violations.length > 0) {
+            // Note: For future implementation.
+          }
+        });
+      }
+    );
 
     test("User can view and interact with FAQ entries", async ({
       page,
@@ -133,90 +137,92 @@ test.describe(
       await expect(groupFaqPage.newFaqButton).toBeVisible();
     });
 
-    test("User can reorder FAQ entries using drag and drop", async ({
-      page,
-    }, testInfo) => {
-      logTestPath(testInfo);
-      const organizationPage = newOrganizationPage(page);
-      const groupFaqPage = organizationPage.groupFaqPage;
+    test(
+      "User can reorder FAQ entries using drag and drop",
+      { tag: "@drag-drop" },
+      async ({ page }, testInfo) => {
+        logTestPath(testInfo);
+        const organizationPage = newOrganizationPage(page);
+        const groupFaqPage = organizationPage.groupFaqPage;
 
-      // Wait for page to load and then for FAQ cards to appear
-      await page.waitForLoadState("networkidle");
-
-      // Wait for FAQ cards to be present (with timeout to handle empty state)
-      try {
-        await expect(groupFaqPage.faqCards.first()).toBeVisible({
-          timeout: 5000,
-        });
-      } catch {
-        // If no FAQ cards appear, that's fine - could be empty state
-      }
-
-      const faqCount = await groupFaqPage.getFaqCount();
-
-      if (faqCount >= 2) {
-        // Get initial order of first 2 FAQ questions for drag and drop test
-        const firstQuestion = await groupFaqPage.getFaqQuestionText(0);
-        const secondQuestion = await groupFaqPage.getFaqQuestionText(1);
-
-        // Verify drag handles are visible and have correct classes
-        const firstFaqDragHandle = groupFaqPage.getFaqDragHandle(0);
-        const secondFaqDragHandle = groupFaqPage.getFaqDragHandle(1);
-
-        await expect(firstFaqDragHandle).toBeVisible();
-        await expect(secondFaqDragHandle).toBeVisible();
-
-        // Validate drag handles have the correct CSS class
-        await expect(firstFaqDragHandle).toContainClass("drag-handle");
-        await expect(secondFaqDragHandle).toContainClass("drag-handle");
-
-        // Use mouse events for reliable drag and drop
-        const firstBox = await groupFaqPage.getFaqDragHandlePosition(0);
-        const secondBox = await groupFaqPage.getFaqDragHandlePosition(1);
-
-        if (firstBox && secondBox) {
-          const startX = firstBox.x + firstBox.width / 2;
-          const startY = firstBox.y + firstBox.height / 2;
-          const endX = secondBox.x + secondBox.width / 2;
-          const endY = secondBox.y + secondBox.height / 2;
-
-          // Simulate drag with mouse events
-          await page.mouse.move(startX, startY);
-          await page.mouse.down();
-          await page.waitForTimeout(100);
-
-          // Move to target with intermediate steps
-          const steps = 5;
-          for (let i = 1; i <= steps; i++) {
-            const progress = i / steps;
-            const currentX = startX + (endX - startX) * progress;
-            const currentY = startY + (endY - startY) * progress;
-            await page.mouse.move(currentX, currentY);
-            await page.waitForTimeout(50);
-          }
-
-          await page.mouse.up();
-          await page.waitForTimeout(200);
-        }
-
-        // Wait for the reorder operation to complete
+        // Wait for page to load and then for FAQ cards to appear
         await page.waitForLoadState("networkidle");
 
-        // Get final order after drag operation
-        const finalFirstQuestion = await groupFaqPage.getFaqQuestionText(0);
-        const finalSecondQuestion = await groupFaqPage.getFaqQuestionText(1);
+        // Wait for FAQ cards to be present (with timeout to handle empty state)
+        try {
+          await expect(groupFaqPage.faqCards.first()).toBeVisible({
+            timeout: 5000,
+          });
+        } catch {
+          // If no FAQ cards appear, that's fine - could be empty state
+        }
 
-        // Verify the drag operation worked (first and second should be swapped)
-        expect(finalFirstQuestion).toBe(secondQuestion);
-        expect(finalSecondQuestion).toBe(firstQuestion);
-      } else {
-        // Skip test if insufficient FAQ entries for drag and drop testing
-        test.skip(
-          faqCount >= 2,
-          "Need at least 2 FAQ entries to test drag and drop functionality"
-        );
+        const faqCount = await groupFaqPage.getFaqCount();
+
+        if (faqCount >= 2) {
+          // Get initial order of first 2 FAQ questions for drag and drop test
+          const firstQuestion = await groupFaqPage.getFaqQuestionText(0);
+          const secondQuestion = await groupFaqPage.getFaqQuestionText(1);
+
+          // Verify drag handles are visible and have correct classes
+          const firstFaqDragHandle = groupFaqPage.getFaqDragHandle(0);
+          const secondFaqDragHandle = groupFaqPage.getFaqDragHandle(1);
+
+          await expect(firstFaqDragHandle).toBeVisible();
+          await expect(secondFaqDragHandle).toBeVisible();
+
+          // Validate drag handles have the correct CSS class
+          await expect(firstFaqDragHandle).toContainClass("drag-handle");
+          await expect(secondFaqDragHandle).toContainClass("drag-handle");
+
+          // Use mouse events for reliable drag and drop
+          const firstBox = await groupFaqPage.getFaqDragHandlePosition(0);
+          const secondBox = await groupFaqPage.getFaqDragHandlePosition(1);
+
+          if (firstBox && secondBox) {
+            const startX = firstBox.x + firstBox.width / 2;
+            const startY = firstBox.y + firstBox.height / 2;
+            const endX = secondBox.x + secondBox.width / 2;
+            const endY = secondBox.y + secondBox.height / 2;
+
+            // Simulate drag with mouse events
+            await page.mouse.move(startX, startY);
+            await page.mouse.down();
+            await page.waitForTimeout(100);
+
+            // Move to target with intermediate steps
+            const steps = 5;
+            for (let i = 1; i <= steps; i++) {
+              const progress = i / steps;
+              const currentX = startX + (endX - startX) * progress;
+              const currentY = startY + (endY - startY) * progress;
+              await page.mouse.move(currentX, currentY);
+              await page.waitForTimeout(50);
+            }
+
+            await page.mouse.up();
+            await page.waitForTimeout(200);
+          }
+
+          // Wait for the reorder operation to complete
+          await page.waitForLoadState("networkidle");
+
+          // Get final order after drag operation
+          const finalFirstQuestion = await groupFaqPage.getFaqQuestionText(0);
+          const finalSecondQuestion = await groupFaqPage.getFaqQuestionText(1);
+
+          // Verify the drag operation worked (first and second should be swapped)
+          expect(finalFirstQuestion).toBe(secondQuestion);
+          expect(finalSecondQuestion).toBe(firstQuestion);
+        } else {
+          // Skip test if insufficient FAQ entries for drag and drop testing
+          test.skip(
+            faqCount >= 2,
+            "Need at least 2 FAQ entries to test drag and drop functionality"
+          );
+        }
       }
-    });
+    );
 
     test("User can edit existing FAQ entries", async ({ page }, testInfo) => {
       logTestPath(testInfo);

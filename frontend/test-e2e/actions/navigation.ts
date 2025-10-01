@@ -16,7 +16,14 @@ import { getEnglishText } from "~/utils/i18n";
 export async function navigateToFirstOrganization(page: Page) {
   // Navigate to organizations home page first
   await page.goto("/organizations");
-  await page.waitForLoadState("networkidle");
+
+  // Wait for network to be idle with fallback
+  try {
+    await page.waitForLoadState("networkidle", { timeout: 20000 });
+  } catch {
+    // If networkidle times out, fall back to domcontentloaded
+    await page.waitForLoadState("domcontentloaded", { timeout: 10000 });
+  }
 
   const organizationsHomePage = newOrganizationsHomePage(page);
   await expect(organizationsHomePage.heading).toHaveText(
@@ -35,10 +42,20 @@ export async function navigateToFirstOrganization(page: Page) {
   // Click on the first organization to navigate to its page
   await organizationsHomePage.organizationLink.click();
   // Wait for navigation to the specific organization page
-  await page.waitForURL(`**/organizations/${organizationId}/**`);
+  await page.waitForURL(`**/organizations/${organizationId}/**`, {
+    timeout: 15000,
+  });
+
+  // Wait for organization page to load with fallback
+  try {
+    await page.waitForLoadState("networkidle", { timeout: 20000 });
+  } catch {
+    // If networkidle times out, fall back to domcontentloaded
+    await page.waitForLoadState("domcontentloaded", { timeout: 10000 });
+  }
 
   const organizationPage = newOrganizationPage(page);
-  await expect(organizationPage.pageHeading).toBeVisible();
+  await expect(organizationPage.pageHeading).toBeVisible({ timeout: 15000 });
 
   return {
     organizationId,
@@ -96,10 +113,15 @@ export async function navigateToOrganizationSubpage(
     await toggleButton.click();
     await page.waitForTimeout(500); // Wait for dropdown to open
 
-    // Click the appropriate subpage option
+    // Wait for menu option to be visible
     const subpageOption = organizationPage.menu[
       `${menuSubpage}Option` as keyof typeof organizationPage.menu
-    ] as { click: () => Promise<void> };
+    ] as { click: () => Promise<void>; isVisible: () => Promise<boolean> };
+    await expect(
+      subpageOption as unknown as { isVisible: () => Promise<boolean> }
+    ).toBeVisible({ timeout: 10000 });
+
+    // Click the appropriate subpage option
     await subpageOption.click();
 
     // Check if mobile navigation worked correctly
@@ -109,6 +131,13 @@ export async function navigateToOrganizationSubpage(
       // Mobile navigation bug: use direct navigation as fallback
       const correctUrl = `/organizations/${organizationId}/${subpage}`;
       await page.goto(correctUrl);
+
+      // Wait for fallback navigation to complete
+      try {
+        await page.waitForLoadState("networkidle", { timeout: 20000 });
+      } catch {
+        await page.waitForLoadState("domcontentloaded", { timeout: 10000 });
+      }
     }
   } else {
     // Desktop layout: uses direct tab navigation
@@ -118,9 +147,19 @@ export async function navigateToOrganizationSubpage(
     await subpageOption.click();
   }
 
+  // Wait for navigation to complete with timeout
   await expect(page).toHaveURL(
-    new RegExp(`.*\\/organizations\\/.*\\/${subpage}`)
+    new RegExp(`.*\\/organizations\\/.*\\/${subpage}`),
+    { timeout: 15000 }
   );
+
+  // Wait for subpage to load with fallback
+  try {
+    await page.waitForLoadState("networkidle", { timeout: 20000 });
+  } catch {
+    // If networkidle times out, fall back to domcontentloaded
+    await page.waitForLoadState("domcontentloaded", { timeout: 10000 });
+  }
 
   return { organizationId, organizationPage };
 }

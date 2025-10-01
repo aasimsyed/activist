@@ -29,13 +29,15 @@ const ENV = (process.env.TEST_ENV || "local") as keyof typeof environments;
 export default defineConfig({
   testDir: "./test-e2e/specs",
   /* Global setup to create authenticated session before tests run */
+  /* Note: Unauthenticated projects skip this by not using the storageState */
   globalSetup: require.resolve("./test-e2e/global-setup"),
   /* Run tests in files in parallel. */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
   /* Retry on both CI and local - helps with flaky tests. */
-  retries: 4,
+  /* Fewer retries for local dev to prevent browser exhaustion */
+  retries: process.env.CI ? 4 : 2,
   /* Enhanced parallel execution with test sharding. */
   workers: process.env.CI ? 4 : 1,
   /* Fail on flaky tests to ensure stability. */
@@ -71,8 +73,9 @@ export default defineConfig({
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
     baseURL: environments[ENV],
-    navigationTimeout: 10000,
-    actionTimeout: process.env.CI ? 5000 : 10000, // Longer timeout for dev mode
+    /* Longer timeouts for remote server testing */
+    navigationTimeout: ENV === "prod" ? 30000 : 15000,
+    actionTimeout: process.env.CI ? 5000 : 15000,
 
     /* Enhanced trace configuration for better debugging. */
     trace: {
