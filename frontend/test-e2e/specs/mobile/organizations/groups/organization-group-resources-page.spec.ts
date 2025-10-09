@@ -28,14 +28,16 @@ test.describe(
 
       // Wait for resource cards to be present (with timeout to handle empty state).
       try {
-        await expect(groupResourcesPage.resourceCards.first()).toBeVisible({
-          timeout: 5000,
-        });
+        await expect(groupResourcesPage.list.resourceCards.first()).toBeVisible(
+          {
+            timeout: 5000,
+          }
+        );
       } catch {
         // If no resource cards appear, that's fine - could be empty state.
       }
 
-      const resourceCount = await groupResourcesPage.getResourceCount();
+      const resourceCount = await groupResourcesPage.actions.getResourceCount();
 
       if (resourceCount >= 2) {
         // Get initial order of first 2 resources for drag and drop test.
@@ -45,9 +47,9 @@ test.describe(
 
         // Verify drag handles are visible and have correct classes.
         const firstResourceDragHandle =
-          groupResourcesPage.getResourceDragHandle(0);
+          groupResourcesPage.card.getResourceDragHandle(0);
         const secondResourceDragHandle =
-          groupResourcesPage.getResourceDragHandle(1);
+          groupResourcesPage.card.getResourceDragHandle(1);
 
         await expect(firstResourceDragHandle).toBeVisible();
         await expect(secondResourceDragHandle).toBeVisible();

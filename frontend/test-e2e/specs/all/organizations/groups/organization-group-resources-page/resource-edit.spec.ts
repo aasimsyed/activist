@@ -49,7 +49,7 @@ test.describe(
       // Wait for resources to load.
       await page.waitForLoadState("domcontentloaded");
 
-      const resourceCount = await groupResourcesPage.getResourceCount();
+      const resourceCount = await groupResourcesPage.actions.getResourceCount();
 
       if (resourceCount > 0) {
         // Note: Check auth state.
@@ -63,7 +63,7 @@ test.describe(
         }
 
         // Check if edit button exists (requires auth).
-        const editButtonCount = await groupResourcesPage
+        const editButtonCount = await groupResourcesPage.card
           .getResourceEditButton(0)
           .count();
 
@@ -74,7 +74,7 @@ test.describe(
         }
 
         // Get the resource ID from the first resource card.
-        const firstResourceCard = groupResourcesPage.getResourceCard(0);
+        const firstResourceCard = groupResourcesPage.card.getResourceCard(0);
         const resourceId =
           await firstResourceCard.getAttribute("data-resource-id");
 
@@ -83,12 +83,14 @@ test.describe(
         }
 
         // Wait for edit button to be visible and clickable.
-        await expect(groupResourcesPage.getResourceEditButton(0)).toBeVisible({
+        await expect(
+          groupResourcesPage.card.getResourceEditButton(0)
+        ).toBeVisible({
           timeout: 10000,
         });
 
         // Click the edit button for the first resource.
-        await groupResourcesPage.clickResourceEdit(0);
+        await groupResourcesPage.actions.clickResourceEdit(0);
 
         // Wait for modal to open with exact testid (includes resource ID).
         const editResourceModal = page.getByTestId(
@@ -104,11 +106,13 @@ test.describe(
 
         // Update the form fields.
         const nameInput =
-          groupResourcesPage.getResourceNameInput(editResourceModal);
+          groupResourcesPage.modal.getResourceNameInput(editResourceModal);
         const descriptionInput =
-          groupResourcesPage.getResourceDescriptionInput(editResourceModal);
+          groupResourcesPage.modal.getResourceDescriptionInput(
+            editResourceModal
+          );
         const urlInput =
-          groupResourcesPage.getResourceUrlInput(editResourceModal);
+          groupResourcesPage.modal.getResourceUrlInput(editResourceModal);
 
         await expect(nameInput).toBeVisible();
         await expect(descriptionInput).toBeVisible();
@@ -131,7 +135,7 @@ test.describe(
 
         // Submit the form.
         const submitButton =
-          groupResourcesPage.getResourceSubmitButton(editResourceModal);
+          groupResourcesPage.modal.getResourceSubmitButton(editResourceModal);
         await expect(submitButton).toBeVisible();
         await submitButton.click();
 
@@ -139,7 +143,7 @@ test.describe(
         await expect(editResourceModal).not.toBeVisible();
         // Verify the changes are reflected on the page.
         // The resource name should be visible in the resource card.
-        const resourceCard = groupResourcesPage.getResourceCard(0);
+        const resourceCard = groupResourcesPage.card.getResourceCard(0);
         await expect(resourceCard).toContainText(newName);
       } else {
         test.skip(resourceCount > 0, "No resources available to test editing");

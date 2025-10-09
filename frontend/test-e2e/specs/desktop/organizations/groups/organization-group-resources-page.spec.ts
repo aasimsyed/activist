@@ -34,11 +34,12 @@ test.describe(
       // Wait for either resource cards or empty state to appear.
       try {
         await expect(async () => {
-          const resourceCardsVisible = await groupResourcesPage.resourceCards
-            .first()
-            .isVisible()
-            .catch(() => false);
-          const emptyStateVisible = await groupResourcesPage.emptyState
+          const resourceCardsVisible =
+            await groupResourcesPage.list.resourceCards
+              .first()
+              .isVisible()
+              .catch(() => false);
+          const emptyStateVisible = await groupResourcesPage.list.emptyState
             .isVisible()
             .catch(() => false);
           expect(resourceCardsVisible || emptyStateVisible).toBe(true);
@@ -47,7 +48,7 @@ test.describe(
         // If neither appears, that's fine - page might still be loading.
       }
 
-      const resourceCount = await groupResourcesPage.getResourceCount();
+      const resourceCount = await groupResourcesPage.actions.getResourceCount();
 
       if (resourceCount >= 2) {
         // Get initial order of first 2 resources for drag and drop test.
@@ -57,9 +58,9 @@ test.describe(
 
         // Verify drag handles are visible and have correct classes.
         const firstResourceDragHandle =
-          groupResourcesPage.getResourceDragHandle(0);
+          groupResourcesPage.card.getResourceDragHandle(0);
         const secondResourceDragHandle =
-          groupResourcesPage.getResourceDragHandle(1);
+          groupResourcesPage.card.getResourceDragHandle(1);
 
         await expect(firstResourceDragHandle).toBeVisible();
         await expect(secondResourceDragHandle).toBeVisible();

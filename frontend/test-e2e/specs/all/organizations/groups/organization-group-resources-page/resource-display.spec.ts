@@ -51,37 +51,39 @@ test.describe(
 
       // Wait for either resources or empty state to appear.
       await expect(async () => {
-        const resourcesListVisible = await groupResourcesPage.resourcesList
+        const resourcesListVisible = await groupResourcesPage.list.resourcesList
           .isVisible()
           .catch(() => false);
-        const emptyStateVisible = await groupResourcesPage.emptyState
+        const emptyStateVisible = await groupResourcesPage.list.emptyState
           .isVisible()
           .catch(() => false);
         expect(resourcesListVisible || emptyStateVisible).toBe(true);
       }).toPass({ timeout: 10000 });
 
       // Check if resources exist or empty state is shown.
-      const resourceCount = await groupResourcesPage.getResourceCount();
+      const resourceCount = await groupResourcesPage.actions.getResourceCount();
 
       if (resourceCount > 0) {
         // Verify resources list is visible.
-        await expect(groupResourcesPage.resourcesList).toBeVisible();
-        await expect(groupResourcesPage.resourceCards.first()).toBeVisible();
+        await expect(groupResourcesPage.list.resourcesList).toBeVisible();
+        await expect(
+          groupResourcesPage.list.resourceCards.first()
+        ).toBeVisible();
 
         // Verify first resource has required elements.
-        const firstResourceCard = groupResourcesPage.getResourceCard(0);
+        const firstResourceCard = groupResourcesPage.card.getResourceCard(0);
         await expect(firstResourceCard).toBeVisible();
 
-        const firstResourceLink = groupResourcesPage.getResourceLink(0);
+        const firstResourceLink = groupResourcesPage.card.getResourceLink(0);
         await expect(firstResourceLink).toBeVisible();
         await expect(firstResourceLink).toHaveAttribute("href", /.+/);
         // Verify resource icon is visible.
-        const firstResourceIcon = groupResourcesPage.getResourceIcon(0);
+        const firstResourceIcon = groupResourcesPage.card.getResourceIcon(0);
         await expect(firstResourceIcon).toBeVisible();
       } else {
         // Verify empty state is shown when no resources.
-        await expect(groupResourcesPage.emptyState).toBeVisible();
-        await expect(groupResourcesPage.emptyStateMessage).toBeVisible();
+        await expect(groupResourcesPage.list.emptyState).toBeVisible();
+        await expect(groupResourcesPage.list.emptyStateMessage).toBeVisible();
       }
     });
   }
