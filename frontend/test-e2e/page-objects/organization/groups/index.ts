@@ -2,5 +2,5 @@
 
 export { OrganizationGroupAboutPage } from "./OrganizationGroupAboutPage";
 export { OrganizationGroupEventsPage } from "./OrganizationGroupEventsPage";
-export { OrganizationGroupFAQPage } from "./OrganizationGroupFAQPage";
+export { OrganizationGroupFAQPage } from "./organization-group-faq";
 export { OrganizationGroupResourcesPage } from "./OrganizationGroupResourcesPage";
