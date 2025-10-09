@@ -26,7 +26,7 @@ test.describe(
 
       // Ensure we're on the About page.
       await expect(page).toHaveURL(/.*\/groups\/.*\/about/);
-      await expect(groupAboutPage.connectCard).toBeVisible();
+      await expect(groupAboutPage.content.connectCard).toBeVisible();
 
       // Generate unique content for this test run.
       const timestamp = Date.now();
@@ -35,9 +35,9 @@ test.describe(
 
       // Open the social links modal.
       const connectCardEditIcon =
-        groupAboutPage.connectCard.getByTestId("edit-icon");
+        groupAboutPage.content.connectCard.getByTestId("edit-icon");
       await connectCardEditIcon.click();
-      await expect(groupAboutPage.socialLinksModal).toBeVisible();
+      await expect(groupAboutPage.modals.socialLinksModal).toBeVisible();
 
       // Get all label inputs and find an existing one to update.
       const availableEntries = await organizationPage.socialLinksModal.modal
@@ -87,18 +87,18 @@ test.describe(
       expect(updatedUrl.trim()).toBeTruthy();
 
       // Save the changes with retry logic.
-      const updateSubmitButton = groupAboutPage.socialLinksModal.locator(
+      const updateSubmitButton = groupAboutPage.modals.socialLinksModal.locator(
         'button[type="submit"]'
       );
       await submitModalWithRetry(
         page,
-        groupAboutPage.socialLinksModal,
+        groupAboutPage.modals.socialLinksModal,
         updateSubmitButton,
         "UPDATE"
       );
 
       // Verify the updated social link appears on the Connect card.
-      const { connectCard } = groupAboutPage;
+      const connectCard = groupAboutPage.content.connectCard;
 
       // Wait a bit for the page to update after the modal closes.
       await page.waitForTimeout(1000);

@@ -24,7 +24,7 @@ test.describe(
 
       // Ensure we're on the About page.
       await expect(page).toHaveURL(/.*\/groups\/.*\/about/);
-      await expect(groupAboutPage.connectCard).toBeVisible();
+      await expect(groupAboutPage.content.connectCard).toBeVisible();
 
       // Generate unique content for this test run.
       const timestamp = Date.now();
@@ -33,17 +33,17 @@ test.describe(
 
       // Open the social links modal.
       const connectCardEditIcon =
-        groupAboutPage.connectCard.getByTestId("edit-icon");
+        groupAboutPage.content.connectCard.getByTestId("edit-icon");
       await connectCardEditIcon.click();
-      await expect(groupAboutPage.socialLinksModal).toBeVisible();
+      await expect(groupAboutPage.modals.socialLinksModal).toBeVisible();
 
       // Count existing social links.
-      const initialCount = await groupAboutPage.socialLinksModal
+      const initialCount = await groupAboutPage.modals.socialLinksModal
         .locator('input[id^="form-item-socialLinks."][id$=".label"]')
         .count();
 
       // Add a new social link.
-      const addButton = groupAboutPage.socialLinksModal.locator(
+      const addButton = groupAboutPage.modals.socialLinksModal.locator(
         'button:has-text("Add link")'
       );
       await expect(addButton).toBeVisible();
@@ -52,17 +52,17 @@ test.describe(
 
       // Wait for the new entry to appear.
       await expect(
-        groupAboutPage.socialLinksModal.locator(
+        groupAboutPage.modals.socialLinksModal.locator(
           'input[id^="form-item-socialLinks."][id$=".label"]'
         )
       ).toHaveCount(initialCount + 1);
 
       // Use the newly added entry (at the last index).
       const newEntryIndex = initialCount;
-      const newLabelField = groupAboutPage.socialLinksModal.locator(
+      const newLabelField = groupAboutPage.modals.socialLinksModal.locator(
         `[id="form-item-socialLinks.${newEntryIndex}.label"]`
       );
-      const newUrlField = groupAboutPage.socialLinksModal.locator(
+      const newUrlField = groupAboutPage.modals.socialLinksModal.locator(
         `[id="form-item-socialLinks.${newEntryIndex}.link"]`
       );
 
@@ -81,18 +81,18 @@ test.describe(
       expect(newUrl.trim()).toBeTruthy();
 
       // Save the new social link with retry logic.
-      const submitButton = groupAboutPage.socialLinksModal.locator(
+      const submitButton = groupAboutPage.modals.socialLinksModal.locator(
         'button[type="submit"]'
       );
       await submitModalWithRetry(
         page,
-        groupAboutPage.socialLinksModal,
+        groupAboutPage.modals.socialLinksModal,
         submitButton,
         "CREATE"
       );
 
       // Verify the new social link appears on the Connect card.
-      const { connectCard } = groupAboutPage;
+      const connectCard = groupAboutPage.content.connectCard;
 
       // Wait for the page to update after the modal closes.
       await page.waitForTimeout(1000);

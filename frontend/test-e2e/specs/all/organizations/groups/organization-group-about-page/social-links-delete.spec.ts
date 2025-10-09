@@ -24,13 +24,13 @@ test.describe(
 
       // Ensure we're on the About page.
       await expect(page).toHaveURL(/.*\/groups\/.*\/about/);
-      await expect(groupAboutPage.connectCard).toBeVisible();
+      await expect(groupAboutPage.content.connectCard).toBeVisible();
 
       // Open the social links modal.
       const connectCardEditIcon =
-        groupAboutPage.connectCard.getByTestId("edit-icon");
+        groupAboutPage.content.connectCard.getByTestId("edit-icon");
       await connectCardEditIcon.click();
-      await expect(groupAboutPage.socialLinksModal).toBeVisible();
+      await expect(groupAboutPage.modals.socialLinksModal).toBeVisible();
 
       // Get the current form entries using test IDs.
       const allLabelInputs = await organizationPage.socialLinksModal.modal
@@ -58,7 +58,7 @@ test.describe(
       await deleteButton.click();
 
       // Save the deletion with retry logic.
-      const deleteSubmitButton = groupAboutPage.socialLinksModal.locator(
+      const deleteSubmitButton = groupAboutPage.modals.socialLinksModal.locator(
         'button[type="submit"]'
       );
       await expect(deleteSubmitButton).toBeVisible();
@@ -66,16 +66,16 @@ test.describe(
 
       await submitModalWithRetry(
         page,
-        groupAboutPage.socialLinksModal,
+        groupAboutPage.modals.socialLinksModal,
         deleteSubmitButton,
         "DELETE"
       );
 
       // Verify the deleted social link no longer appears on the Connect card.
-      const { connectCard } = groupAboutPage;
+      const connectCard = groupAboutPage.content.connectCard;
 
       // Wait for the modal to close and page to update.
-      await expect(groupAboutPage.socialLinksModal).not.toBeVisible({
+      await expect(groupAboutPage.modals.socialLinksModal).not.toBeVisible({
         timeout: 10000,
       });
       // Verify the deleted social link no longer exists.

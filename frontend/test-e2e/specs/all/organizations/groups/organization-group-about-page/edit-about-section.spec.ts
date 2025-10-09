@@ -21,37 +21,46 @@ test.describe(
 
       // Ensure we're on the About page.
       await expect(page).toHaveURL(/.*\/groups\/.*\/about/);
-      await expect(groupAboutPage.aboutCard).toBeVisible();
+      await expect(groupAboutPage.content.aboutCard).toBeVisible();
 
       // Click the edit icon to open the edit modal.
       const aboutCardEditIcon =
-        groupAboutPage.aboutCard.getByTestId("edit-icon");
+        groupAboutPage.content.aboutCard.getByTestId("edit-icon");
       await expect(aboutCardEditIcon).toBeVisible();
       await aboutCardEditIcon.click();
 
       // Verify the edit modal appears.
-      await expect(groupAboutPage.textModal).toBeVisible();
+      await expect(groupAboutPage.modals.textModal).toBeVisible();
 
       // Verify the form and its fields are present.
-      const editForm = groupAboutPage.textModal.getByRole("form");
+      const editForm = groupAboutPage.modals.textModal.getByRole("form");
       await expect(editForm).toBeVisible();
 
       // Verify specific editable text fields.
-      const descriptionField = groupAboutPage.textModal.getByRole("textbox", {
-        name: new RegExp(getEnglishText("i18n._global.description"), "i"),
-      });
-      const getInvolvedField = groupAboutPage.textModal.getByRole("textbox", {
-        name: new RegExp(
-          getEnglishText("i18n.components._global.get_involved"),
-          "i"
-        ),
-      });
-      const joinUrlField = groupAboutPage.textModal.getByRole("textbox", {
-        name: new RegExp(
-          getEnglishText("i18n.components.modal_text_group.join_group_link"),
-          "i"
-        ),
-      });
+      const descriptionField = groupAboutPage.modals.textModal.getByRole(
+        "textbox",
+        {
+          name: new RegExp(getEnglishText("i18n._global.description"), "i"),
+        }
+      );
+      const getInvolvedField = groupAboutPage.modals.textModal.getByRole(
+        "textbox",
+        {
+          name: new RegExp(
+            getEnglishText("i18n.components._global.get_involved"),
+            "i"
+          ),
+        }
+      );
+      const joinUrlField = groupAboutPage.modals.textModal.getByRole(
+        "textbox",
+        {
+          name: new RegExp(
+            getEnglishText("i18n.components.modal_text_group.join_group_link"),
+            "i"
+          ),
+        }
+      );
 
       await expect(descriptionField).toBeVisible();
       await expect(descriptionField).toBeEditable();
@@ -81,7 +90,7 @@ test.describe(
       await expect(joinUrlField).toHaveValue(customJoinUrl);
 
       // Submit the form to save changes.
-      const submitButton = groupAboutPage.textModal.getByRole("button", {
+      const submitButton = groupAboutPage.modals.textModal.getByRole("button", {
         name: new RegExp(getEnglishText("i18n.components.submit"), "i"),
       });
       await expect(submitButton).toBeVisible();
@@ -89,18 +98,18 @@ test.describe(
       await submitButton.click();
 
       // Wait for the modal to close after successful save.
-      await expect(groupAboutPage.textModal).not.toBeVisible();
+      await expect(groupAboutPage.modals.textModal).not.toBeVisible();
 
       // Verify the changes are reflected on the page.
       // The description should be visible in the about card.
-      const { aboutCard } = groupAboutPage;
+      const aboutCard = groupAboutPage.content.aboutCard;
       await expect(aboutCard).toContainText(customDescription);
 
       // The get involved text should be visible in the get involved card.
-      const { getInvolvedCard } = groupAboutPage;
+      const getInvolvedCard = groupAboutPage.content.getInvolvedCard;
       await expect(getInvolvedCard).toContainText(customGetInvolved);
       // Verify the join button URL was updated.
-      const joinButton = groupAboutPage.getInvolvedCard.getByTestId(
+      const joinButton = groupAboutPage.content.getInvolvedCard.getByTestId(
         "get-involved-join-button"
       );
       await expect(joinButton).toBeVisible();

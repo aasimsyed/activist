@@ -23,47 +23,47 @@ test.describe(
       const { groupAboutPage } = organizationPage;
 
       await withTestStep(testInfo, "Navigate to events tab", async () => {
-        await groupAboutPage.clickEventsTab();
-        await expect(groupAboutPage.eventsTab).toHaveAttribute(
+        await groupAboutPage.actions.clickEventsTab();
+        await expect(groupAboutPage.tabs.eventsTab).toHaveAttribute(
           "aria-selected",
           "true"
         );
-        await expect(groupAboutPage.aboutTab).toHaveAttribute(
+        await expect(groupAboutPage.tabs.aboutTab).toHaveAttribute(
           "aria-selected",
           "false"
         );
       });
 
       await withTestStep(testInfo, "Navigate to resources tab", async () => {
-        await groupAboutPage.clickResourcesTab();
-        await expect(groupAboutPage.resourcesTab).toHaveAttribute(
+        await groupAboutPage.actions.clickResourcesTab();
+        await expect(groupAboutPage.tabs.resourcesTab).toHaveAttribute(
           "aria-selected",
           "true"
         );
-        await expect(groupAboutPage.eventsTab).toHaveAttribute(
+        await expect(groupAboutPage.tabs.eventsTab).toHaveAttribute(
           "aria-selected",
           "false"
         );
       });
 
       await withTestStep(testInfo, "Navigate to FAQ tab", async () => {
-        await groupAboutPage.clickFaqTab();
-        await expect(groupAboutPage.faqTab).toHaveAttribute(
+        await groupAboutPage.actions.clickFaqTab();
+        await expect(groupAboutPage.tabs.faqTab).toHaveAttribute(
           "aria-selected",
           "true"
         );
-        await expect(groupAboutPage.resourcesTab).toHaveAttribute(
+        await expect(groupAboutPage.tabs.resourcesTab).toHaveAttribute(
           "aria-selected",
           "false"
         );
       });
       await withTestStep(testInfo, "Return to about tab", async () => {
-        await groupAboutPage.clickAboutTab();
-        await expect(groupAboutPage.aboutTab).toHaveAttribute(
+        await groupAboutPage.actions.clickAboutTab();
+        await expect(groupAboutPage.tabs.aboutTab).toHaveAttribute(
           "aria-selected",
           "true"
         );
-        await expect(groupAboutPage.faqTab).toHaveAttribute(
+        await expect(groupAboutPage.tabs.faqTab).toHaveAttribute(
           "aria-selected",
           "false"
         );
