@@ -5,10 +5,10 @@ import {
   getFAQCardOrder,
   performDragAndDrop,
   verifyReorder,
-} from "~/test-e2e/helpers/dragAndDrop";
+} from "~/test-e2e/helpers/drag-and-drop";
 import { navigateToOrganizationGroupSubpage } from "~/test-e2e/helpers/navigation";
 import { newOrganizationPage } from "~/test-e2e/page-objects/OrganizationPage";
-import { logTestPath, withTestStep } from "~/test-e2e/utils/testTraceability";
+import { logTestPath, withTestStep } from "~/test-e2e/utils/test-traceability";
 
 test.beforeEach(async ({ page }) => {
   // Already authenticated via global storageState.

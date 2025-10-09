@@ -2,7 +2,7 @@ import { expect, test } from "~/test-e2e/global-fixtures";
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { navigateToFirstOrganization } from "~/test-e2e/helpers/navigation";
 import { newOrganizationPage } from "~/test-e2e/page-objects/OrganizationPage";
-import { submitModalWithRetry } from "~/test-e2e/utils/modalHelpers";
+import { submitModalWithRetry } from "~/test-e2e/utils/modal-helpers";
 
 test.beforeEach(async ({ page }) => {
   // Already authenticated via global storageState.

@@ -3,7 +3,7 @@ import { runAccessibilityTest } from "~/test-e2e/accessibility/accessibilityTest
 import { expect, test } from "~/test-e2e/global-fixtures";
 import { navigateToOrganizationGroupSubpage } from "~/test-e2e/helpers/navigation";
 import { newOrganizationPage } from "~/test-e2e/page-objects/OrganizationPage";
-import { logTestPath, withTestStep } from "~/test-e2e/utils/testTraceability";
+import { logTestPath, withTestStep } from "~/test-e2e/utils/test-traceability";
 
 test.beforeEach(async ({ page }) => {
   // Already authenticated via global storageState.
