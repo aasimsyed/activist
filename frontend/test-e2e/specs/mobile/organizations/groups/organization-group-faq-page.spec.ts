@@ -26,7 +26,7 @@ test.describe(
       // Wait for FAQ entries to load completely.
       await page.waitForLoadState("domcontentloaded");
 
-      const faqCount = await groupFaqPage.getFaqCount();
+      const faqCount = await groupFaqPage.actions.getFaqCount();
 
       if (faqCount >= 2) {
         // Get initial order of first 2 FAQ questions for drag and drop test.
@@ -35,8 +35,8 @@ test.describe(
         const secondQuestion = initialOrder[1];
 
         // Verify drag handles are visible and get their properties.
-        const firstFaqDragHandle = groupFaqPage.getFaqDragHandle(0);
-        const secondFaqDragHandle = groupFaqPage.getFaqDragHandle(1);
+        const firstFaqDragHandle = groupFaqPage.card.getFaqDragHandle(0);
+        const secondFaqDragHandle = groupFaqPage.card.getFaqDragHandle(1);
 
         // Quick validation that drag handles are ready.
         await expect(firstFaqDragHandle).toBeVisible();

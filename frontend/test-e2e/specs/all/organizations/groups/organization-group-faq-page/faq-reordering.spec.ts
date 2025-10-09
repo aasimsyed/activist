@@ -30,14 +30,14 @@ test.describe(
 
       // Wait for FAQ cards to be present (with timeout to handle empty state).
       try {
-        await expect(groupFaqPage.faqCards.first()).toBeVisible({
+        await expect(groupFaqPage.list.faqCards.first()).toBeVisible({
           timeout: 5000,
         });
       } catch {
         // If no FAQ cards appear, that's fine - could be empty state.
       }
 
-      const faqCount = await groupFaqPage.getFaqCount();
+      const faqCount = await groupFaqPage.actions.getFaqCount();
 
       if (faqCount >= 2) {
         // Get initial order of first 2 FAQ questions for drag and drop test.
@@ -46,8 +46,8 @@ test.describe(
         const secondQuestion = initialOrder[1];
 
         // Verify drag handles are visible and have correct classes.
-        const firstFaqDragHandle = groupFaqPage.getFaqDragHandle(0);
-        const secondFaqDragHandle = groupFaqPage.getFaqDragHandle(1);
+        const firstFaqDragHandle = groupFaqPage.card.getFaqDragHandle(0);
+        const secondFaqDragHandle = groupFaqPage.card.getFaqDragHandle(1);
 
         await expect(firstFaqDragHandle).toBeVisible();
         await expect(secondFaqDragHandle).toBeVisible();

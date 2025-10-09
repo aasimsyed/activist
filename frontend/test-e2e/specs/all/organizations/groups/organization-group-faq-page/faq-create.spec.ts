@@ -19,21 +19,23 @@ test.describe(
       const { groupFaqPage } = organizationPage;
 
       // Verify new FAQ button is visible and functional.
-      await expect(groupFaqPage.newFaqButton).toBeVisible();
-      await expect(groupFaqPage.newFaqButton).toBeEnabled();
+      await expect(groupFaqPage.list.newFaqButton).toBeVisible();
+      await expect(groupFaqPage.list.newFaqButton).toBeEnabled();
 
       // Get button text to verify we have the right button.
-      const buttonText = await groupFaqPage.newFaqButton.textContent();
+      const buttonText = await groupFaqPage.list.newFaqButton.textContent();
       expect(buttonText).toContain("FAQ");
 
       // Verify button has correct aria-label.
-      await expect(groupFaqPage.newFaqButton).toHaveAttribute("aria-label");
+      await expect(groupFaqPage.list.newFaqButton).toHaveAttribute(
+        "aria-label"
+      );
 
       // Test that button is clickable (click and verify no errors).
-      await groupFaqPage.clickNewFaq();
+      await groupFaqPage.actions.clickNewFaq();
       // Verify button click was successful (no errors thrown).
       // Since modal is not implemented yet, we just verify the click worked.
-      await expect(groupFaqPage.newFaqButton).toBeVisible();
+      await expect(groupFaqPage.list.newFaqButton).toBeVisible();
     });
   }
 );

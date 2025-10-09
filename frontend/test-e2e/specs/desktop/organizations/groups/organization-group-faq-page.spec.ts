@@ -21,23 +21,25 @@ test.describe(
       // Wait for FAQ entries to load completely.
       await page.waitForLoadState("domcontentloaded");
 
-      const faqCount = await groupFaqPage.getFaqCount();
+      const faqCount = await groupFaqPage.actions.getFaqCount();
 
       if (faqCount >= 2) {
         // Get initial order of first 2 FAQ questions for drag and drop test.
-        const firstQuestion = await groupFaqPage.getFaqQuestionText(0);
-        const secondQuestion = await groupFaqPage.getFaqQuestionText(1);
+        const firstQuestion = await groupFaqPage.actions.getFaqQuestionText(0);
+        const secondQuestion = await groupFaqPage.actions.getFaqQuestionText(1);
 
         // Verify drag handles are visible.
-        const firstFaqDragHandle = groupFaqPage.getFaqDragHandle(0);
-        const secondFaqDragHandle = groupFaqPage.getFaqDragHandle(1);
+        const firstFaqDragHandle = groupFaqPage.card.getFaqDragHandle(0);
+        const secondFaqDragHandle = groupFaqPage.card.getFaqDragHandle(1);
 
         await expect(firstFaqDragHandle).toBeVisible();
         await expect(secondFaqDragHandle).toBeVisible();
 
         // Perform drag and drop from first to second position.
-        const firstHandleBox = await groupFaqPage.getFaqDragHandlePosition(0);
-        const secondHandleBox = await groupFaqPage.getFaqDragHandlePosition(1);
+        const firstHandleBox =
+          await groupFaqPage.dragDrop.getFaqDragHandlePosition(0);
+        const secondHandleBox =
+          await groupFaqPage.dragDrop.getFaqDragHandlePosition(1);
 
         if (firstHandleBox && secondHandleBox) {
           // Drag first FAQ to second position.
@@ -56,8 +58,10 @@ test.describe(
           await page.waitForLoadState("domcontentloaded");
 
           // Get final order of first 2 FAQ questions.
-          const finalFirstQuestion = await groupFaqPage.getFaqQuestionText(0);
-          const finalSecondQuestion = await groupFaqPage.getFaqQuestionText(1);
+          const finalFirstQuestion =
+            await groupFaqPage.actions.getFaqQuestionText(0);
+          const finalSecondQuestion =
+            await groupFaqPage.actions.getFaqQuestionText(1);
 
           // Verify the order has changed (first and second should be swapped).
           expect(finalFirstQuestion).toBe(secondQuestion);
