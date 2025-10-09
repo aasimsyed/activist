@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { chromium, type FullConfig } from "@playwright/test";
 
-import { signInAsAdmin } from "~/test-e2e/actions/authentication";
+import { signInAsAdmin } from "~/test-e2e/helpers/authentication";
 import { waitForServerReady } from "~/test-e2e/utils/server-readiness";
 
 /**

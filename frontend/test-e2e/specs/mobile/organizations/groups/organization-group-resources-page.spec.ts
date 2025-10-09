@@ -1,11 +1,11 @@
+import { expect, test } from "~/test-e2e/global-fixtures";
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import {
   getResourceCardOrder,
   performDragAndDrop,
   verifyReorder,
-} from "~/test-e2e/actions/dragAndDrop";
-import { navigateToOrganizationGroupSubpage } from "~/test-e2e/actions/navigation";
-import { expect, test } from "~/test-e2e/global-fixtures";
+} from "~/test-e2e/helpers/dragAndDrop";
+import { navigateToOrganizationGroupSubpage } from "~/test-e2e/helpers/navigation";
 import { newOrganizationPage } from "~/test-e2e/page-objects/OrganizationPage";
 
 test.beforeEach(async ({ page }) => {

@@ -1,7 +1,7 @@
-// SPDX-License-Identifier: AGPL-3.0-or-later
-import { getResourceCardOrder } from "~/test-e2e/actions/dragAndDrop";
-import { navigateToOrganizationSubpage } from "~/test-e2e/actions/navigation";
 import { expect, test } from "~/test-e2e/global-fixtures";
+// SPDX-License-Identifier: AGPL-3.0-or-later
+import { getResourceCardOrder } from "~/test-e2e/helpers/dragAndDrop";
+import { navigateToOrganizationSubpage } from "~/test-e2e/helpers/navigation";
 import { newOrganizationPage } from "~/test-e2e/page-objects/OrganizationPage";
 
 test.beforeEach(async ({ page }) => {
