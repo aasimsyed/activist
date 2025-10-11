@@ -21,30 +21,29 @@ test.describe(
       // Wait for FAQ entries to load completely.
       await page.waitForLoadState("domcontentloaded");
 
-      const faqCount = await groupFaqPage.actions.getFaqCount();
+      const faqCount = await groupFaqPage.getFaqCount();
 
       if (faqCount > 0) {
         // Get the original question text.
-        const originalQuestion =
-          await groupFaqPage.actions.getFaqQuestionText(0);
+        const originalQuestion = await groupFaqPage.getFaqQuestionText(0);
         expect(originalQuestion).toBeTruthy();
 
         // Expand the FAQ to get the answer text.
-        await groupFaqPage.actions.expandFaq(0);
+        await groupFaqPage.expandFaq(0);
 
         // Wait for FAQ to be expanded.
-        await expect(groupFaqPage.card.getFaqAnswer(0)).toBeVisible();
+        await expect(groupFaqPage.getFaqAnswer(0)).toBeVisible();
 
-        const originalAnswer = await groupFaqPage.actions.getFaqAnswerText(0);
+        const originalAnswer = await groupFaqPage.getFaqAnswerText(0);
         expect(originalAnswer).toBeTruthy();
 
         // Verify edit button is visible and clickable.
-        const editButton = groupFaqPage.card.getFaqEditButton(0);
+        const editButton = groupFaqPage.getFaqEditButton(0);
         await expect(editButton).toBeVisible();
         await expect(editButton).toBeEnabled();
 
         // Test that edit button is clickable (click and verify no errors).
-        await groupFaqPage.actions.editFaq(0);
+        await groupFaqPage.editFaq(0);
         // Verify edit button click was successful (no errors thrown).
         // Since modal is not implemented yet, we just verify the click worked.
         await expect(editButton).toBeVisible();

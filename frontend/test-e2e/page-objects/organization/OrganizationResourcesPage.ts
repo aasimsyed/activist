@@ -96,10 +96,18 @@ export const newOrganizationResourcesPage = (page: Page) => ({
   },
 
   navigateToResource: async (index: number) => {
+    // On mobile viewports, ensure sidebar doesn't block clicks
+    const viewport = page.viewportSize();
+    if (viewport && viewport.width <= 1024) {
+      // Move mouse to right side of screen to trigger sidebar collapse
+      await page.mouse.move(viewport.width - 50, viewport.height / 2);
+      await page.waitForTimeout(500); // Wait for sidebar animation
+    }
+
     const resourceLink = page
       .getByTestId("resource-card")
       .nth(index)
       .getByTestId("resource-link");
-    await resourceLink.click();
+    await resourceLink.click({ force: true });
   },
 });

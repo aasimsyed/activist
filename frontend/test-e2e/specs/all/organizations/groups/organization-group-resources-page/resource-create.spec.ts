@@ -49,22 +49,20 @@ test.describe(
       const { groupResourcesPage } = organizationPage;
 
       // Verify new resource button is visible and functional.
-      await expect(groupResourcesPage.list.newResourceButton).toBeVisible();
-      await expect(groupResourcesPage.list.newResourceButton).toBeEnabled();
+      await expect(groupResourcesPage.newResourceButton).toBeVisible();
+      await expect(groupResourcesPage.newResourceButton).toBeEnabled();
 
       // Click the new resource button to open modal.
-      await groupResourcesPage.list.newResourceButton.click();
+      await groupResourcesPage.newResourceButton.click();
 
       // Verify resource creation modal opens.
-      await expect(groupResourcesPage.modal.resourceModal).toBeVisible();
+      await expect(groupResourcesPage.resourceModal).toBeVisible();
 
       // Close the modal using the close button.
-      await expect(
-        groupResourcesPage.modal.resourceModalCloseButton
-      ).toBeVisible();
-      await groupResourcesPage.modal.resourceModalCloseButton.click();
+      await expect(groupResourcesPage.resourceModalCloseButton).toBeVisible();
+      await groupResourcesPage.resourceModalCloseButton.click();
       // Verify modal closes
-      await expect(groupResourcesPage.modal.resourceModal).not.toBeVisible();
+      await expect(groupResourcesPage.resourceModal).not.toBeVisible();
     });
   }
 );

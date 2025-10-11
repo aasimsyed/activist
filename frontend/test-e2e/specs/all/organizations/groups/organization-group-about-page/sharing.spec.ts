@@ -19,17 +19,17 @@ test.describe(
       const { groupAboutPage } = organizationPage;
 
       await withTestStep(testInfo, "Open share modal", async () => {
-        await groupAboutPage.actions.clickShare();
-        await expect(groupAboutPage.modals.shareModal).toBeVisible();
+        await groupAboutPage.clickShare();
+        await expect(groupAboutPage.shareModal).toBeVisible();
       });
 
       await withTestStep(testInfo, "Close share modal", async () => {
         const closeModalButton =
-          groupAboutPage.modals.shareModal.getByTestId("modal-close-button");
+          groupAboutPage.shareModal.getByTestId("modal-close-button");
         await expect(closeModalButton).toBeVisible();
         await closeModalButton.click({ force: true });
         // Wait for the modal to actually close.
-        await expect(groupAboutPage.modals.shareModal).not.toBeVisible({
+        await expect(groupAboutPage.shareModal).not.toBeVisible({
           timeout: 10000,
         });
       });

@@ -1,5 +1,6 @@
-import { expect, test } from "~/test-e2e/global-fixtures";
 // SPDX-License-Identifier: AGPL-3.0-or-later
+import { expect, test } from "~/test-e2e/global-fixtures";
+import { performDragAndDrop } from "~/test-e2e/helpers/drag-and-drop";
 import { navigateToOrganizationSubpage } from "~/test-e2e/helpers/navigation";
 import { newOrganizationPage } from "~/test-e2e/page-objects/OrganizationPage";
 
@@ -32,34 +33,23 @@ test.describe("Organization FAQ Page - Desktop", { tag: "@desktop" }, () => {
       await expect(firstFAQDragHandle).toBeVisible();
       await expect(secondFAQDragHandle).toBeVisible();
 
-      // Perform drag and drop from first to second position.
-      const firstHandleBox = await faqPage.getFAQDragHandlePosition(0);
-      const secondHandleBox = await faqPage.getFAQDragHandlePosition(1);
+      // Ensure sidebar is collapsed before drag (iPad Portrait issue)
+      const viewport = page.viewportSize();
+      if (viewport && viewport.width <= 1024) {
+        await page.mouse.move(viewport.width - 50, viewport.height / 2);
+        await page.waitForTimeout(500);
+      }
 
-      if (firstHandleBox && secondHandleBox) {
-        // Drag first FAQ to second position.
-        await page.mouse.move(
-          firstHandleBox.x + firstHandleBox.width / 2,
-          firstHandleBox.y + firstHandleBox.height / 2
-        );
-        await page.mouse.down();
-        await page.mouse.move(
-          secondHandleBox.x + secondHandleBox.width / 2,
-          secondHandleBox.y + secondHandleBox.height / 2
-        );
-        await page.mouse.up();
+      // Perform drag and drop using shared helper (includes proper waits for iPad).
+      await performDragAndDrop(page, firstFAQDragHandle, secondFAQDragHandle);
 
-        // Wait for the reorder operation to complete (including network requests).
-        await page.waitForLoadState("domcontentloaded");
-
-        // Get final order of first 2 FAQ questions
+      // Wait for reorder to persist and verify using retry logic
+      await expect(async () => {
         const finalFirstQuestion = await faqPage.getFAQQuestionText(0);
         const finalSecondQuestion = await faqPage.getFAQQuestionText(1);
-
-        // Verify the order has changed (first and second should be swapped).
         expect(finalFirstQuestion).toBe(secondQuestion);
         expect(finalSecondQuestion).toBe(firstQuestion);
-      }
+      }).toPass({ timeout: 10000 });
     } else {
       // Skip test if insufficient FAQ entries for drag and drop testing.
       test.skip(

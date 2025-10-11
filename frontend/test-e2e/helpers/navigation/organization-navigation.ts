@@ -16,6 +16,14 @@ export async function navigateToFirstOrganization(page: Page) {
   // Navigate to organizations home page.
   await page.goto("/organizations", { waitUntil: "domcontentloaded" });
 
+  // On mobile viewports, ensure sidebar doesn't block content
+  const viewport = page.viewportSize();
+  if (viewport && viewport.width <= 1024) {
+    // Move mouse to right side of screen to trigger sidebar collapse
+    await page.mouse.move(viewport.width - 50, viewport.height / 2);
+    await page.waitForTimeout(500); // Wait for sidebar animation
+  }
+
   const organizationsHomePage = newOrganizationsHomePage(page);
 
   // Wait for the heading to be visible before checking text.
@@ -98,8 +106,15 @@ export async function navigateToOrganizationSubpage(
   const { organizationId, organizationPage } =
     await navigateToFirstOrganization(page);
 
-  // Detect if mobile layout is active by checking viewport width.
+  // On mobile viewports, ensure sidebar doesn't block content
   const viewportSize = page.viewportSize();
+  if (viewportSize && viewportSize.width <= 1024) {
+    // Move mouse to right side of screen to trigger sidebar collapse
+    await page.mouse.move(viewportSize.width - 50, viewportSize.height / 2);
+    await page.waitForTimeout(500); // Wait for sidebar animation
+  }
+
+  // Detect if mobile layout is active by checking viewport width.
   const isMobileLayout = viewportSize ? viewportSize.width < 768 : false;
   const submenu = page.locator("#submenu");
 

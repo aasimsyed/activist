@@ -49,19 +49,19 @@ test.describe(
       // Wait for resources to load.
       await page.waitForLoadState("domcontentloaded");
 
-      const resourceCount = await groupResourcesPage.actions.getResourceCount();
+      const resourceCount = await groupResourcesPage.getResourceCount();
 
       if (resourceCount > 0) {
         // Click on the menu button for the first resource.
-        await groupResourcesPage.actions.clickResourceMenu(0);
+        await groupResourcesPage.clickResourceMenu(0);
 
         // Wait for the tooltip menu to appear.
         await expect(
-          groupResourcesPage.card.getResourceMenuTooltip(0)
+          groupResourcesPage.getResourceMenuTooltip(0)
         ).toBeVisible();
 
         // Click the share button.
-        await groupResourcesPage.actions.clickResourceShare(0);
+        await groupResourcesPage.clickResourceShare(0);
 
         // Verify share modal opens (this would be a generic share modal).
         // Note: The actual share modal implementation may vary

@@ -74,10 +74,14 @@ export async function verifyReorder(
       },
     },
     {
-      timeout: 10000,
+      timeout: 15000, // Increased for slower devices (iPad Portrait)
       polling: 100, // poll every 100ms
     }
   );
+
+  // Additional wait for API persistence on slower devices
+  await page.waitForTimeout(500);
+
   // Final verification to provide clear error message if somehow still wrong.
   const finalOrder = await getOrderFunction(page);
   if (

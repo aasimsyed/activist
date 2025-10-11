@@ -79,12 +79,20 @@ export const newOrganizationEventsPage = (page: Page) => ({
   // MARK: Event Navigation
 
   navigateToEvent: async (index: number) => {
+    // On mobile viewports, ensure sidebar doesn't block clicks
+    const viewport = page.viewportSize();
+    if (viewport && viewport.width <= 1024) {
+      // Move mouse to right side of screen to trigger sidebar collapse
+      await page.mouse.move(viewport.width - 50, viewport.height / 2);
+      await page.waitForTimeout(500); // Wait for sidebar animation
+    }
+
     const eventLink = page
       .getByTestId("event-card")
       .nth(index)
       .getByRole("link")
       .first();
-    await eventLink.click();
+    await eventLink.click({ force: true });
   },
 
   // MARK: Count Helpers

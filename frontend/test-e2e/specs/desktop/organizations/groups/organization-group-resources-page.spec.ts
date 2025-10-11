@@ -2,6 +2,7 @@
 import type { Page } from "@playwright/test";
 
 import { expect, test } from "~/test-e2e/global-fixtures";
+import { performDragAndDrop } from "~/test-e2e/helpers/drag-and-drop";
 import { navigateToOrganizationGroupSubpage } from "~/test-e2e/helpers/navigation";
 import { newOrganizationPage } from "~/test-e2e/page-objects/OrganizationPage";
 
@@ -34,12 +35,11 @@ test.describe(
       // Wait for either resource cards or empty state to appear.
       try {
         await expect(async () => {
-          const resourceCardsVisible =
-            await groupResourcesPage.list.resourceCards
-              .first()
-              .isVisible()
-              .catch(() => false);
-          const emptyStateVisible = await groupResourcesPage.list.emptyState
+          const resourceCardsVisible = await groupResourcesPage.resourceCards
+            .first()
+            .isVisible()
+            .catch(() => false);
+          const emptyStateVisible = await groupResourcesPage.emptyState
             .isVisible()
             .catch(() => false);
           expect(resourceCardsVisible || emptyStateVisible).toBe(true);
@@ -48,7 +48,7 @@ test.describe(
         // If neither appears, that's fine - page might still be loading.
       }
 
-      const resourceCount = await groupResourcesPage.actions.getResourceCount();
+      const resourceCount = await groupResourcesPage.getResourceCount();
 
       if (resourceCount >= 2) {
         // Get initial order of first 2 resources for drag and drop test.
@@ -58,9 +58,9 @@ test.describe(
 
         // Verify drag handles are visible and have correct classes.
         const firstResourceDragHandle =
-          groupResourcesPage.card.getResourceDragHandle(0);
+          groupResourcesPage.getResourceDragHandle(0);
         const secondResourceDragHandle =
-          groupResourcesPage.card.getResourceDragHandle(1);
+          groupResourcesPage.getResourceDragHandle(1);
 
         await expect(firstResourceDragHandle).toBeVisible();
         await expect(secondResourceDragHandle).toBeVisible();
@@ -69,48 +69,26 @@ test.describe(
         await expect(firstResourceDragHandle).toContainClass("drag-handle");
         await expect(secondResourceDragHandle).toContainClass("drag-handle");
 
-        // Use mouse events for reliable drag and drop.
-        const firstBox = await firstResourceDragHandle.boundingBox();
-        const secondBox = await secondResourceDragHandle.boundingBox();
-
-        if (firstBox && secondBox) {
-          const startX = firstBox.x + firstBox.width / 2;
-          const startY = firstBox.y + firstBox.height / 2;
-          const endX = secondBox.x + secondBox.width / 2;
-          const endY = secondBox.y + secondBox.height / 2;
-
-          // Simulate drag with mouse events.
-          await page.mouse.move(startX, startY);
-          await page.mouse.down();
-          await page.waitForTimeout(100);
-
-          // Move to target with intermediate steps.
-          const steps = 5;
-          for (let i = 1; i <= steps; i++) {
-            const progress = i / steps;
-            const currentX = startX + (endX - startX) * progress;
-            const currentY = startY + (endY - startY) * progress;
-            await page.mouse.move(currentX, currentY);
-            await page.waitForTimeout(50);
-          }
-
-          await page.mouse.up();
-          await page.waitForTimeout(200);
+        // Ensure sidebar is collapsed before drag (iPad Portrait issue)
+        const viewport = page.viewportSize();
+        if (viewport && viewport.width <= 1024) {
+          await page.mouse.move(viewport.width - 50, viewport.height / 2);
+          await page.waitForTimeout(500);
         }
 
-        // Wait for the reorder operation to complete by checking for DOM changes.
+        // Perform drag and drop using shared helper (includes proper waits for iPad).
+        await performDragAndDrop(
+          page,
+          firstResourceDragHandle,
+          secondResourceDragHandle
+        );
+
+        // Wait for reorder to persist and verify using retry logic
         await expect(async () => {
           const finalOrder = await getResourceCardOrder(page);
-          // Check if the order has actually changed (first and second should be swapped).
-          return (
-            finalOrder[0] === secondResource && finalOrder[1] === firstResource
-          );
-        }).toPass({ timeout: 5000 });
-
-        // Verify the drag operation worked (first and second should be swapped).
-        const finalOrder = await getResourceCardOrder(page);
-        expect(finalOrder[0]).toBe(secondResource);
-        expect(finalOrder[1]).toBe(firstResource);
+          expect(finalOrder[0]).toBe(secondResource);
+          expect(finalOrder[1]).toBe(firstResource);
+        }).toPass({ timeout: 10000 });
       } else {
         // Skip test if insufficient resources for drag and drop testing.
         test.skip(

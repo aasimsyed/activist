@@ -64,6 +64,7 @@ export async function performDragAndDrop(
 
   // Release mouse button.
   await page.mouse.up();
+
   // Wait for animation to complete by checking if ghost/chosen classes are removed.
   await page
     .waitForFunction(
@@ -78,4 +79,10 @@ export async function performDragAndDrop(
     .catch(() => {
       // If classes don't clear, continue anyway (might have completed).
     });
+
+  // Additional wait for API call to persist changes on slower devices
+  await page.waitForTimeout(1000);
+  await page.waitForLoadState("networkidle", { timeout: 3000 }).catch(() => {
+    // If network doesn't idle, continue anyway
+  });
 }

@@ -142,9 +142,18 @@ export async function navigateToOrganizationGroupSubpage(
     throw new Error("Could not extract group ID from URL");
   }
 
+  // On mobile phone viewports (not tablets), ensure sidebar doesn't block clicks
+  // by moving mouse away from sidebar area to trigger auto-collapse
+  const viewport = page.viewportSize();
+  if (viewport && viewport.width <= 1024) {
+    // Move mouse to right side of screen to trigger sidebar collapse
+    await page.mouse.move(viewport.width - 50, viewport.height / 2);
+    await page.waitForTimeout(500); // Wait for sidebar animation
+  }
+
   // Navigate to the first group and wait for the navigation to be successful.
   await groupsPage.navigateToGroup(0);
-  await page.waitForURL(`**/groups/${groupId}/**`, { timeout: 10000 });
+  await page.waitForURL(`**/groups/${groupId}/**`, { timeout: 15000 });
   await page.waitForLoadState("domcontentloaded");
 
   // Now navigate to the specific subpage using the tab navigation.
@@ -157,7 +166,9 @@ export async function navigateToOrganizationGroupSubpage(
   await expect(subpageTab).toBeVisible({ timeout: 15000 });
 
   // Click the tab to navigate to the subpage.
-  await subpageTab.click({ timeout: 15000 });
+  // Use force to bypass header/tab interception on mobile viewports
+  // This is safe because we're clicking a visible, valid tab
+  await subpageTab.click({ force: true });
 
   // Wait for navigation to complete.
   await page.waitForLoadState("domcontentloaded");

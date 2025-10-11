@@ -25,52 +25,51 @@ test.describe(
 
       // Wait for either FAQ entries or empty state to appear.
       await expect(async () => {
-        const faqListVisible = await groupFaqPage.list.faqList
+        const faqListVisible = await groupFaqPage.faqList
           .isVisible()
           .catch(() => false);
-        const emptyStateVisible = await groupFaqPage.list.emptyState
+        const emptyStateVisible = await groupFaqPage.emptyState
           .isVisible()
           .catch(() => false);
         expect(faqListVisible || emptyStateVisible).toBe(true);
       }).toPass({ timeout: 10000 });
 
-      const faqCount = await groupFaqPage.actions.getFaqCount();
+      const faqCount = await groupFaqPage.getFaqCount();
 
       if (faqCount > 0) {
         // Verify FAQ list is visible.
-        await expect(groupFaqPage.list.faqList).toBeVisible();
-        await expect(groupFaqPage.list.faqCards.first()).toBeVisible();
+        await expect(groupFaqPage.faqList).toBeVisible();
+        await expect(groupFaqPage.faqCards.first()).toBeVisible();
 
         // Verify first FAQ has required elements.
-        const firstFaqCard = groupFaqPage.card.getFaqCard(0);
+        const firstFaqCard = groupFaqPage.getFaqCard(0);
         await expect(firstFaqCard).toBeVisible();
 
-        const firstFaqQuestion = groupFaqPage.card.getFaqQuestion(0);
+        const firstFaqQuestion = groupFaqPage.getFaqQuestion(0);
         await expect(firstFaqQuestion).toBeVisible();
 
-        const firstFaqDisclosureButton =
-          groupFaqPage.card.getFaqDisclosureButton(0);
+        const firstFaqDisclosureButton = groupFaqPage.getFaqDisclosureButton(0);
         await expect(firstFaqDisclosureButton).toBeVisible();
 
         // Test expanding FAQ.
-        await groupFaqPage.actions.expandFaq(0);
-        await expect(groupFaqPage.card.getFaqAnswer(0)).toBeVisible();
+        await groupFaqPage.expandFaq(0);
+        await expect(groupFaqPage.getFaqAnswer(0)).toBeVisible();
 
         // Test collapsing FAQ.
-        await groupFaqPage.actions.collapseFaq(0);
-        await expect(groupFaqPage.card.getFaqAnswer(0)).not.toBeVisible();
+        await groupFaqPage.collapseFaq(0);
+        await expect(groupFaqPage.getFaqAnswer(0)).not.toBeVisible();
 
         // Verify drag handles are visible.
-        const firstFaqDragHandle = groupFaqPage.card.getFaqDragHandle(0);
+        const firstFaqDragHandle = groupFaqPage.getFaqDragHandle(0);
         await expect(firstFaqDragHandle).toBeVisible();
         await expect(firstFaqDragHandle).toContainClass("drag-handle");
         // Verify edit buttons are visible.
-        const firstFaqEditButton = groupFaqPage.card.getFaqEditButton(0);
+        const firstFaqEditButton = groupFaqPage.getFaqEditButton(0);
         await expect(firstFaqEditButton).toBeVisible();
       } else {
         // Verify empty state is shown when no FAQ entries.
-        await expect(groupFaqPage.list.emptyState).toBeVisible();
-        await expect(groupFaqPage.list.emptyStateMessage).toBeVisible();
+        await expect(groupFaqPage.emptyState).toBeVisible();
+        await expect(groupFaqPage.emptyStateMessage).toBeVisible();
       }
     });
   }

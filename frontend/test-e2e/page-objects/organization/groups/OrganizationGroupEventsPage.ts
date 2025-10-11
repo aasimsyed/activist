@@ -5,155 +5,182 @@ import { getEnglishText } from "~/utils/i18n";
 
 /**
  * Page Object Model for Organization Group Events Page
- * Handles interactions with the group events page within an organization
+ *
+ * Flat POM pattern with semantic prefixes for improved readability.
+ * All selectors and actions are at the top level, organized by type:
+ * - Header elements: newEventButton, subscribeToEventsButton
+ * - List elements: eventsList, eventCards, firstEventCard, lastEventCard
+ * - Empty state: emptyState, emptyStateMessage
+ * - Tab elements: aboutTab, eventsTab, resourcesTab, faqTab
+ * - Card methods: getEventCard(), getEventLink(), getEventTitle(), etc.
+ * - Actions: clickNewEvent(), clickSubscribeToEvents(), getEventCount(), etc.
  */
-export class OrganizationGroupEventsPage {
-  constructor(private readonly page: Page) {}
+export const newGroupEventsPage = (page: Page) => {
+  return {
+    // ========================================
+    // HEADER ELEMENTS
+    // ========================================
 
-  // MARK: Header
+    get newEventButton() {
+      return page.getByRole("link", { name: /new event/i });
+    },
 
-  get newEventButton() {
-    return this.page.getByRole("link", { name: /new event/i });
-  }
+    get subscribeToEventsButton() {
+      return page.getByRole("button", { name: /subscribe to events/i });
+    },
 
-  get subscribeToEventsButton() {
-    return this.page.getByRole("button", { name: /subscribe to events/i });
-  }
+    // ========================================
+    // LIST AND CARD ELEMENTS
+    // ========================================
 
-  // MARK: List and Cards
+    get eventsList() {
+      return page.locator(".space-y-3.py-4");
+    },
 
-  get eventsList() {
-    return this.page.locator(".space-y-3.py-4");
-  }
+    get eventCards() {
+      return page.getByTestId("event-card");
+    },
 
-  get eventCards() {
-    return this.page.getByTestId("event-card");
-  }
+    get firstEventCard() {
+      return this.eventCards.first();
+    },
 
-  get firstEventCard() {
-    return this.eventCards.first();
-  }
+    get lastEventCard() {
+      return this.eventCards.last();
+    },
 
-  get lastEventCard() {
-    return this.eventCards.last();
-  }
+    // ========================================
+    // EMPTY STATE ELEMENTS
+    // ========================================
 
-  // MARK: Empty State
+    get emptyState() {
+      return page.getByTestId("empty-state");
+    },
 
-  get emptyState() {
-    return this.page.getByTestId("empty-state");
-  }
+    get emptyStateMessage() {
+      return this.emptyState.getByRole("heading", { level: 4 }).first();
+    },
 
-  get emptyStateMessage() {
-    return this.emptyState.getByRole("heading", { level: 4 }).first();
-  }
+    // ========================================
+    // TAB NAVIGATION ELEMENTS
+    // ========================================
 
-  // MARK: Tab Navigation
-  get tabs() {
-    return this.page.getByRole("tablist");
-  }
+    get tabs() {
+      return page.getByRole("tablist");
+    },
 
-  get aboutTab() {
-    return this.page.getByRole("tab", {
-      name: new RegExp(getEnglishText("i18n._global.about"), "i"),
-    });
-  }
+    get aboutTab() {
+      return page.getByRole("tab", {
+        name: new RegExp(getEnglishText("i18n._global.about"), "i"),
+      });
+    },
 
-  get eventsTab() {
-    return this.page.getByRole("tab", {
-      name: new RegExp(getEnglishText("i18n._global.events"), "i"),
-    });
-  }
+    get eventsTab() {
+      return page.getByRole("tab", {
+        name: new RegExp(getEnglishText("i18n._global.events"), "i"),
+      });
+    },
 
-  get resourcesTab() {
-    return this.page.getByRole("tab", {
-      name: new RegExp(getEnglishText("i18n._global.resources"), "i"),
-    });
-  }
+    get resourcesTab() {
+      return page.getByRole("tab", {
+        name: new RegExp(getEnglishText("i18n._global.resources"), "i"),
+      });
+    },
 
-  get faqTab() {
-    return this.page.getByRole("tab", {
-      name: new RegExp(getEnglishText("i18n._global.faq"), "i"),
-    });
-  }
+    get faqTab() {
+      return page.getByRole("tab", {
+        name: new RegExp(getEnglishText("i18n._global.faq"), "i"),
+      });
+    },
 
-  // MARK: Actions
-  async clickNewEvent() {
-    await this.newEventButton.click();
-  }
+    // ========================================
+    // CARD INTERACTION METHODS (by index)
+    // ========================================
 
-  async clickSubscribeToEvents() {
-    await this.subscribeToEventsButton.click();
-  }
+    getEventCard(index: number) {
+      return this.eventCards.nth(index);
+    },
 
-  async clickFirstEvent() {
-    await this.firstEventCard.click();
-  }
+    getEventLink(index: number) {
+      return this.eventCards.nth(index).getByRole("link").first();
+    },
 
-  async clickAboutTab() {
-    await this.aboutTab.click();
-  }
+    async getEventTitle(index: number) {
+      const eventCard = this.eventCards.nth(index);
+      return await eventCard.getByTestId("event-title").textContent();
+    },
 
-  async clickEventsTab() {
-    await this.eventsTab.click();
-  }
+    async getEventDate(index: number) {
+      const eventCard = this.eventCards.nth(index);
+      return await eventCard.getByTestId("event-date").textContent();
+    },
 
-  async clickResourcesTab() {
-    await this.resourcesTab.click();
-  }
+    async getEventLocation(index: number) {
+      const eventCard = this.eventCards.nth(index);
+      return await eventCard.getByTestId("event-location").textContent();
+    },
 
-  async clickFaqTab() {
-    await this.faqTab.click();
-  }
+    // ========================================
+    // ACTIONS
+    // ========================================
 
-  // Verification methods
-  async getEventCount() {
-    return await this.eventCards.count();
-  }
+    async clickNewEvent() {
+      await this.newEventButton.click();
+    },
 
-  async isNewEventButtonVisible() {
-    return await this.newEventButton.isVisible();
-  }
+    async clickSubscribeToEvents() {
+      await this.subscribeToEventsButton.click();
+    },
 
-  async isSubscribeToEventsButtonVisible() {
-    return await this.subscribeToEventsButton.isVisible();
-  }
+    async clickFirstEvent() {
+      await this.firstEventCard.click();
+    },
 
-  async isEventsTabActive() {
-    return (await this.eventsTab.getAttribute("aria-selected")) === "true";
-  }
+    async clickAboutTab() {
+      await this.aboutTab.click();
+    },
 
-  async isEmptyStateVisible() {
-    return await this.emptyState.isVisible();
-  }
+    async clickEventsTab() {
+      await this.eventsTab.click();
+    },
 
-  async hasEvents() {
-    const count = await this.getEventCount();
-    return count > 0;
-  }
+    async clickResourcesTab() {
+      await this.resourcesTab.click();
+    },
 
-  // MARK: Card Interactions
+    async clickFaqTab() {
+      await this.faqTab.click();
+    },
 
-  getEventCard(index: number) {
-    return this.eventCards.nth(index);
-  }
+    // ========================================
+    // VERIFICATION METHODS
+    // ========================================
 
-  getEventLink(index: number) {
-    return this.eventCards.nth(index).getByRole("link").first();
-  }
+    async getEventCount() {
+      return await this.eventCards.count();
+    },
 
-  async getEventTitle(index: number) {
-    const eventCard = this.eventCards.nth(index);
-    return await eventCard.getByTestId("event-title").textContent();
-  }
+    async isNewEventButtonVisible() {
+      return await this.newEventButton.isVisible();
+    },
 
-  async getEventDate(index: number) {
-    const eventCard = this.eventCards.nth(index);
-    return await eventCard.getByTestId("event-date").textContent();
-  }
+    async isSubscribeToEventsButtonVisible() {
+      return await this.subscribeToEventsButton.isVisible();
+    },
 
-  async getEventLocation(index: number) {
-    const eventCard = this.eventCards.nth(index);
-    return await eventCard.getByTestId("event-location").textContent();
-  }
-}
+    async isEventsTabActive() {
+      return (await this.eventsTab.getAttribute("aria-selected")) === "true";
+    },
+
+    async isEmptyStateVisible() {
+      return await this.emptyState.isVisible();
+    },
+
+    async hasEvents() {
+      const count = await this.getEventCount();
+      return count > 0;
+    },
+  };
+};
+
+export type GroupEventsPage = ReturnType<typeof newGroupEventsPage>;

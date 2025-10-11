@@ -30,14 +30,14 @@ test.describe(
 
       // Wait for FAQ cards to be present (with timeout to handle empty state).
       try {
-        await expect(groupFaqPage.list.faqCards.first()).toBeVisible({
+        await expect(groupFaqPage.faqCards.first()).toBeVisible({
           timeout: 5000,
         });
       } catch {
         // If no FAQ cards appear, that's fine - could be empty state.
       }
 
-      const faqCount = await groupFaqPage.actions.getFaqCount();
+      const faqCount = await groupFaqPage.getFaqCount();
 
       if (faqCount >= 2) {
         // Get initial order of first 2 FAQ questions for drag and drop test.
@@ -46,8 +46,8 @@ test.describe(
         const secondQuestion = initialOrder[1];
 
         // Verify drag handles are visible and have correct classes.
-        const firstFaqDragHandle = groupFaqPage.card.getFaqDragHandle(0);
-        const secondFaqDragHandle = groupFaqPage.card.getFaqDragHandle(1);
+        const firstFaqDragHandle = groupFaqPage.getFaqDragHandle(0);
+        const secondFaqDragHandle = groupFaqPage.getFaqDragHandle(1);
 
         await expect(firstFaqDragHandle).toBeVisible();
         await expect(secondFaqDragHandle).toBeVisible();
@@ -55,6 +55,13 @@ test.describe(
         // Validate drag handles have the correct CSS class.
         await expect(firstFaqDragHandle).toContainClass("drag-handle");
         await expect(secondFaqDragHandle).toContainClass("drag-handle");
+
+        // Ensure sidebar is collapsed before drag (iPad Portrait issue)
+        const viewport = page.viewportSize();
+        if (viewport && viewport.width <= 1024) {
+          await page.mouse.move(viewport.width - 50, viewport.height / 2);
+          await page.waitForTimeout(500);
+        }
 
         // Perform drag and drop using shared utility.
         await performDragAndDrop(page, firstFaqDragHandle, secondFaqDragHandle);

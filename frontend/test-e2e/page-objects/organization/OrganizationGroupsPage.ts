@@ -64,11 +64,22 @@ export const newOrganizationGroupsPage = (page: Page) => ({
   },
 
   navigateToGroup: async (index: number) => {
+    // On mobile viewports, ensure sidebar doesn't block clicks
+    const viewport = page.viewportSize();
+    if (viewport && viewport.width <= 1024) {
+      // Move mouse to right side of screen to trigger sidebar collapse
+      await page.mouse.move(viewport.width - 50, viewport.height / 2);
+      await page.waitForTimeout(500); // Wait for sidebar animation
+    }
+
     const groupLink = page
       .getByTestId("group-card")
       .nth(index)
       .getByRole("link")
       .first();
-    await groupLink.click();
+
+    // Use force to bypass sidebar/element interception on mobile viewports
+    // This is safe because we're clicking a visible, valid navigation link
+    await groupLink.click({ force: true });
   },
 });

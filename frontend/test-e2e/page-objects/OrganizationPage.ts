@@ -6,12 +6,10 @@ import { newOrganizationMenu } from "~/test-e2e/component-objects/OrganizationMe
 import { newShareModal } from "~/test-e2e/component-objects/ShareModal";
 import { newSidebarLeft } from "~/test-e2e/component-objects/SidebarLeft";
 import { newSocialLinksModal } from "~/test-e2e/component-objects/SocialLinksModal";
-import {
-  OrganizationGroupAboutPage,
-  OrganizationGroupEventsPage,
-  OrganizationGroupFAQPage,
-  OrganizationGroupResourcesPage,
-} from "~/test-e2e/page-objects/organization/groups";
+import { newGroupAboutPage } from "~/test-e2e/page-objects/organization/groups/organization-group-about/OrganizationGroupAboutPage";
+import { newGroupFaqPage } from "~/test-e2e/page-objects/organization/groups/organization-group-faq/OrganizationGroupFAQPage";
+import { newGroupResourcesPage } from "~/test-e2e/page-objects/organization/groups/organization-group-resources/OrganizationGroupResourcesPage";
+import { newGroupEventsPage } from "~/test-e2e/page-objects/organization/groups/OrganizationGroupEventsPage";
 import { newOrganizationAboutPage } from "~/test-e2e/page-objects/organization/OrganizationAboutPage";
 import { newOrganizationEventsPage } from "~/test-e2e/page-objects/organization/OrganizationEventsPage";
 import { newOrganizationFAQPage } from "~/test-e2e/page-objects/organization/OrganizationFAQPage";
@@ -57,15 +55,15 @@ export const newOrganizationPage = (page: Page) => ({
 
   // Group-specific pages (for individual group pages within organization)
   get groupAboutPage() {
-    return new OrganizationGroupAboutPage(page);
+    return newGroupAboutPage(page);
   },
   get groupEventsPage() {
-    return new OrganizationGroupEventsPage(page);
+    return newGroupEventsPage(page);
   },
   get groupFaqPage() {
-    return new OrganizationGroupFAQPage(page);
+    return newGroupFaqPage(page);
   },
   get groupResourcesPage() {
-    return new OrganizationGroupResourcesPage(page);
+    return newGroupResourcesPage(page);
   },
 });
