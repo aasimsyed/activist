@@ -741,42 +741,61 @@ export const useOrganizationStore = defineStore("organization", {
     // MARK: Reorder FAQ
 
     async reorderFaqEntries(org: Organization, faqEntries: FaqEntry[]) {
+      // Store original state for rollback on error
+      const originalFaqEntries = [...(this.organization.faqEntries || [])];
+
+      // Optimistically update the store immediately for instant UI feedback
+      this.organization.faqEntries = faqEntries.map((faq, index) => ({
+        ...faq,
+        order: index,
+      }));
+
       this.loading = true;
       const responses: boolean[] = [];
 
-      const responseFAQs = await Promise.all(
-        faqEntries.map((faq) =>
-          useFetch(
-            `${BASE_BACKEND_URL}/communities/organization_faqs/${faq.id}`,
-            {
-              method: "PUT",
-              body: JSON.stringify({
-                id: faq.id,
-                order: faq.order,
-              }),
-              headers: {
-                Authorization: `${token.value}`,
-              },
-            }
+      try {
+        const responseFAQs = await Promise.all(
+          faqEntries.map((faq) =>
+            useFetch(
+              `${BASE_BACKEND_URL}/communities/organization_faqs/${faq.id}`,
+              {
+                method: "PUT",
+                body: JSON.stringify({
+                  id: faq.id,
+                  order: faq.order,
+                }),
+                headers: {
+                  Authorization: `${token.value}`,
+                },
+              }
+            )
           )
-        )
-      );
+        );
 
-      const responseFAQsData = responseFAQs.map(
-        (item) => item.data.value as unknown as Organization
-      );
-      if (responseFAQsData) {
-        responses.push(true);
-      } else {
-        responses.push(false);
-      }
+        const responseFAQsData = responseFAQs.map(
+          (item) => item.data.value as unknown as Organization
+        );
 
-      if (responses.every((r) => r === true)) {
-        // Fetch updated group data after successful updates to update the frontend.
-        await this.fetchById(org.id, true);
-        this.loading = false;
-        return true;
-      } else {
+        if (responseFAQsData) {
+          responses.push(true);
+        } else {
+          responses.push(false);
+        }
+
+        if (responses.every((r) => r === true)) {
+          // Optionally refetch to ensure sync with backend
+          await this.fetchById(org.id, true);
+          this.loading = false;
+          return true;
+        } else {
+          // Rollback on partial failure
+          this.organization.faqEntries = originalFaqEntries;
+          this.loading = false;
+          return false;
+        }
+      } catch {
+        // Rollback on error
+        this.organization.faqEntries = originalFaqEntries;
         this.loading = false;
         return false;
       }
@@ -785,42 +804,61 @@ export const useOrganizationStore = defineStore("organization", {
     // MARK: Reorder Resource
 
     async reorderResource(org: Organization, resources: Resource[]) {
+      // Store original state for rollback on error
+      const originalResources = [...(this.organization.resources || [])];
+
+      // Optimistically update the store immediately for instant UI feedback
+      this.organization.resources = resources.map((resource, index) => ({
+        ...resource,
+        order: index,
+      }));
+
       this.loading = true;
       const responses: boolean[] = [];
 
-      const responseResources = await Promise.all(
-        resources.map((resource) =>
-          useFetch(
-            `${BASE_BACKEND_URL}/communities/organization_resources/${resource.id}`,
-            {
-              method: "PUT",
-              body: JSON.stringify({
-                id: resource.id,
-                order: resource.order,
-              }),
-              headers: {
-                Authorization: `${token.value}`,
-              },
-            }
+      try {
+        const responseResources = await Promise.all(
+          resources.map((resource) =>
+            useFetch(
+              `${BASE_BACKEND_URL}/communities/organization_resources/${resource.id}`,
+              {
+                method: "PUT",
+                body: JSON.stringify({
+                  id: resource.id,
+                  order: resource.order,
+                }),
+                headers: {
+                  Authorization: `${token.value}`,
+                },
+              }
+            )
           )
-        )
-      );
+        );
 
-      const responseResourcesData = responseResources.map(
-        (item) => item.data.value as unknown as Organization
-      );
-      if (responseResourcesData) {
-        responses.push(true);
-      } else {
-        responses.push(false);
-      }
+        const responseResourcesData = responseResources.map(
+          (item) => item.data.value as unknown as Organization
+        );
 
-      if (responses.every((r) => r === true)) {
-        // Fetch updated group data after successful updates to update the frontend.
-        await this.fetchById(org.id, true);
-        this.loading = false;
-        return true;
-      } else {
+        if (responseResourcesData) {
+          responses.push(true);
+        } else {
+          responses.push(false);
+        }
+
+        if (responses.every((r) => r === true)) {
+          // Optionally refetch to ensure sync with backend
+          await this.fetchById(org.id, true);
+          this.loading = false;
+          return true;
+        } else {
+          // Rollback on partial failure
+          this.organization.resources = originalResources;
+          this.loading = false;
+          return false;
+        }
+      } catch {
+        // Rollback on error
+        this.organization.resources = originalResources;
         this.loading = false;
         return false;
       }

@@ -28,10 +28,16 @@
         <ModalFaqEntryOrganization />
       </div>
     </HeaderAppPageOrganization>
-    <div v-if="organization.faqEntries!.length > 0" class="py-4">
+    <div
+      v-if="
+        orgStore.organization.faqEntries &&
+        orgStore.organization.faqEntries.length > 0
+      "
+      class="py-4"
+    >
       <!-- Draggable list -->
       <draggable
-        v-model="faqList"
+        v-model="faqListComputed"
         @end="onDragEnd"
         :animation="150"
         chosen-class="sortable-chosen"
@@ -63,7 +69,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { computed } from "vue";
 import draggable from "vuedraggable";
 
 import type { Organization } from "~/types/communities/organization";
@@ -76,22 +82,24 @@ const props = defineProps<{ organization: Organization }>();
 
 const orgStore = useOrganizationStore();
 
-const faqList = ref<FaqEntry[]>([...(props.organization.faqEntries || [])]);
-
-watch(
-  () => props.organization.faqEntries,
-  (newVal) => {
-    faqList.value = newVal?.slice() ?? [];
+// Use computed property to directly reference store state (single source of truth)
+const faqListComputed = computed({
+  get: () => orgStore.organization.faqEntries || [],
+  set: (value: FaqEntry[]) => {
+    // Update the store directly when draggable changes the order
+    orgStore.organization.faqEntries = value;
   },
-  { immediate: true }
-);
+});
 
 const onDragEnd = async () => {
-  faqList.value.forEach((faq, index) => {
-    faq.order = index;
-  });
+  // Update order indices before persisting
+  const updatedList = faqListComputed.value.map((faq, index) => ({
+    ...faq,
+    order: index,
+  }));
 
-  await orgStore.reorderFaqEntries(props.organization, faqList.value);
+  // Store now handles optimistic updates and rollback on error
+  await orgStore.reorderFaqEntries(props.organization, updatedList);
 };
 </script>
 

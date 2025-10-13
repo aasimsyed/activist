@@ -28,9 +28,9 @@
       </div>
     </HeaderAppPageOrganization>
     <!-- Draggable list -->
-    <div v-if="props.organization.resources?.length" class="py-4">
+    <div v-if="orgStore.organization.resources?.length" class="py-4">
       <draggable
-        v-model="resourceList"
+        v-model="resourceListComputed"
         @end="onDragEnd"
         :animation="150"
         chosen-class="sortable-chosen"
@@ -66,6 +66,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from "vue";
 import draggable from "vuedraggable";
 
 import type { Organization } from "~/types/communities/organization";
@@ -78,21 +79,28 @@ const { openModal } = useModalHandlers("ModalResourceOrganization");
 const props = defineProps<{
   organization: Organization;
 }>();
-const resourceList = ref<Resource[]>([...(props.organization.resources || [])]);
-const orgStore = useOrganizationStore();
-const onDragEnd = () => {
-  resourceList.value.forEach((resource, index) => {
-    resource.order = index;
-  });
 
-  orgStore.reorderResource(props.organization, resourceList.value);
+const orgStore = useOrganizationStore();
+
+// Use computed property to directly reference store state (single source of truth)
+const resourceListComputed = computed({
+  get: () => orgStore.organization.resources || [],
+  set: (value: Resource[]) => {
+    // Update the store directly when draggable changes the order
+    orgStore.organization.resources = value;
+  },
+});
+
+const onDragEnd = async () => {
+  // Update order indices before persisting
+  const updatedList = resourceListComputed.value.map((resource, index) => ({
+    ...resource,
+    order: index,
+  }));
+
+  // Store now handles optimistic updates and rollback on error
+  await orgStore.reorderResource(props.organization, updatedList);
 };
-watch(
-  () => orgStore.organization.resources,
-  (newResources) => {
-    resourceList.value = [...(newResources || [])];
-  }
-);
 </script>
 
 <style scoped>
