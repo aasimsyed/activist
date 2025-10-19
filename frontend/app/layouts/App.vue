@@ -15,6 +15,13 @@ const sidebar = useSidebar();
 onMounted(() => {
   window.addEventListener("resize", handleWindowSizeChange);
   handleWindowSizeChange();
+
+  // Ensure sidebar is collapsed on initial load for mobile/tablet viewports
+  // This is especially important for test environments
+  if (window.innerWidth < 1280) {
+    sidebar.collapsed = true;
+    sidebar.collapsedSwitch = true;
+  }
 });
 
 onUnmounted(() => {
