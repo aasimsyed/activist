@@ -31,6 +31,9 @@ export function useGroupTextsMutations(groupId: MaybeRef<string>) {
     loading.value = true;
     error.value = null;
     try {
+      // FIX: Split the update into two API calls because getInvolvedUrl belongs to Group model,
+      // not GroupText model. This fixes the issue where join URLs were not persisting.
+
       // Update GroupText model (description, getInvolved, donate_prompt)
       await updateGroupTexts(currentGroupId.value, textId, {
         description: textsData.description,
@@ -38,7 +41,7 @@ export function useGroupTextsMutations(groupId: MaybeRef<string>) {
         getInvolvedUrl: "", // This field is ignored by GroupText endpoint
       });
 
-      // Update Group model (getInvolvedUrl)
+      // Update Group model (getInvolvedUrl) - separate API call needed
       if (textsData.getInvolvedUrl !== undefined) {
         await updateGroup(currentGroupId.value, {
           getInvolvedUrl: textsData.getInvolvedUrl,

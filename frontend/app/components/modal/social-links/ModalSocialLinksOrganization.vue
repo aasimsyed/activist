@@ -36,7 +36,10 @@ type SocialLinkWithKey = (OrganizationSocialLink | SocialLink) & {
 // Reactive social links ref that syncs with organization data
 const socialLinksRef = ref<SocialLinkWithKey[]>([]);
 
-// Sync socialLinksRef with organization data reactively
+// FIX: Use watchEffect for reactive initialization to solve modal submission failures.
+// The previous non-reactive initialization caused issues where the modal would try to
+// access null organization data, leading to "DELETE modal submission failed after 3 attempts" errors.
+// This ensures socialLinksRef is properly synced with organization data when it becomes available.
 watchEffect(() => {
   if (organization.value?.socialLinks) {
     socialLinksRef.value = organization.value.socialLinks.map((l, idx) => ({
@@ -92,6 +95,10 @@ async function handleSubmit(values: unknown) {
     const formValues = (
       values as { socialLinks: { link: string; label: string }[] }
     ).socialLinks;
+
+    // FIX: Add null safety checks to prevent "DELETE modal submission failed" errors.
+    // The previous code assumed organization.value was always available, but during
+    // the refactor to composable-based data fetching, organization data might be null initially.
 
     // Track existing IDs from the original organization data
     const existingIds = new Set(

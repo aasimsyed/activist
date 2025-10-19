@@ -98,6 +98,16 @@ export async function createOrganization(
 
 // MARK: Update Organization
 
+/**
+ * Update Organization model fields directly (e.g., getInvolvedUrl).
+ *
+ * FIX: This function was added to solve the same issue as groups - organization
+ * join URLs were not persisting in the About section edit modal. The problem was
+ * identical: getInvolvedUrl belongs to the Organization model, not the OrganizationText model,
+ * so it needs to be updated via the organizations endpoint, not the organization_texts endpoint.
+ *
+ * Related to: useOrganizationTextsMutations.ts - makes separate API calls for OrganizationText and Organization models
+ */
 export async function updateOrganization(
   orgId: string,
   data: { getInvolvedUrl?: string }

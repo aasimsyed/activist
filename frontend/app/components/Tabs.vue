@@ -1,7 +1,15 @@
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
   <div class="h-fit w-full">
-    <TabGroup @change="changeTab" manual :selectedIndex="props.selectedTab">
+    <!-- FIX: Add key prop to force re-rendering when selectedTab changes.
+         This helps resolve tab navigation issues after the refactor from props-based
+         to composable-based data fetching, where tabs might render before data is loaded. -->
+    <TabGroup
+      :key="`tabs-${props.selectedTab}`"
+      @change="changeTab"
+      manual
+      :selectedIndex="props.selectedTab"
+    >
       <TabList class="flex flex-row">
         <Tab v-for="tab in tabs" :key="tab.id" class="w-full">
           <NuxtLink

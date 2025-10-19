@@ -67,6 +67,16 @@ export async function listGroups(): Promise<GroupT[]> {
 
 // MARK: Update Group
 
+/**
+ * Update Group model fields directly (e.g., getInvolvedUrl).
+ *
+ * FIX: This function was added to solve the issue where group join URLs
+ * were not persisting in the About section edit modal. The problem was
+ * that getInvolvedUrl belongs to the Group model, not the GroupText model,
+ * so it needs to be updated via the groups endpoint, not the group_texts endpoint.
+ *
+ * Related to: useGroupTextsMutations.ts - makes separate API calls for GroupText and Group models
+ */
 export async function updateGroup(
   groupId: string,
   data: { getInvolvedUrl?: string }

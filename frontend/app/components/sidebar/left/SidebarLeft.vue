@@ -198,6 +198,9 @@ function collapseSidebar(collapse: boolean): void {
   setSidebarContentScrollable();
 }
 
+// FIX: Viewport-aware sidebar behavior to prevent expansion on mobile/tablet.
+// The original behavior caused the sidebar to expand on focus/hover, which would
+// then intercept pointer events and block access to main content during tests.
 function handleSidebarFocus() {
   // Only expand sidebar on focus for desktop viewports (>= 1280px)
   if (window.innerWidth >= 1280) {
@@ -222,7 +225,8 @@ function handleSidebarMouseLeave() {
 function handleFocusOut(event: FocusEvent) {
   const focusedElement = event.relatedTarget as HTMLElement;
   if (sidebarWrapper.value && sidebarWrapper.value.contains(focusedElement)) {
-    // Only expand sidebar if focus stays within sidebar and we're on desktop
+    // FIX: Only expand sidebar if focus stays within sidebar and we're on desktop.
+    // This prevents unwanted expansion during focus transitions on mobile/tablet.
     if (window.innerWidth >= 1280) {
       collapseSidebar(false);
     }

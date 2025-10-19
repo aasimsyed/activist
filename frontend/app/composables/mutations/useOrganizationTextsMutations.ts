@@ -33,6 +33,9 @@ export function useOrganizationTextsMutations(
     loading.value = true;
     error.value = null;
     try {
+      // FIX: Split the update into two API calls because getInvolvedUrl belongs to Organization model,
+      // not OrganizationText model. This fixes the same issue as groups - join URLs not persisting.
+
       // Update OrganizationText model (description, getInvolved, donate_prompt)
       await updateOrganizationTexts(currentOrganizationId.value, textId, {
         description: textsData.description,
@@ -40,7 +43,7 @@ export function useOrganizationTextsMutations(
         getInvolvedUrl: "", // This field is ignored by OrganizationText endpoint
       });
 
-      // Update Organization model (getInvolvedUrl)
+      // Update Organization model (getInvolvedUrl) - separate API call needed
       if (textsData.getInvolvedUrl !== undefined) {
         await updateOrganization(currentOrganizationId.value, {
           getInvolvedUrl: textsData.getInvolvedUrl,
