@@ -7,6 +7,7 @@ import type { OrganizationUpdateTextFormData } from "~/types/communities/organiz
 import type { AppError } from "~/utils/errorHandler";
 
 import { updateOrganizationTexts } from "~/services/communities/organization/text";
+import { updateOrganization } from "~/services/communities/organization/organization";
 
 import { getKeyForGetOrganization } from "../queries/useGetOrganization";
 
@@ -32,12 +33,20 @@ export function useOrganizationTextsMutations(
     loading.value = true;
     error.value = null;
     try {
-      // Service function handles the HTTP call and throws normalized errors.
-      await updateOrganizationTexts(
-        currentOrganizationId.value,
-        textId,
-        textsData
-      );
+      // Update OrganizationText model (description, getInvolved, donate_prompt)
+      await updateOrganizationTexts(currentOrganizationId.value, textId, {
+        description: textsData.description,
+        getInvolved: textsData.getInvolved,
+        getInvolvedUrl: "", // This field is ignored by OrganizationText endpoint
+      });
+
+      // Update Organization model (getInvolvedUrl)
+      if (textsData.getInvolvedUrl !== undefined) {
+        await updateOrganization(currentOrganizationId.value, {
+          getInvolvedUrl: textsData.getInvolvedUrl,
+        });
+      }
+
       // Refresh the organization data to get the updated texts.
       await refreshOrganizationData();
       return true;

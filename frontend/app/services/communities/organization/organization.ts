@@ -10,7 +10,7 @@ import type {
   Organization as OrganizationT,
 } from "~/types/communities/organization";
 
-import { del, get, post } from "~/services/http";
+import { del, get, post, put, type AcceptedBody } from "~/services/http";
 import { defaultOrganizationText } from "~/types/communities/organization";
 import { errorHandler } from "~/utils/errorHandler";
 
@@ -91,6 +91,25 @@ export async function createOrganization(
       payload
     );
     return res.id;
+  } catch (e) {
+    throw errorHandler(e);
+  }
+}
+
+// MARK: Update Organization
+
+export async function updateOrganization(
+  orgId: string,
+  data: { getInvolvedUrl?: string }
+): Promise<void> {
+  try {
+    await put(
+      `/communities/organizations/${orgId}`,
+      {
+        getInvolvedUrl: data.getInvolvedUrl,
+      } as AcceptedBody,
+      { headers: { "Content-Type": "application/json" } }
+    );
   } catch (e) {
     throw errorHandler(e);
   }
