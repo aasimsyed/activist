@@ -43,12 +43,11 @@ export const useModals = defineStore("modals", {
     },
 
     closeModalAndUpdateState(modalName: string) {
-      this.closeModal(modalName);
-
       if (this.modals[modalName]) {
-        return this.modals[modalName].isOpen;
+        this.closeModal(modalName);
+        return true; // Return true if modal was successfully closed
       } else {
-        return false;
+        return false; // Return false if modal doesn't exist
       }
     },
   },

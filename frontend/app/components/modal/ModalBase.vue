@@ -16,13 +16,13 @@
       @mousedown="
         console.log(
           'Modal backdrop mousedown on iPad viewport:',
-          window.innerWidth
+          typeof window !== 'undefined' ? window.innerWidth : 'SSR'
         )
       "
       @touchstart="
         console.log(
           'Modal backdrop touchstart on iPad viewport:',
-          window.innerWidth
+          typeof window !== 'undefined' ? window.innerWidth : 'SSR'
         )
       "
     >
@@ -61,13 +61,13 @@
             @mousedown="
               console.log(
                 'Modal close button mousedown on iPad viewport:',
-                window.innerWidth
+                typeof window !== 'undefined' ? window.innerWidth : 'SSR'
               )
             "
             @touchstart="
               console.log(
                 'Modal close button touchstart on iPad viewport:',
-                window.innerWidth
+                typeof window !== 'undefined' ? window.innerWidth : 'SSR'
               )
             "
           >
@@ -137,7 +137,7 @@ const closeModal = () => {
     "ModalBase closeModal called for:",
     modalName,
     "viewport:",
-    window.innerWidth
+    typeof window !== "undefined" ? window.innerWidth : "SSR"
   );
   emit("closeModal");
   modals.closeModal(modalName);
