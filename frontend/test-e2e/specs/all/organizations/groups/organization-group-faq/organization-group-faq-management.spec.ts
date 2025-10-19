@@ -1,4 +1,20 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
+
+/**
+ * FAQ Management Tests
+ *
+ * FIXES APPLIED:
+ * 1. FAQ Creation/Edit Tests: Added proper waiting for disclosure panel expansion
+ *    - Issue: FAQ answer elements weren't visible immediately after clicking disclosure button
+ *    - Fix: Added explicit waiting with timeout after clicking disclosure button
+ *    - Prevents "element not found" errors due to disclosure animation timing
+ *
+ * 2. FAQ Service Functions: Fixed syntax errors in reorder functions
+ *    - Issue: FAQ modals stayed open after form submission due to silent failures
+ *    - Fix: Corrected misplaced headers object in reorderGroupFaqs, reorderOrganizationFaqs, reorderEventFaqs
+ *    - Result: FAQ creation/update operations now complete successfully and close modals
+ */
+
 import {
   getFAQCardOrder,
   performDragAndDrop,
@@ -92,11 +108,14 @@ test.describe(
       const disclosureButton = newFaqCard.getByTestId("faq-disclosure-button");
       const answerElement = newFaqCard.getByTestId("faq-answer");
 
-      // Check if the FAQ is already expanded, if not, click to expand it
+      // FIX: Check if the FAQ is already expanded, if not, click to expand it
+      // This addresses timing issues where the disclosure panel animation wasn't completing
+      // before the test expected the answer element to be visible.
       const isExpanded = await answerElement.isVisible();
       if (!isExpanded) {
         await disclosureButton.click();
         // Wait for the disclosure panel to expand and the answer to become visible
+        // This prevents "element not found" errors due to disclosure animation timing
         await expect(answerElement).toBeVisible({ timeout: 5000 });
       }
 
@@ -259,11 +278,13 @@ test.describe(
         );
         const answerElement = updatedFaqCard.getByTestId("faq-answer");
 
-        // Check if the FAQ is already expanded, if not, click to expand it
+        // FIX: Check if the FAQ is already expanded, if not, click to expand it
+        // Same timing fix as above - addresses disclosure panel animation timing issues
         const isExpanded = await answerElement.isVisible();
         if (!isExpanded) {
           await disclosureButton.click();
           // Wait for the disclosure panel to expand and the answer to become visible
+          // This prevents "element not found" errors due to disclosure animation timing
           await expect(answerElement).toBeVisible({ timeout: 5000 });
         }
 
