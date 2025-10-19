@@ -109,9 +109,35 @@ test.describe(
       // This addresses timing issues where the disclosure panel animation wasn't completing
       // before the test expected the answer element to be visible.
       const isExpanded = await answerElement.isVisible();
+      console.log("FAQ expanded state before click:", isExpanded);
+
       if (!isExpanded) {
         console.log("FAQ not expanded, clicking disclosure button");
         await disclosureButton.click();
+
+        // DEBUG: Check the state after click
+        console.log(
+          "FAQ expanded state after click:",
+          await answerElement.isVisible()
+        );
+        console.log(
+          "DisclosurePanel visible:",
+          await newFaqCard.getByTestId("faq-disclosure-panel").isVisible()
+        );
+
+        // Wait a bit for any animations
+        await page.waitForTimeout(1000);
+
+        // Check state again after waiting
+        console.log(
+          "FAQ expanded state after wait:",
+          await answerElement.isVisible()
+        );
+        console.log(
+          "DisclosurePanel visible after wait:",
+          await newFaqCard.getByTestId("faq-disclosure-panel").isVisible()
+        );
+
         // Wait for the disclosure panel to expand and the answer to become visible
         // This prevents "element not found" errors due to disclosure animation timing
         await expect(answerElement).toBeVisible({ timeout: 5000 });
