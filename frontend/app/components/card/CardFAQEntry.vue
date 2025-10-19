@@ -38,16 +38,24 @@
               </p>
               <IconEdit
                 @click.stop="
+                  console.log(
+                    'CardFAQEntry: Edit button clicked for FAQ:',
+                    props.faqEntry.id
+                  );
                   useModalHandlers(
                     `ModalFaqEntry${props.pageType.charAt(0).toUpperCase() + props.pageType.slice(1)}` +
                       props.faqEntry.id
-                  ).openModal()
+                  ).openModal();
                 "
                 @keydown.enter="
+                  console.log(
+                    'CardFAQEntry: Edit button keydown for FAQ:',
+                    props.faqEntry.id
+                  );
                   useModalHandlers(
                     `ModalFaqEntry${props.pageType.charAt(0).toUpperCase() + props.pageType.slice(1)}` +
                       props.faqEntry.id
-                  ).openModal()
+                  ).openModal();
                 "
                 class="flex"
                 data-testid="faq-edit-button"

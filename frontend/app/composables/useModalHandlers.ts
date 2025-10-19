@@ -5,6 +5,7 @@ export function useModalHandlers(modalName: string) {
   const modals = useModals();
 
   const openModal = (params?: unknown) => {
+    console.log("useModalHandlers: Opening modal:", modalName);
     modals.openModalAndUpdateState(modalName, params);
   };
   const handleCloseModal = () => {

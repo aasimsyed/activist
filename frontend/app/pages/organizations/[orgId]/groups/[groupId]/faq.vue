@@ -13,8 +13,14 @@
     >
       <div class="flex space-x-2 pb-3 lg:space-x-3 lg:pb-4">
         <BtnAction
-          @click.stop="openModal()"
-          @keydown.enter="openModal()"
+          @click.stop="
+            console.log('FAQ Page: New FAQ button clicked');
+            openModal();
+          "
+          @keydown.enter="
+            console.log('FAQ Page: New FAQ button keydown');
+            openModal();
+          "
           ariaLabel="i18n.pages._global.new_faq_aria_label"
           class="w-max"
           :cta="true"
@@ -78,6 +84,7 @@ const groupId = useRoute().params.groupId as string;
 const { data: group } = useGetGroup(groupId ?? "");
 
 const { openModal } = useModalHandlers("ModalFaqEntryGroup");
+console.log("FAQ Page: Setting up modal handler for ModalFaqEntryGroup");
 
 const groupTabs = getGroupTabs();
 const { reorderFAQs } = useGroupFAQEntryMutations(groupId);
