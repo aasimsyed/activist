@@ -5,7 +5,12 @@ export function useModalHandlers(modalName: string) {
   const modals = useModals();
 
   const openModal = (params?: unknown) => {
-    console.log("useModalHandlers: Opening modal:", modalName);
+    console.log(
+      "useModalHandlers: Opening modal:",
+      modalName,
+      "viewport:",
+      typeof window !== "undefined" ? window.innerWidth : "SSR"
+    );
     modals.openModalAndUpdateState(modalName, params);
   };
   const handleCloseModal = () => {

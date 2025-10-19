@@ -14,11 +14,17 @@
       <div class="flex space-x-2 pb-3 lg:space-x-3 lg:pb-4">
         <BtnAction
           @click.stop="
-            console.log('FAQ Page: New FAQ button clicked');
+            console.log(
+              'FAQ Page: New FAQ button clicked - viewport:',
+              typeof window !== 'undefined' ? window.innerWidth : 'SSR'
+            );
             openModal();
           "
           @keydown.enter="
-            console.log('FAQ Page: New FAQ button keydown');
+            console.log(
+              'FAQ Page: New FAQ button keydown - viewport:',
+              typeof window !== 'undefined' ? window.innerWidth : 'SSR'
+            );
             openModal();
           "
           ariaLabel="i18n.pages._global.new_faq_aria_label"
