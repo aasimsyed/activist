@@ -41,37 +41,44 @@
             <div
               class="flex select-text items-center gap-3 text-left text-primary-text md:gap-4"
             >
-              <p
-                data-testid="faq-question"
+              <div
+                class="min-w-0 flex-1"
                 @click.stop="
                   console.log(
-                    'CardFAQEntry: FAQ question clicked for FAQ:',
+                    'CardFAQEntry: FAQ question area clicked for FAQ:',
                     props.faqEntry.id,
                     'viewport:',
                     typeof window !== 'undefined' ? window.innerWidth : 'SSR'
                   );
-                  // Prevent edit modal from opening when clicking on FAQ question
+                  // Prevent edit modal from opening when clicking on FAQ question area
                   $event.stopPropagation();
                 "
               >
-                {{ faqEntry.question }}
-              </p>
-              <IconEdit
-                @click.stop="
-                  useModalHandlers(
-                    `ModalFaqEntry${props.pageType.charAt(0).toUpperCase() + props.pageType.slice(1)}` +
-                      props.faqEntry.id
-                  ).openModal()
-                "
-                @keydown.enter="
-                  useModalHandlers(
-                    `ModalFaqEntry${props.pageType.charAt(0).toUpperCase() + props.pageType.slice(1)}` +
-                      props.faqEntry.id
-                  ).openModal()
-                "
-                class="flex"
-                data-testid="faq-edit-button"
-              />
+                <p
+                  data-testid="faq-question"
+                  class="cursor-pointer transition-colors hover:text-primary-text/80"
+                >
+                  {{ faqEntry.question }}
+                </p>
+              </div>
+              <div class="ml-2 flex-shrink-0">
+                <IconEdit
+                  @click.stop="
+                    useModalHandlers(
+                      `ModalFaqEntry${props.pageType.charAt(0).toUpperCase() + props.pageType.slice(1)}` +
+                        props.faqEntry.id
+                    ).openModal()
+                  "
+                  @keydown.enter="
+                    useModalHandlers(
+                      `ModalFaqEntry${props.pageType.charAt(0).toUpperCase() + props.pageType.slice(1)}` +
+                        props.faqEntry.id
+                    ).openModal()
+                  "
+                  class="flex rounded p-1 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
+                  data-testid="faq-edit-button"
+                />
+              </div>
               <ModalFaqEntryOrganization
                 v-if="pageType === 'organization'"
                 :faqEntry="faqEntry"
