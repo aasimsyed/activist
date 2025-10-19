@@ -88,19 +88,19 @@ export const newOrganizationFAQPage = (page: Page) => ({
   // MARK: FAQ Interaction
 
   expandFAQ: async (index: number) => {
-    const expandButton = page
+    const chevronDown = page
       .getByTestId("faq-card")
       .nth(index)
-      .getByTestId("faq-disclosure-button");
-    await expandButton.click();
+      .getByTestId("faq-chevron-down");
+    await chevronDown.click();
   },
 
   collapseFAQ: async (index: number) => {
-    const collapseButton = page
+    const chevronUp = page
       .getByTestId("faq-card")
       .nth(index)
-      .getByTestId("faq-disclosure-button");
-    await collapseButton.click();
+      .getByTestId("faq-chevron-up");
+    await chevronUp.click();
   },
 
   editFAQ: async (index: number) => {

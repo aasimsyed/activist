@@ -90,19 +90,19 @@ export const FAQCard = (page: Page) => {
     },
 
     async expandFaq(index: number) {
-      const expandButton = page
+      const chevronDown = page
         .getByTestId("faq-card")
         .nth(index)
-        .getByTestId("faq-disclosure-button");
-      await expandButton.click();
+        .getByTestId("faq-chevron-down");
+      await chevronDown.click();
     },
 
     async collapseFaq(index: number) {
-      const collapseButton = page
+      const chevronUp = page
         .getByTestId("faq-card")
         .nth(index)
-        .getByTestId("faq-disclosure-button");
-      await collapseButton.click();
+        .getByTestId("faq-chevron-up");
+      await chevronUp.click();
     },
 
     async editFaq(index: number) {
