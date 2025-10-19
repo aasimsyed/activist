@@ -94,15 +94,29 @@ test.describe(
       const disclosureButton = newFaqCard.getByTestId("faq-disclosure-button");
       const answerElement = newFaqCard.getByTestId("faq-answer");
 
+      // DEBUG: Log the disclosure button element details
+      console.log(
+        "DisclosureButton element:",
+        await disclosureButton.evaluate((el) => ({
+          tagName: el.tagName,
+          className: el.className,
+          boundingBox: el.getBoundingClientRect(),
+          innerHTML: el.innerHTML.substring(0, 200) + "...",
+        }))
+      );
+
       // FIX: Check if the FAQ is already expanded, if not, click to expand it
       // This addresses timing issues where the disclosure panel animation wasn't completing
       // before the test expected the answer element to be visible.
       const isExpanded = await answerElement.isVisible();
       if (!isExpanded) {
+        console.log("FAQ not expanded, clicking disclosure button");
         await disclosureButton.click();
         // Wait for the disclosure panel to expand and the answer to become visible
         // This prevents "element not found" errors due to disclosure animation timing
         await expect(answerElement).toBeVisible({ timeout: 5000 });
+      } else {
+        console.log("FAQ already expanded");
       }
 
       // Wait for the answer to be visible and verify the content
