@@ -58,9 +58,7 @@
                 @click.stop="
                   console.log(
                     'CardFAQEntry: Edit button clicked for FAQ:',
-                    props.faqEntry.id,
-                    'viewport:',
-                    typeof window !== 'undefined' ? window.innerWidth : 'SSR'
+                    props.faqEntry.id
                   );
                   useModalHandlers(
                     `ModalFaqEntry${props.pageType.charAt(0).toUpperCase() + props.pageType.slice(1)}` +
@@ -70,9 +68,7 @@
                 @keydown.enter="
                   console.log(
                     'CardFAQEntry: Edit button keydown for FAQ:',
-                    props.faqEntry.id,
-                    'viewport:',
-                    typeof window !== 'undefined' ? window.innerWidth : 'SSR'
+                    props.faqEntry.id
                   );
                   useModalHandlers(
                     `ModalFaqEntry${props.pageType.charAt(0).toUpperCase() + props.pageType.slice(1)}` +
