@@ -10,6 +10,24 @@
             'CardFAQEntry: DisclosureButton clicked for FAQ:',
             props.faqEntry.id,
             'viewport:',
+            typeof window !== 'undefined' ? window.innerWidth : 'SSR',
+            'event:',
+            $event
+          )
+        "
+        @mousedown="
+          console.log(
+            'CardFAQEntry: DisclosureButton mousedown for FAQ:',
+            props.faqEntry.id,
+            'viewport:',
+            typeof window !== 'undefined' ? window.innerWidth : 'SSR'
+          )
+        "
+        @touchstart="
+          console.log(
+            'CardFAQEntry: DisclosureButton touchstart for FAQ:',
+            props.faqEntry.id,
+            'viewport:',
             typeof window !== 'undefined' ? window.innerWidth : 'SSR'
           )
         "
@@ -48,6 +66,24 @@
                     'CardFAQEntry: FAQ question clicked for FAQ:',
                     props.faqEntry.id,
                     'viewport:',
+                    typeof window !== 'undefined' ? window.innerWidth : 'SSR',
+                    'event:',
+                    $event
+                  )
+                "
+                @mousedown="
+                  console.log(
+                    'CardFAQEntry: FAQ question mousedown for FAQ:',
+                    props.faqEntry.id,
+                    'viewport:',
+                    typeof window !== 'undefined' ? window.innerWidth : 'SSR'
+                  )
+                "
+                @touchstart="
+                  console.log(
+                    'CardFAQEntry: FAQ question touchstart for FAQ:',
+                    props.faqEntry.id,
+                    'viewport:',
                     typeof window !== 'undefined' ? window.innerWidth : 'SSR'
                   )
                 "
@@ -56,16 +92,46 @@
               </p>
               <IconEdit
                 @click.stop="
+                  console.log(
+                    'CardFAQEntry: Edit button clicked for FAQ:',
+                    props.faqEntry.id,
+                    'viewport:',
+                    typeof window !== 'undefined' ? window.innerWidth : 'SSR',
+                    'event:',
+                    $event
+                  );
                   useModalHandlers(
                     `ModalFaqEntry${props.pageType.charAt(0).toUpperCase() + props.pageType.slice(1)}` +
                       props.faqEntry.id
-                  ).openModal()
+                  ).openModal();
                 "
                 @keydown.enter="
+                  console.log(
+                    'CardFAQEntry: Edit button keydown for FAQ:',
+                    props.faqEntry.id,
+                    'viewport:',
+                    typeof window !== 'undefined' ? window.innerWidth : 'SSR'
+                  );
                   useModalHandlers(
                     `ModalFaqEntry${props.pageType.charAt(0).toUpperCase() + props.pageType.slice(1)}` +
                       props.faqEntry.id
-                  ).openModal()
+                  ).openModal();
+                "
+                @mousedown="
+                  console.log(
+                    'CardFAQEntry: Edit button mousedown for FAQ:',
+                    props.faqEntry.id,
+                    'viewport:',
+                    typeof window !== 'undefined' ? window.innerWidth : 'SSR'
+                  )
+                "
+                @touchstart="
+                  console.log(
+                    'CardFAQEntry: Edit button touchstart for FAQ:',
+                    props.faqEntry.id,
+                    'viewport:',
+                    typeof window !== 'undefined' ? window.innerWidth : 'SSR'
+                  )
                 "
                 class="flex"
                 data-testid="faq-edit-button"
