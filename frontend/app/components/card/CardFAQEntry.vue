@@ -39,17 +39,19 @@
           </div>
           <div class="flex-col">
             <div
-              class="flex select-text items-center gap-3 text-left text-primary-text"
+              class="flex select-text items-center gap-3 text-left text-primary-text md:gap-4"
             >
               <p
                 data-testid="faq-question"
-                @click="
+                @click.stop="
                   console.log(
                     'CardFAQEntry: FAQ question clicked for FAQ:',
                     props.faqEntry.id,
                     'viewport:',
                     typeof window !== 'undefined' ? window.innerWidth : 'SSR'
-                  )
+                  );
+                  // Prevent edit modal from opening when clicking on FAQ question
+                  $event.stopPropagation();
                 "
               >
                 {{ faqEntry.question }}
