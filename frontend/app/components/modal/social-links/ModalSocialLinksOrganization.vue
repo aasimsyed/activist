@@ -32,21 +32,19 @@ const { updateLink, deleteLink, createLinks } =
 type SocialLinkWithKey = (OrganizationSocialLink | SocialLink) & {
   key: string;
 };
+
+// Reactive social links ref that syncs with organization data
 const socialLinksRef = ref<SocialLinkWithKey[]>([]);
 
-// Initialize socialLinksRef reactively when organization data is available
-watch(
-  organization,
-  (newOrg) => {
-    if (newOrg?.socialLinks) {
-      socialLinksRef.value = newOrg.socialLinks.map((l, idx) => ({
-        ...l,
-        key: l.id ?? String(idx),
-      }));
-    }
-  },
-  { immediate: true, deep: true }
-);
+// Sync socialLinksRef with organization data reactively
+watchEffect(() => {
+  if (organization.value?.socialLinks) {
+    socialLinksRef.value = organization.value.socialLinks.map((l, idx) => ({
+      ...l,
+      key: l.id ?? String(idx),
+    }));
+  }
+});
 
 const formData = computed(() => ({
   socialLinks: (socialLinksRef.value || []).map((socialLink, index) => ({
