@@ -91,19 +91,7 @@ test.describe(
       await expect(newFaqCard).toBeVisible();
 
       // Verify the FAQ can be expanded and shows the correct answer.
-      const disclosureButton = newFaqCard.getByTestId("faq-disclosure-button");
       const answerElement = newFaqCard.getByTestId("faq-answer");
-
-      // DEBUG: Log the disclosure button element details
-      console.log(
-        "DisclosureButton element:",
-        await disclosureButton.evaluate((el) => ({
-          tagName: el.tagName,
-          className: el.className,
-          boundingBox: el.getBoundingClientRect(),
-          innerHTML: el.innerHTML.substring(0, 200) + "...",
-        }))
-      );
 
       // FIX: Check if the FAQ is already expanded, if not, click to expand it
       // This addresses timing issues where the disclosure panel animation wasn't completing
@@ -112,8 +100,10 @@ test.describe(
       console.log("FAQ expanded state before click:", isExpanded);
 
       if (!isExpanded) {
-        console.log("FAQ not expanded, clicking disclosure button");
-        await disclosureButton.click();
+        console.log("FAQ not expanded, clicking chevron down icon");
+        // Click directly on the chevron icon instead of the entire disclosure button
+        const chevronDown = newFaqCard.getByTestId("faq-chevron-down");
+        await chevronDown.click();
 
         // DEBUG: Check the state after click
         console.log(
