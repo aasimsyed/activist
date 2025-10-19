@@ -25,7 +25,9 @@ const modalName = "ModalFaqEntryGroup" + (props.faqEntry?.id ?? "");
 const { handleCloseModal } = useModalHandlers(modalName);
 
 const paramsGroupId = useRoute().params.groupId;
-const groupId = typeof paramsGroupId === "string" ? paramsGroupId : "";
+const groupId = Array.isArray(paramsGroupId)
+  ? paramsGroupId[0]
+  : paramsGroupId || "";
 
 const { data: group } = useGetGroup(groupId);
 const { updateFAQ, createFAQ } = useGroupFAQEntryMutations(groupId);
@@ -74,12 +76,23 @@ async function handleSubmit(values: unknown) {
   let updateResponse = false;
   const newValues = { ...formData.value, ...(values as FaqEntry) };
 
+  console.log("FAQ Modal handleSubmit called", {
+    isAddMode,
+    groupId,
+    newValues,
+  });
+
   updateResponse = isAddMode
     ? await createFAQ(newValues as FaqEntry)
     : await updateFAQ(newValues as FaqEntry);
 
+  console.log("FAQ Modal updateResponse", updateResponse);
+
   if (updateResponse) {
+    console.log("FAQ Modal closing modal");
     handleCloseModal();
+  } else {
+    console.log("FAQ Modal not closing - updateResponse was false");
   }
 }
 </script>
