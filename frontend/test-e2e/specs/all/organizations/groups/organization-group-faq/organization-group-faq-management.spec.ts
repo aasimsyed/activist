@@ -17,7 +17,7 @@ test.beforeEach(async ({ page }) => {
 
 test.describe(
   "Organization Group FAQ Page - Management",
-  { tag: ["@desktop", "@mobile"] },
+  { tag: ["@desktop", "@mobile", "@tablet"] },
   () => {
     // MARK: CREATE FAQ
 
@@ -81,7 +81,8 @@ test.describe(
       await expect(groupFaqPage.faqModal).not.toBeVisible();
 
       // Wait for the page to update and verify the new FAQ appears in the list.
-      await page.waitForTimeout(1000);
+      // Increased timeout to ensure FAQ card is rendered after modal closes
+      await page.waitForTimeout(2000);
 
       // Verify the new FAQ entry appears on the page.
       const newFaqCard = groupFaqPage.faqCards.filter({
