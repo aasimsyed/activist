@@ -96,6 +96,8 @@ test.describe(
       const isExpanded = await answerElement.isVisible();
       if (!isExpanded) {
         await disclosureButton.click();
+        // Wait for the disclosure panel to expand and the answer to become visible
+        await expect(answerElement).toBeVisible({ timeout: 5000 });
       }
 
       // Wait for the answer to be visible and verify the content
@@ -261,6 +263,8 @@ test.describe(
         const isExpanded = await answerElement.isVisible();
         if (!isExpanded) {
           await disclosureButton.click();
+          // Wait for the disclosure panel to expand and the answer to become visible
+          await expect(answerElement).toBeVisible({ timeout: 5000 });
         }
 
         // Wait for the answer to be visible and verify the content
