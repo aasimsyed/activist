@@ -88,6 +88,22 @@ test.describe(
       const newFaqCard = groupFaqPage.faqCards.filter({
         hasText: testQuestion,
       });
+
+      // DEBUG: Log the test question and FAQ card details
+      console.log("Looking for FAQ with question:", testQuestion);
+      console.log(
+        "Number of FAQ cards found:",
+        await groupFaqPage.faqCards.count()
+      );
+
+      // Log all FAQ questions to see what's available
+      const allFaqCards = groupFaqPage.faqCards;
+      const faqCount = await allFaqCards.count();
+      for (let i = 0; i < faqCount; i++) {
+        const faqText = await allFaqCards.nth(i).textContent();
+        console.log(`FAQ ${i}:`, faqText?.substring(0, 100) + "...");
+      }
+
       await expect(newFaqCard).toBeVisible();
 
       // Verify the FAQ can be expanded and shows the correct answer.
