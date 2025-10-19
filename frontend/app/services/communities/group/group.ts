@@ -8,7 +8,7 @@ import type {
   Group as GroupT,
 } from "~/types/communities/group";
 
-import { get } from "~/services/http";
+import { get, put, type AcceptedBody } from "~/services/http";
 import { defaultGroupText } from "~/types/communities/group";
 import { errorHandler } from "~/utils/errorHandler";
 
@@ -64,6 +64,26 @@ export async function listGroups(): Promise<GroupT[]> {
 }
 
 // MARK: Creates Group
+
+// MARK: Update Group
+
+export async function updateGroup(
+  groupId: string,
+  data: { getInvolvedUrl?: string }
+): Promise<void> {
+  try {
+    await put(
+      `/communities/groups/${groupId}`,
+      {
+        getInvolvedUrl: data.getInvolvedUrl,
+      } as AcceptedBody,
+      { headers: { "Content-Type": "application/json" } }
+    );
+  } catch (e) {
+    const err = errorHandler(e);
+    throw err;
+  }
+}
 
 // export async function createGroup(data: GroupCreateFormData): Promise<GroupT> {
 //   try {
