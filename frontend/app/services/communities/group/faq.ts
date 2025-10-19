@@ -53,10 +53,12 @@ export async function updateGroupFaq(faq: FaqEntry): Promise<void> {
 export async function reorderGroupFaqs(faqs: FaqEntry[]): Promise<void> {
   try {
     await Promise.all(
-      faqs.map(
-        (f) =>
-          put(`/communities/group_faqs/${f.id}`, { id: f.id, order: f.order }),
-        { headers: { "Content-Type": "application/json" } }
+      faqs.map((f) =>
+        put(
+          `/communities/group_faqs/${f.id}`,
+          { id: f.id, order: f.order },
+          { headers: { "Content-Type": "application/json" } }
+        )
       )
     );
   } catch (e) {

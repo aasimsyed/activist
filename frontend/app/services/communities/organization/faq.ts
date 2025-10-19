@@ -53,13 +53,15 @@ export async function updateOrganizationFaq(faq: FaqEntry): Promise<void> {
 export async function reorderOrganizationFaqs(faqs: FaqEntry[]): Promise<void> {
   try {
     await Promise.all(
-      faqs.map(
-        (f) =>
-          put(`/communities/organization_faqs/${f.id}`, {
+      faqs.map((f) =>
+        put(
+          `/communities/organization_faqs/${f.id}`,
+          {
             id: f.id,
             order: f.order,
-          }),
-        { headers: { "Content-Type": "application/json" } }
+          },
+          { headers: { "Content-Type": "application/json" } }
+        )
       )
     );
   } catch (e) {
