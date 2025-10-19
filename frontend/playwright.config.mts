@@ -195,7 +195,7 @@ export default defineConfig({
           },
           {
             name: "iPad Landscape",
-            grep: matchTablet,
+            grep: /@tablet|@desktop|@mobile/,
             workers: process.env.CI ? 1 : 1,
             use: {
               ...devices["iPad (gen 7 landscape)"],
@@ -209,7 +209,7 @@ export default defineConfig({
           },
           {
             name: "iPad Portrait",
-            grep: matchTablet,
+            grep: /@tablet|@desktop|@mobile/,
             workers: process.env.CI ? 1 : 1,
             use: {
               ...devices["iPad (gen 7)"],
