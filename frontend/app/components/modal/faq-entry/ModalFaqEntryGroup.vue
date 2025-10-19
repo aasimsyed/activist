@@ -22,6 +22,7 @@ const props = defineProps<{
 
 const isAddMode = !props.faqEntry;
 const modalName = "ModalFaqEntryGroup" + (props.faqEntry?.id ?? "");
+console.log("FAQ Modal modalName:", modalName);
 const { handleCloseModal } = useModalHandlers(modalName);
 
 const paramsGroupId = useRoute().params.groupId;
