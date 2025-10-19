@@ -84,17 +84,17 @@
                 :faqEntry="faqEntry"
               />
             </div>
-            <DisclosurePanel
-              class="mt-2 border-t border-section-div py-2 focus-within:border-0"
-              data-testid="faq-disclosure-panel"
-            >
-              <p class="select-text text-left" data-testid="faq-answer">
-                {{ faqEntry.answer }}
-              </p>
-            </DisclosurePanel>
           </div>
         </div>
       </DisclosureButton>
+      <DisclosurePanel
+        class="mt-2 border-t border-section-div py-2 focus-within:border-0"
+        data-testid="faq-disclosure-panel"
+      >
+        <p class="select-text text-left" data-testid="faq-answer">
+          {{ faqEntry.answer }}
+        </p>
+      </DisclosurePanel>
     </div>
   </Disclosure>
 </template>
