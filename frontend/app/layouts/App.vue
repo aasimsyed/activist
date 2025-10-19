@@ -15,14 +15,6 @@ const sidebar = useSidebar();
 onMounted(() => {
   window.addEventListener("resize", handleWindowSizeChange);
   handleWindowSizeChange();
-
-  // FIX: Ensure sidebar is collapsed on initial load for mobile/tablet viewports.
-  // This prevents the sidebar from intercepting pointer events during test execution.
-  // Without this fix, tests fail with "intercepts pointer events" errors on iPad Portrait (768px).
-  if (window.innerWidth < 1280) {
-    sidebar.collapsed = true;
-    sidebar.collapsedSwitch = true;
-  }
 });
 
 onUnmounted(() => {

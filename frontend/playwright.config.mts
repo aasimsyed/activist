@@ -29,7 +29,6 @@ const environments = {
 // Device Type matching for describe blocks.
 const matchMobile = /@mobile/;
 const matchDesktop = /@desktop/;
-const matchTablet = /@tablet/;
 
 // Determine the environment from the command line or default to 'local'.
 const ENV = (process.env.TEST_ENV || "local") as keyof typeof environments;
@@ -195,7 +194,7 @@ export default defineConfig({
           },
           {
             name: "iPad Landscape",
-            grep: /@tablet|@desktop|@mobile/,
+            grep: matchDesktop,
             workers: process.env.CI ? 1 : 1,
             use: {
               ...devices["iPad (gen 7 landscape)"],
@@ -209,7 +208,7 @@ export default defineConfig({
           },
           {
             name: "iPad Portrait",
-            grep: /@tablet|@desktop|@mobile/,
+            grep: matchDesktop,
             workers: process.env.CI ? 1 : 1,
             use: {
               ...devices["iPad (gen 7)"],

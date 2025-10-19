@@ -22,7 +22,6 @@ const props = defineProps<{
 
 const isAddMode = !props.faqEntry;
 const modalName = "ModalFaqEntryGroup" + (props.faqEntry?.id ?? "");
-console.log("FAQ Modal modalName:", modalName);
 const { handleCloseModal } = useModalHandlers(modalName);
 
 const paramsGroupId = useRoute().params.groupId;
@@ -77,23 +76,12 @@ async function handleSubmit(values: unknown) {
   let updateResponse = false;
   const newValues = { ...formData.value, ...(values as FaqEntry) };
 
-  console.log("FAQ Modal handleSubmit called", {
-    isAddMode,
-    groupId,
-    newValues,
-  });
-
   updateResponse = isAddMode
     ? await createFAQ(newValues as FaqEntry)
     : await updateFAQ(newValues as FaqEntry);
 
-  console.log("FAQ Modal updateResponse", updateResponse);
-
   if (updateResponse) {
-    console.log("FAQ Modal closing modal");
     handleCloseModal();
-  } else {
-    console.log("FAQ Modal not closing - updateResponse was false");
   }
 }
 </script>

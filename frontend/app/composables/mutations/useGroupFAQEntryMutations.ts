@@ -24,13 +24,7 @@ export function useGroupFAQEntryMutations(groupId: MaybeRef<string>) {
 
   // Create new FAQ entry.
   async function createFAQ(faqData: Omit<FaqEntry, "id">) {
-    console.log("createFAQ called", {
-      currentGroupId: currentGroupId.value,
-      faqData,
-    });
-
     if (!currentGroupId.value) {
-      console.log("createFAQ returning false - no groupId");
       return false;
     }
 
@@ -38,18 +32,14 @@ export function useGroupFAQEntryMutations(groupId: MaybeRef<string>) {
     error.value = null;
 
     try {
-      console.log("createFAQ calling createGroupFaq service");
       // Service function handles the HTTP call and throws normalized errors.
       await createGroupFaq(currentGroupId.value, faqData as FaqEntry);
 
-      console.log("createFAQ calling refreshGroupData");
       // Refresh the group data to get the new FAQ.
       await refreshGroupData();
 
-      console.log("createFAQ returning true - success");
       return true;
     } catch (err) {
-      console.log("createFAQ error", err);
       showToastError((err as AppError).message);
       return false;
     } finally {

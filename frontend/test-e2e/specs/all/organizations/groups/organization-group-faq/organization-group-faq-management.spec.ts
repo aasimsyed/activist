@@ -17,7 +17,7 @@ test.beforeEach(async ({ page }) => {
 
 test.describe(
   "Organization Group FAQ Page - Management",
-  { tag: ["@desktop", "@mobile", "@tablet"] },
+  { tag: ["@desktop", "@mobile"] },
   () => {
     // MARK: CREATE FAQ
 
@@ -102,9 +102,6 @@ test.describe(
         // Click directly on the chevron icon instead of the entire disclosure button
         const chevronDown = newFaqCard.getByTestId("faq-chevron-down");
         await chevronDown.click();
-        // Wait for the disclosure panel to expand and the answer to become visible
-        // This prevents "element not found" errors due to disclosure animation timing
-        await expect(answerElement).toBeVisible({ timeout: 5000 });
       }
 
       // Wait for the answer to be visible and verify the content
@@ -271,9 +268,6 @@ test.describe(
         const isExpanded = await answerElement.isVisible();
         if (!isExpanded) {
           await disclosureButton.click();
-          // Wait for the disclosure panel to expand and the answer to become visible
-          // This prevents "element not found" errors due to disclosure animation timing
-          await expect(answerElement).toBeVisible({ timeout: 5000 });
         }
 
         // Wait for the answer to be visible and verify the content

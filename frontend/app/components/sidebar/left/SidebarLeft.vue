@@ -3,13 +3,13 @@
   <aside
     id="sidebar-left"
     ref="sidebarWrapper"
-    @focus="handleSidebarFocus"
+    @focus="collapseSidebar(false)"
     @focusout="
       collapseSidebar(true);
       handleFocusOut($event);
     "
-    @mouseleave="handleSidebarMouseLeave"
-    @mouseover="handleSidebarMouseOver"
+    @mouseleave="collapseSidebar(true)"
+    @mouseover="collapseSidebar(false)"
     :aria-label="$t('i18n.components.sidebar_left.sidebar_left_aria_label')"
     class="absolute z-40 block h-full flex-col border-r border-section-div bg-layer-1 transition-all duration-500 elem-shadow-sm focus-brand md:flex"
     :class="{
@@ -198,40 +198,11 @@ function collapseSidebar(collapse: boolean): void {
   setSidebarContentScrollable();
 }
 
-// FIX: Viewport-aware sidebar behavior to prevent expansion on mobile/tablet.
-// The original behavior caused the sidebar to expand on focus/hover, which would
-// then intercept pointer events and block access to main content during tests.
-function handleSidebarFocus() {
-  // Only expand sidebar on focus for desktop viewports (>= 1280px)
-  if (window.innerWidth >= 1280) {
-    collapseSidebar(false);
-  }
-}
-
-function handleSidebarMouseOver() {
-  // Only expand sidebar on hover for desktop viewports (>= 1280px)
-  if (window.innerWidth >= 1280) {
-    collapseSidebar(false);
-  }
-}
-
-function handleSidebarMouseLeave() {
-  // Only collapse sidebar on mouse leave for desktop viewports (>= 1280px)
-  if (window.innerWidth >= 1280) {
-    collapseSidebar(true);
-  }
-}
-
 function handleFocusOut(event: FocusEvent) {
   const focusedElement = event.relatedTarget as HTMLElement;
   if (sidebarWrapper.value && sidebarWrapper.value.contains(focusedElement)) {
-    // FIX: Only expand sidebar if focus stays within sidebar and we're on desktop.
-    // This prevents unwanted expansion during focus transitions on mobile/tablet.
-    if (window.innerWidth >= 1280) {
-      collapseSidebar(false);
-    }
+    collapseSidebar(false);
   } else {
-    // Always collapse when focus leaves sidebar
     collapseSidebar(true);
   }
 }

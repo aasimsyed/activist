@@ -31,40 +31,27 @@
           </div>
           <div class="flex-col">
             <div
-              class="flex select-text items-center gap-3 text-left text-primary-text md:gap-4"
+              class="flex select-text items-center gap-3 text-left text-primary-text"
             >
-              <div
-                class="min-w-0 flex-1"
+              <p data-testid="faq-question">
+                {{ faqEntry.question }}
+              </p>
+              <IconEdit
                 @click.stop="
-                  // Prevent edit modal from opening when clicking on FAQ question area
-                  $event.stopPropagation()
+                  useModalHandlers(
+                    `ModalFaqEntry${props.pageType.charAt(0).toUpperCase() + props.pageType.slice(1)}` +
+                      props.faqEntry.id
+                  ).openModal()
                 "
-              >
-                <p
-                  data-testid="faq-question"
-                  class="cursor-pointer transition-colors hover:text-primary-text/80"
-                >
-                  {{ faqEntry.question }}
-                </p>
-              </div>
-              <div class="ml-2 flex-shrink-0">
-                <IconEdit
-                  @click.stop="
-                    useModalHandlers(
-                      `ModalFaqEntry${props.pageType.charAt(0).toUpperCase() + props.pageType.slice(1)}` +
-                        props.faqEntry.id
-                    ).openModal()
-                  "
-                  @keydown.enter="
-                    useModalHandlers(
-                      `ModalFaqEntry${props.pageType.charAt(0).toUpperCase() + props.pageType.slice(1)}` +
-                        props.faqEntry.id
-                    ).openModal()
-                  "
-                  class="flex rounded p-1 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
-                  data-testid="faq-edit-button"
-                />
-              </div>
+                @keydown.enter="
+                  useModalHandlers(
+                    `ModalFaqEntry${props.pageType.charAt(0).toUpperCase() + props.pageType.slice(1)}` +
+                      props.faqEntry.id
+                  ).openModal()
+                "
+                class="flex"
+                data-testid="faq-edit-button"
+              />
               <ModalFaqEntryOrganization
                 v-if="pageType === 'organization'"
                 :faqEntry="faqEntry"
@@ -78,17 +65,17 @@
                 :faqEntry="faqEntry"
               />
             </div>
+            <DisclosurePanel
+              class="mt-2 border-t border-section-div py-2 focus-within:border-0"
+              data-testid="faq-disclosure-panel"
+            >
+              <p class="select-text text-left" data-testid="faq-answer">
+                {{ faqEntry.answer }}
+              </p>
+            </DisclosurePanel>
           </div>
         </div>
       </DisclosureButton>
-      <DisclosurePanel
-        class="mt-2 border-t border-section-div py-2 focus-within:border-0"
-        data-testid="faq-disclosure-panel"
-      >
-        <p class="select-text text-left" data-testid="faq-answer">
-          {{ faqEntry.answer }}
-        </p>
-      </DisclosurePanel>
     </div>
   </Disclosure>
 </template>
