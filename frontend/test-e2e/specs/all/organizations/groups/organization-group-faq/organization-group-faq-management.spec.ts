@@ -1,20 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-/**
- * FAQ Management Tests
- *
- * FIXES APPLIED:
- * 1. FAQ Creation/Edit Tests: Added proper waiting for disclosure panel expansion
- *    - Issue: FAQ answer elements weren't visible immediately after clicking disclosure button
- *    - Fix: Added explicit waiting with timeout after clicking disclosure button
- *    - Prevents "element not found" errors due to disclosure animation timing
- *
- * 2. FAQ Service Functions: Fixed syntax errors in reorder functions
- *    - Issue: FAQ modals stayed open after form submission due to silent failures
- *    - Fix: Corrected misplaced headers object in reorderGroupFaqs, reorderOrganizationFaqs, reorderEventFaqs
- *    - Result: FAQ creation/update operations now complete successfully and close modals
- */
-
 import {
   getFAQCardOrder,
   performDragAndDrop,
