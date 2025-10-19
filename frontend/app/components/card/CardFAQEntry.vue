@@ -5,6 +5,14 @@
       <DisclosureButton
         class="w-full rounded-md px-4 py-2 focus-brand"
         data-testid="faq-disclosure-button"
+        @click="
+          console.log(
+            'CardFAQEntry: DisclosureButton clicked for FAQ:',
+            props.faqEntry.id,
+            'viewport:',
+            typeof window !== 'undefined' ? window.innerWidth : 'SSR'
+          )
+        "
       >
         <div
           class="flex gap-3"
@@ -33,7 +41,17 @@
             <div
               class="flex select-text items-center gap-3 text-left text-primary-text"
             >
-              <p data-testid="faq-question">
+              <p
+                data-testid="faq-question"
+                @click="
+                  console.log(
+                    'CardFAQEntry: FAQ question clicked for FAQ:',
+                    props.faqEntry.id,
+                    'viewport:',
+                    typeof window !== 'undefined' ? window.innerWidth : 'SSR'
+                  )
+                "
+              >
                 {{ faqEntry.question }}
               </p>
               <IconEdit
