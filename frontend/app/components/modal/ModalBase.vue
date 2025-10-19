@@ -13,18 +13,6 @@
           imageModal,
         'fixed inset-0 flex w-screen items-center justify-center': !imageModal,
       }"
-      @mousedown="
-        console.log(
-          'Modal backdrop mousedown on iPad viewport:',
-          window.innerWidth
-        )
-      "
-      @touchstart="
-        console.log(
-          'Modal backdrop touchstart on iPad viewport:',
-          window.innerWidth
-        )
-      "
     >
       <DialogPanel
         id="modal"
@@ -58,18 +46,6 @@
             class="absolute right-0 rounded-full p-1 text-distinct-text focus-brand hover:text-primary-text"
             data-testid="modal-close-button"
             role="button"
-            @mousedown="
-              console.log(
-                'Modal close button mousedown on iPad viewport:',
-                window.innerWidth
-              )
-            "
-            @touchstart="
-              console.log(
-                'Modal close button touchstart on iPad viewport:',
-                window.innerWidth
-              )
-            "
           >
             <Icon class="h-10 w-10" :name="IconMap.CIRCLE_X_FILL" />
           </button>
@@ -133,12 +109,6 @@ watch(
 // Tell any interested observers that the closeModal event has happened.
 // The interested observer(s) can respond or do cleanup specific to their needs.
 const closeModal = () => {
-  console.log(
-    "ModalBase closeModal called for:",
-    modalName,
-    "viewport:",
-    window.innerWidth
-  );
   emit("closeModal");
   modals.closeModal(modalName);
 };
