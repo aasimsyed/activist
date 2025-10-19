@@ -36,14 +36,8 @@
               <div
                 class="min-w-0 flex-1"
                 @click.stop="
-                  console.log(
-                    'CardFAQEntry: FAQ question area clicked for FAQ:',
-                    props.faqEntry.id,
-                    'viewport:',
-                    typeof window !== 'undefined' ? window.innerWidth : 'SSR'
-                  );
                   // Prevent edit modal from opening when clicking on FAQ question area
-                  $event.stopPropagation();
+                  $event.stopPropagation()
                 "
               >
                 <p

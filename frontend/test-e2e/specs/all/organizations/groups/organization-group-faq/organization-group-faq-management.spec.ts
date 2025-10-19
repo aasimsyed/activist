@@ -89,21 +89,6 @@ test.describe(
         hasText: testQuestion,
       });
 
-      // DEBUG: Log the test question and FAQ card details
-      console.log("Looking for FAQ with question:", testQuestion);
-      console.log(
-        "Number of FAQ cards found:",
-        await groupFaqPage.faqCards.count()
-      );
-
-      // Log all FAQ questions to see what's available
-      const allFaqCards = groupFaqPage.faqCards;
-      const faqCount = await allFaqCards.count();
-      for (let i = 0; i < faqCount; i++) {
-        const faqText = await allFaqCards.nth(i).textContent();
-        console.log(`FAQ ${i}:`, faqText?.substring(0, 100) + "...");
-      }
-
       await expect(newFaqCard).toBeVisible();
 
       // Verify the FAQ can be expanded and shows the correct answer.
@@ -113,42 +98,13 @@ test.describe(
       // This addresses timing issues where the disclosure panel animation wasn't completing
       // before the test expected the answer element to be visible.
       const isExpanded = await answerElement.isVisible();
-      console.log("FAQ expanded state before click:", isExpanded);
-
       if (!isExpanded) {
-        console.log("FAQ not expanded, clicking chevron down icon");
         // Click directly on the chevron icon instead of the entire disclosure button
         const chevronDown = newFaqCard.getByTestId("faq-chevron-down");
         await chevronDown.click();
-
-        // DEBUG: Check the state after click
-        console.log(
-          "FAQ expanded state after click:",
-          await answerElement.isVisible()
-        );
-        console.log(
-          "DisclosurePanel visible:",
-          await newFaqCard.getByTestId("faq-disclosure-panel").isVisible()
-        );
-
-        // Wait a bit for any animations
-        await page.waitForTimeout(1000);
-
-        // Check state again after waiting
-        console.log(
-          "FAQ expanded state after wait:",
-          await answerElement.isVisible()
-        );
-        console.log(
-          "DisclosurePanel visible after wait:",
-          await newFaqCard.getByTestId("faq-disclosure-panel").isVisible()
-        );
-
         // Wait for the disclosure panel to expand and the answer to become visible
         // This prevents "element not found" errors due to disclosure animation timing
         await expect(answerElement).toBeVisible({ timeout: 5000 });
-      } else {
-        console.log("FAQ already expanded");
       }
 
       // Wait for the answer to be visible and verify the content
