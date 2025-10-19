@@ -5,14 +5,6 @@
       <DisclosureButton
         class="w-full rounded-md px-4 py-2 focus-brand"
         data-testid="faq-disclosure-button"
-        @click="
-          console.log(
-            'CardFAQEntry: DisclosureButton clicked for FAQ:',
-            props.faqEntry.id,
-            'viewport:',
-            typeof window !== 'undefined' ? window.innerWidth : 'SSR'
-          )
-        "
       >
         <div
           class="flex gap-3"
