@@ -34,12 +34,15 @@ type SocialLinkWithKey = (OrganizationSocialLink | SocialLink) & {
 };
 const socialLinksRef = ref<SocialLinkWithKey[]>();
 
-socialLinksRef.value = (organization.value?.socialLinks || []).map(
-  (l, idx) => ({
-    ...l,
-    key: l.id ?? String(idx),
-  })
-);
+// Make social links reactive to organization data changes
+watchEffect(() => {
+  socialLinksRef.value = (organization?.value?.socialLinks || []).map(
+    (l, idx) => ({
+      ...l,
+      key: l.id ?? String(idx),
+    })
+  );
+});
 
 const formData = computed(() => ({
   socialLinks: (socialLinksRef.value || []).map((socialLink, index) => ({
@@ -90,7 +93,7 @@ async function handleSubmit(values: unknown) {
 
     // Track existing IDs.
     const existingIds = new Set(
-      organization.value?.socialLinks.map((link) => link.id)
+      organization?.value?.socialLinks.map((link) => link.id)
     );
     const currentIds = new Set(
       socialLinksRef.value?.map((link) => link.id).filter(Boolean)
@@ -99,7 +102,7 @@ async function handleSubmit(values: unknown) {
     let allSuccess = true;
 
     // 1. DELETE: Items that existed but are no longer in the list.
-    const toDelete = (organization.value?.socialLinks || []).filter(
+    const toDelete = (organization?.value?.socialLinks || []).filter(
       (link) => link.id && !currentIds.has(link.id)
     );
     for (const link of toDelete) {
@@ -117,7 +120,7 @@ async function handleSubmit(values: unknown) {
       const formLink = formValues?.[formIndex];
       if (formLink && refItem.id) {
         // Only update if link or label actually changed (ignore order for now).
-        const existing = organization.value?.socialLinks.find(
+        const existing = organization?.value?.socialLinks.find(
           (l) => l.id === refItem.id
         );
         if (
@@ -150,7 +153,7 @@ async function handleSubmit(values: unknown) {
           order: formIndex,
         };
         // Don't create if link/label are empty OR if they match an existing link.
-        const isDuplicate = organization.value?.socialLinks.some(
+        const isDuplicate = organization?.value?.socialLinks.some(
           (existing) =>
             existing.link === data.link && existing.label === data.label
         );
@@ -168,7 +171,7 @@ async function handleSubmit(values: unknown) {
 
     if (allSuccess) {
       // Update local ref to reflect changes.
-      socialLinksRef.value = (organization.value?.socialLinks || []).map(
+      socialLinksRef.value = (organization?.value?.socialLinks || []).map(
         (l, idx) => ({
           ...l,
           key: l.id ?? String(idx),
