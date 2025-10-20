@@ -32,17 +32,25 @@ const { updateLink, deleteLink, createLinks } =
 type SocialLinkWithKey = (OrganizationSocialLink | SocialLink) & {
   key: string;
 };
-const socialLinksRef = ref<SocialLinkWithKey[]>();
 
-socialLinksRef.value = (organization.value?.socialLinks || []).map(
-  (l, idx) => ({
+// Use computed property for automatic reactivity and caching.
+const socialLinksComputed = computed<SocialLinkWithKey[]>(() =>
+  (organization.value?.socialLinks || []).map((l, idx) => ({
     ...l,
     key: l.id ?? String(idx),
-  })
+  }))
 );
 
+// Mutable ref for form state management.
+const socialLinksRef = ref<SocialLinkWithKey[]>([]);
+
+// Initialize and keep in sync with computed data.
+watchEffect(() => {
+  socialLinksRef.value = socialLinksComputed.value;
+});
+
 const formData = computed(() => ({
-  socialLinks: (socialLinksRef.value || []).map((socialLink, index) => ({
+  socialLinks: socialLinksRef.value.map((socialLink, index) => ({
     label: socialLink.label,
     link: socialLink.link,
     order: index,
@@ -90,7 +98,7 @@ async function handleSubmit(values: unknown) {
 
     // Track existing IDs.
     const existingIds = new Set(
-      organization.value?.socialLinks.map((link) => link.id)
+      socialLinksComputed.value.map((link) => link.id)
     );
     const currentIds = new Set(
       socialLinksRef.value?.map((link) => link.id).filter(Boolean)
@@ -99,7 +107,7 @@ async function handleSubmit(values: unknown) {
     let allSuccess = true;
 
     // 1. DELETE: Items that existed but are no longer in the list.
-    const toDelete = (organization.value?.socialLinks || []).filter(
+    const toDelete = socialLinksComputed.value.filter(
       (link) => link.id && !currentIds.has(link.id)
     );
     for (const link of toDelete) {
@@ -117,7 +125,7 @@ async function handleSubmit(values: unknown) {
       const formLink = formValues?.[formIndex];
       if (formLink && refItem.id) {
         // Only update if link or label actually changed (ignore order for now).
-        const existing = organization.value?.socialLinks.find(
+        const existing = socialLinksComputed.value.find(
           (l) => l.id === refItem.id
         );
         if (
@@ -150,7 +158,7 @@ async function handleSubmit(values: unknown) {
           order: formIndex,
         };
         // Don't create if link/label are empty OR if they match an existing link.
-        const isDuplicate = organization.value?.socialLinks.some(
+        const isDuplicate = socialLinksComputed.value.some(
           (existing) =>
             existing.link === data.link && existing.label === data.label
         );
@@ -167,13 +175,8 @@ async function handleSubmit(values: unknown) {
     }
 
     if (allSuccess) {
-      // Update local ref to reflect changes.
-      socialLinksRef.value = (organization.value?.socialLinks || []).map(
-        (l, idx) => ({
-          ...l,
-          key: l.id ?? String(idx),
-        })
-      );
+      // The computed property will automatically update when organization data changes.
+      // No need to manually update socialLinksRef as it's synced via watchEffect.
 
       // Close modal after data is updated.
       handleCloseModal();
