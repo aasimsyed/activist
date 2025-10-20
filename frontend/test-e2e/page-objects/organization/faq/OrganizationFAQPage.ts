@@ -88,19 +88,31 @@ export const newOrganizationFAQPage = (page: Page) => ({
   // MARK: FAQ Interaction
 
   expandFAQ: async (index: number) => {
-    const expandButton = page
-      .getByTestId("faq-card")
-      .nth(index)
-      .getByTestId("faq-disclosure-button");
-    await expandButton.click();
+    const faqCard = page.getByTestId("faq-card").nth(index);
+    const answerElement = faqCard.getByTestId("faq-answer");
+
+    // Check if FAQ is already expanded
+    const isExpanded = await answerElement.isVisible();
+    if (!isExpanded) {
+      // FAQ is closed, click chevron-down to expand
+      const chevronDown = faqCard.getByTestId("faq-chevron-down");
+      await chevronDown.click();
+    }
+    // If already expanded, do nothing
   },
 
   collapseFAQ: async (index: number) => {
-    const collapseButton = page
-      .getByTestId("faq-card")
-      .nth(index)
-      .getByTestId("faq-disclosure-button");
-    await collapseButton.click();
+    const faqCard = page.getByTestId("faq-card").nth(index);
+    const answerElement = faqCard.getByTestId("faq-answer");
+
+    // Check if FAQ is already collapsed
+    const isExpanded = await answerElement.isVisible();
+    if (isExpanded) {
+      // FAQ is open, click chevron-up to collapse
+      const chevronUp = faqCard.getByTestId("faq-chevron-up");
+      await chevronUp.click();
+    }
+    // If already collapsed, do nothing
   },
 
   editFAQ: async (index: number) => {
