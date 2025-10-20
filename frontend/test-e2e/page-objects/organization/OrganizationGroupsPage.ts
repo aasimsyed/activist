@@ -64,6 +64,23 @@ export const newOrganizationGroupsPage = (page: Page) => ({
   },
 
   navigateToGroup: async (index: number) => {
+    // Import sidebar page object
+    const { newSidebarLeft } = await import(
+      "~/test-e2e/component-objects/SidebarLeft"
+    );
+    const sidebarLeft = newSidebarLeft(page);
+
+    // Check if we're on a mobile/tablet viewport where sidebar might be expanded
+    const viewport = page.viewportSize();
+    if (viewport && viewport.width < 1280) {
+      // Check if sidebar is expanded and collapse it if needed
+      const isExpanded = await sidebarLeft.isExpanded();
+      if (isExpanded) {
+        await sidebarLeft.lockToggle.click();
+        await sidebarLeft.expectIsCollapsed();
+      }
+    }
+
     const groupLink = page
       .getByTestId("group-card")
       .nth(index)
