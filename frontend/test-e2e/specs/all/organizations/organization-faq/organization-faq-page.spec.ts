@@ -90,7 +90,7 @@ test.describe("Organization FAQ Page", { tag: ["@desktop", "@mobile"] }, () => {
       await expect(answer).toContainText(/.+/);
 
       // Collapse FAQ.
-      await faqPage.expandFAQ(0);
+      await faqPage.collapseFAQ(0);
 
       // Wait for FAQ to be collapsed.
       await expect(faqPage.getFAQAnswer(0)).not.toBeVisible();
