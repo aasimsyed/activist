@@ -99,6 +99,50 @@ test.describe(
       await expect(resourcesPage.newResourceButton).toBeVisible();
       await expect(resourcesPage.newResourceButton).toBeEnabled();
 
+      // Check if we're on a mobile/tablet viewport where sidebar might be expanded
+      const viewport = page.viewportSize();
+      if (viewport && viewport.width < 1280) {
+        // Check if sidebar element exists (it doesn't on mobile)
+        const sidebarExists = (await page.locator("#sidebar-left").count()) > 0;
+        if (sidebarExists) {
+          // Import sidebar page object and collapse if needed
+          const { newSidebarLeft } = await import(
+            "~/test-e2e/component-objects/SidebarLeft"
+          );
+          const sidebarLeft = newSidebarLeft(page);
+
+          const isExpanded = await sidebarLeft.isExpanded();
+
+          if (isExpanded) {
+            // Try multiple approaches to collapse the sidebar
+            // 1. Direct state manipulation
+            await page.evaluate(() => {
+              // Try to find and call the sidebar collapse function
+              const sidebar = document.getElementById("sidebar-left");
+              if (sidebar) {
+                // Trigger mouseleave event
+                const mouseLeaveEvent = new Event("mouseleave", {
+                  bubbles: true,
+                });
+                sidebar.dispatchEvent(mouseLeaveEvent);
+
+                // Also try to set collapsed state directly
+                if (window.localStorage) {
+                  localStorage.setItem("collapsed", "true");
+                  localStorage.setItem("collapsedSwitch", "true");
+                }
+              }
+            });
+
+            // 2. Use the sidebar's mouseLeave method as backup
+            await sidebarLeft.mouseLeave();
+
+            // 3. Wait a bit for state to update
+            await page.waitForTimeout(200);
+          }
+        }
+      }
+
       // Click the new resource button to open modal.
       await resourcesPage.newResourceButton.click();
 

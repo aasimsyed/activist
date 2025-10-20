@@ -79,6 +79,30 @@ export const newOrganizationEventsPage = (page: Page) => ({
   // MARK: Event Navigation
 
   navigateToEvent: async (index: number) => {
+    // Import sidebar page object
+    const { newSidebarLeft } = await import(
+      "~/test-e2e/component-objects/SidebarLeft"
+    );
+    const sidebarLeft = newSidebarLeft(page);
+
+    // Check if we're on a mobile/tablet viewport where sidebar might be expanded
+    const viewport = page.viewportSize();
+    if (viewport && viewport.width < 1280) {
+      // Check if sidebar element exists (it doesn't on mobile)
+      const sidebarExists = (await page.locator("#sidebar-left").count()) > 0;
+      if (sidebarExists) {
+        // Check if sidebar is expanded and collapse it if needed
+        const isExpanded = await sidebarLeft.isExpanded();
+        if (isExpanded) {
+          // On mobile/tablet, simulate mouse leaving the sidebar like desktop behavior
+          const viewport = page.viewportSize();
+          await page.mouse.move(viewport!.width - 10, 10); // Move to right side of screen (outside sidebar)
+
+          await sidebarLeft.expectIsCollapsed();
+        }
+      }
+    }
+
     const eventLink = page
       .getByTestId("event-card")
       .nth(index)
