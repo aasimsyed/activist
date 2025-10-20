@@ -76,7 +76,19 @@ export const newOrganizationGroupsPage = (page: Page) => ({
       // Check if sidebar is expanded and collapse it if needed
       const isExpanded = await sidebarLeft.isExpanded();
       if (isExpanded) {
+        // On mobile/tablet, we need to set both collapsed states
+        // First click the lock toggle to set collapsedSwitch
         await sidebarLeft.lockToggle.click();
+
+        // Then trigger mouse leave event to set collapsed state
+        await page.evaluate(() => {
+          const sidebar = document.getElementById("sidebar-left");
+          if (sidebar) {
+            const event = new Event("mouseleave", { bubbles: true });
+            sidebar.dispatchEvent(event);
+          }
+        });
+
         await sidebarLeft.expectIsCollapsed();
       }
     }
