@@ -18,7 +18,8 @@ export async function updateGroupTexts(
       {
         primary: true,
         description: data.description,
-        getInvolved: data.getInvolved,
+        get_involved: data.getInvolved,
+        get_involved_url: data.getInvolvedUrl,
         donate_prompt: "",
         groupId: groupId,
         iso: "en",
