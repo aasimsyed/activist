@@ -23,7 +23,6 @@ interface OrganizationBase {
   createdBy: string;
   iconUrl?: ContentImage;
   location: Location;
-  getInvolvedUrl: string;
   socialLinks: OrganizationSocialLink[];
   status: number;
   // statusUpdated?: string;
@@ -86,6 +85,7 @@ export interface OrganizationText {
   primary: boolean;
   description: string;
   getInvolved: string;
+  getInvolvedUrl: string;
   donationPrompt: string;
 }
 
@@ -96,6 +96,7 @@ export const defaultOrganizationText: OrganizationText = {
   primary: false,
   description: "",
   getInvolved: "",
+  getInvolvedUrl: "",
   donationPrompt: "",
 };
 
@@ -107,7 +108,6 @@ export const defaultOrganization: Organization = {
   createdBy: "",
   iconUrl: defaultContentImage,
   location: defaultLocation,
-  getInvolvedUrl: "",
   socialLinks: [defaultOrganizationSocialLink],
   status: 0,
   creationDate: "",

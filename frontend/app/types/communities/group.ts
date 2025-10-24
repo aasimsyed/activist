@@ -21,7 +21,6 @@ interface GroupBase {
   createdBy: User;
   iconUrl?: ContentImage;
   location: Location;
-  getInvolvedUrl: string;
   socialLinks: GroupSocialLink[];
   creationDate: string;
   org: Organization;
@@ -65,6 +64,7 @@ export interface GroupText {
   primary: boolean;
   description: string;
   getInvolved: string;
+  getInvolvedUrl: string;
   donationPrompt: string;
 }
 
@@ -75,6 +75,7 @@ export const defaultGroupText: GroupText = {
   primary: false,
   description: "",
   getInvolved: "",
+  getInvolvedUrl: "",
   donationPrompt: "",
 };
 
