@@ -95,15 +95,18 @@ const useMenuEntriesState = () => {
 
     const buttons = currentPath.value.includes("/organizations/")
       ? organizationEntries
-      : currentPath.value.includes("/events/")
-      ? eventEntries
-      : organizationEntries; // fallback to organization entries
+      : eventEntries;
 
     // Update the id and routeUrl for each button based on current route params.
     const currentId = (router.currentRoute.value.params.groupId ||
       router.currentRoute.value.params.orgId ||
       router.currentRoute.value.params.eventId ||
       router.currentRoute.value.params.id) as string;
+
+    // If currentId is undefined, skip updating (router not ready yet).
+    if (!currentId) {
+      return;
+    }
 
     for (const button of buttons.value) {
       button.selected = false;
