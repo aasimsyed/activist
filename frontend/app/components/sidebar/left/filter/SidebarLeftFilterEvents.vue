@@ -254,10 +254,12 @@ const convertActiveOnToDays = (activeOn: string): string | undefined => {
     targetDate.setHours(0, 0, 0, 0);
 
     const diffTime = targetDate.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const diffDays = diffTime / (1000 * 60 * 60 * 24);
 
-    if (diffDays <= 1) return "1";
-    if (diffDays <= 7) return "7";
+    // Use ranges with tolerance to avoid edge cases
+    // 0-1.5 days → "1", 1.5-15 days → "7", 15-30 days → "30"
+    if (diffDays <= 1.5) return "1";
+    if (diffDays <= 15) return "7";
     if (diffDays <= 30) return "30";
 
     return undefined;

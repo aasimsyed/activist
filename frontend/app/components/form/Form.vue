@@ -54,10 +54,22 @@ const labelForSubmit = props.submitLabel ?? "i18n.components.submit";
 const id = props.id || "form-id";
 const submitId = props.id ? `${props.id}-submit` : "form-submit-id";
 
-const { handleSubmit, values } = useForm({
+const { handleSubmit, values, setValues } = useForm({
   validationSchema: toTypedSchema(props.schema),
   initialValues: props.initialValues,
 });
+
+// Watch for changes to initialValues and update form
+watch(
+  () => props.initialValues,
+  (newValues) => {
+    if (newValues) {
+      setValues(newValues);
+    }
+  },
+  { deep: true }
+);
+
 const emit = defineEmits<{
   (e: "submit", values: Record<string, unknown>): void;
 }>();
