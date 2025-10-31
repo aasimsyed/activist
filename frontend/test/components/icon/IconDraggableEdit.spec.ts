@@ -2,7 +2,7 @@
 import { mount } from "@vue/test-utils";
 import { describe, it, expect } from "vitest";
 
-import IconDraggableEdit from "~/components/icon/IconDraggableEdit.vue";
+import IconDraggableEdit from "../../../app/components/icon/IconDraggableEdit.vue";
 
 describe("Tests for IconDraggableEdit", () => {
   const entityMock = { id: 1, name: "test-entity", createdBy: 1 };
