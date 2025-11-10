@@ -1,0 +1,19 @@
+{
+  "extends": "./.nuxt/tsconfig.json",
+  "compilerOptions": {
+    "module": "ESNext",
+    "baseUrl": ".",
+    "types": ["vitest/globals", "@types/node"],
+    "paths": {
+      "~": ["./app"],
+      "~/*": ["./app/*"],
+      "~~": ["."],
+      "~~/*": ["./*"],
+      "@": ["./app"],
+      "@/*": ["./app/*"],
+      "@@": ["."],
+      "@@/*": ["./*"]
+    }
+  },
+  "include": ["test/**/*.ts", "test/**/*.mts", "app/**/*.ts", "app/**/*.vue"]
+}
