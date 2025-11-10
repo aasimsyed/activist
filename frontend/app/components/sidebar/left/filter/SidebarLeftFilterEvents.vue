@@ -13,6 +13,7 @@
       />
     </div>
     <Form
+      :key="formKey"
       @submit="handleSubmit"
       class="px-1"
       :initial-values="formData"
@@ -258,6 +259,7 @@ const updateViewType = (
 
 const viewType = ref(ViewType.MAP);
 const formData = ref({});
+const formKey = ref(0);
 
 // Check if any filters are active
 const hasActiveFilters = computed(() => {
@@ -274,6 +276,7 @@ const hasActiveFilters = computed(() => {
 // Clear all filters
 const clearFilters = () => {
   formData.value = {};
+  formKey.value++; // Force form to re-render with empty values
   router.push({
     query: {
       view: viewType.value,
