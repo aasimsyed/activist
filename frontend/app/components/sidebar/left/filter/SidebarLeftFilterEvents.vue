@@ -103,6 +103,22 @@
         />
       </FormItem>
     </Form>
+    <BtnAction
+      v-if="hasActiveFilters"
+      @click="clearFilters"
+      @keydown.enter="clearFilters"
+      :ariaLabel="
+        $t(
+          'i18n.components.sidebar_left_filter_events.clear_filters_aria_label'
+        )
+      "
+      class="mt-4 w-full"
+      :cta="false"
+      data-testid="events-clear-filters-button"
+      fontSize="sm"
+      :label="$t('i18n.components.sidebar_left_filter_events.clear_filters')"
+      :leftIcon="IconMap.X_LG"
+    />
   </div>
 </template>
 
@@ -242,6 +258,29 @@ const updateViewType = (
 
 const viewType = ref(ViewType.MAP);
 const formData = ref({});
+
+// Check if any filters are active
+const hasActiveFilters = computed(() => {
+  const query = route.query;
+  return !!(
+    query.active_on ||
+    query.type ||
+    query.setting ||
+    query.location ||
+    (query.topics && Array.isArray(query.topics) && query.topics.length > 0)
+  );
+});
+
+// Clear all filters
+const clearFilters = () => {
+  formData.value = {};
+  router.push({
+    query: {
+      view: viewType.value,
+    },
+  });
+};
+
 watch(
   route,
   (form) => {
