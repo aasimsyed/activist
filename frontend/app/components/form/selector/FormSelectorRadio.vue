@@ -1,7 +1,6 @@
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
   <div
-    ref="groupRef"
     @keydown="handleKeyDown"
     :aria-label="$t('i18n.components.form_selector_radio.title_aria_label')"
     class="flex h-10 w-full px-1"
@@ -46,7 +45,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUpdate } from "vue";
+import { toRef } from "vue";
+
+import { useKeyboardNavigation } from "~/composables/useKeyboardNavigation";
+import { useRovingFocus } from "~/composables/useRovingFocus";
 
 type Option = {
   value: string | number | boolean | Record<string, unknown> | undefined;
@@ -68,32 +70,20 @@ const emit = defineEmits<{
   (e: "update:modelValue", value: typeof props.modelValue): void;
 }>();
 
-// Refs for keyboard navigation and focus management.
-const groupRef = ref<HTMLDivElement | null>(null);
-const buttonRefs = ref<(HTMLButtonElement | null)[]>([]);
-const focusedIndex = ref<number>(0);
+// Focus management with roving tabindex pattern.
+const {
+  focusedIndex,
+  itemRefs: _itemRefs,
+  setItemRef: setButtonRef,
+  getTabIndex,
+  handleFocus,
+  moveFocus,
+} = useRovingFocus(
+  toRef(() => props.options),
+  toRef(() => props.modelValue)
+);
 
-// Track button refs.
-const setButtonRef = (el: HTMLButtonElement | null, idx: number) => {
-  if (el) {
-    buttonRefs.value[idx] = el;
-  }
-};
-
-// Clear button refs before update.
-onBeforeUpdate(() => {
-  buttonRefs.value = [];
-});
-
-// Set initial focus index.
-onMounted(() => {
-  // Focus on the selected option, or the first option if none selected.
-  const selectedIndex = props.options.findIndex(
-    (opt) => opt.value === props.modelValue
-  );
-  focusedIndex.value = selectedIndex >= 0 ? selectedIndex : 0;
-});
-
+// Selection logic.
 const toggleOption = (optionValue: Option["value"], idx: number) => {
   focusedIndex.value = idx;
 
@@ -109,58 +99,17 @@ const isOptionChecked = (option: Option) => {
   return props.modelValue === option.value;
 };
 
-// Roving tabindex: only the focused button is tabbable.
-const getTabIndex = (idx: number) => {
-  // If nothing is selected, first button is tabbable.
-  if (props.modelValue === undefined) {
-    return idx === 0 ? 0 : -1;
-  }
-  // Otherwise, the selected button is tabbable.
-  const selectedIndex = props.options.findIndex(
-    (opt) => opt.value === props.modelValue
-  );
-  return idx === selectedIndex ? 0 : -1;
-};
-
-const handleFocus = (idx: number) => {
-  focusedIndex.value = idx;
-};
-
 // Keyboard navigation (Arrow keys, Home, End, Space, Enter).
-const handleKeyDown = (event: KeyboardEvent) => {
-  const { key } = event;
-
-  // Arrow key navigation.
-  if (key === "ArrowRight" || key === "ArrowDown") {
-    event.preventDefault();
-    const nextIndex = (focusedIndex.value + 1) % props.options.length;
-    focusedIndex.value = nextIndex;
-    buttonRefs.value[nextIndex]?.focus();
-  } else if (key === "ArrowLeft" || key === "ArrowUp") {
-    event.preventDefault();
-    const prevIndex =
-      (focusedIndex.value - 1 + props.options.length) % props.options.length;
-    focusedIndex.value = prevIndex;
-    buttonRefs.value[prevIndex]?.focus();
-  }
-  // Home/End keys.
-  else if (key === "Home") {
-    event.preventDefault();
-    focusedIndex.value = 0;
-    buttonRefs.value[0]?.focus();
-  } else if (key === "End") {
-    event.preventDefault();
-    const lastIndex = props.options.length - 1;
-    focusedIndex.value = lastIndex;
-    buttonRefs.value[lastIndex]?.focus();
-  }
-  // Space/Enter to toggle.
-  else if (key === " " || key === "Enter") {
-    event.preventDefault();
-    const currentOption = props.options[focusedIndex.value];
-    if (currentOption) {
-      toggleOption(currentOption.value, focusedIndex.value);
+const { handleKeyDown } = useKeyboardNavigation({
+  items: toRef(() => props.options),
+  focusedIndex,
+  moveFocus,
+  onSelect: (idx: number) => {
+    const option = props.options[idx];
+    if (option) {
+      toggleOption(option.value, idx);
     }
-  }
-};
+  },
+  orientation: "horizontal",
+});
 </script>
