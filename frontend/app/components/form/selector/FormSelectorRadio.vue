@@ -1,13 +1,18 @@
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
-  <RadioGroup
-    v-model="value"
+  <div
+    @keydown="handleKeyDown"
     :aria-label="$t('i18n.components.form_selector_radio.title_aria_label')"
     class="flex h-10 w-full px-1"
+    role="radiogroup"
   >
-    <RadioGroupOption
+    <button
       v-for="(option, idx) in options"
       :key="option.key"
+      :ref="(el) => setButtonRef(el as HTMLButtonElement, idx)"
+      @click="toggleOption(option.value, idx)"
+      @focus="handleFocus(idx)"
+      :aria-checked="isOptionChecked(option)"
       :aria-label="$t(option.aria_label)"
       class="flex flex-1 cursor-pointer items-center justify-center rounded-none"
       :class="[
@@ -22,8 +27,9 @@
           [option.checkedClass || '']: isOptionChecked(option),
         },
       ]"
-      :name="option.label || ''"
-      :value="option.value"
+      role="radio"
+      :tabindex="getTabIndex(idx)"
+      type="button"
     >
       <Icon
         v-if="option.isIcon"
@@ -34,12 +40,15 @@
       <span v-else class="text-sm font-medium" :class="option.class">
         {{ option.content }}
       </span>
-    </RadioGroupOption>
-  </RadioGroup>
+    </button>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { RadioGroup, RadioGroupOption } from "@headlessui/vue";
+import { toRef } from "vue";
+
+import { useKeyboardNavigation } from "~/composables/useKeyboardNavigation";
+import { useRovingFocus } from "~/composables/useRovingFocus";
 
 type Option = {
   value: string | number | boolean | Record<string, unknown> | undefined;
@@ -61,12 +70,46 @@ const emit = defineEmits<{
   (e: "update:modelValue", value: typeof props.modelValue): void;
 }>();
 
-const value = computed({
-  get: () => props.modelValue,
-  set: (val) => emit("update:modelValue", val),
-});
+// Focus management with roving tabindex pattern.
+const {
+  focusedIndex,
+  itemRefs: _itemRefs,
+  setItemRef: setButtonRef,
+  getTabIndex,
+  handleFocus,
+  moveFocus,
+} = useRovingFocus(
+  toRef(() => props.options),
+  toRef(() => props.modelValue)
+);
+
+// Selection logic.
+const toggleOption = (optionValue: Option["value"], idx: number) => {
+  focusedIndex.value = idx;
+
+  // If clicking the currently selected option, deselect it.
+  if (props.modelValue === optionValue) {
+    emit("update:modelValue", undefined);
+  } else {
+    emit("update:modelValue", optionValue);
+  }
+};
 
 const isOptionChecked = (option: Option) => {
-  return value.value === option.value;
+  return props.modelValue === option.value;
 };
+
+// Keyboard navigation (Arrow keys, Home, End, Space, Enter).
+const { handleKeyDown } = useKeyboardNavigation({
+  items: toRef(() => props.options),
+  focusedIndex,
+  moveFocus,
+  onSelect: (idx: number) => {
+    const option = props.options[idx];
+    if (option) {
+      toggleOption(option.value, idx);
+    }
+  },
+  orientation: "horizontal",
+});
 </script>
