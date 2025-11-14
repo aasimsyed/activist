@@ -1,0 +1,12 @@
+FROM node:20-bookworm
+
+WORKDIR /app
+
+# Enable Corepack (Yarn 4) and pre-install Playwright system deps once at build time
+COPY package.json yarn.lock ./
+RUN set -eux; \
+    corepack enable; \
+    PLAYWRIGHT_VERSION="$(node -e 'const pkg=require("./package.json"); const pick=(record)=>record && (record["@playwright/test"] || record.playwright || record["playwright-core"]); const version=pick(pkg.devDependencies)||pick(pkg.dependencies); if(!version){throw new Error("Unable to detect Playwright version from package.json");} process.stdout.write(version);')"; \
+    npx --yes playwright@"${PLAYWRIGHT_VERSION}" install-deps
+
+COPY . .
