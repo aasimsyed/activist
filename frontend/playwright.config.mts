@@ -22,7 +22,7 @@ export const AUTH_STATE_PATH = path.join(
  */
 // Environment configurations.
 const environments = {
-  local: "http://localhost:3000",
+  local: process.env.PLAYWRIGHT_BASE_URL || "http://localhost:3000",
   prod: "https://activist.org",
 };
 
