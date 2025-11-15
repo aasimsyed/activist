@@ -35,9 +35,10 @@ services:
     environment:
       - USE_PREVIEW=${USE_PREVIEW:-false}
       - FRONTEND_PORT=${FRONTEND_PORT}
-      # In Docker, browsers launched by Playwright run in the e2e-test container's network.
-      # They can access other containers on the same Docker network using service names.
-      # The key is that the browser and backend must be on the same network (they are via Compose).
+      # Browsers launched by Playwright may have DNS resolution issues. Since the browser can
+      # access http://frontend:3000 (via PLAYWRIGHT_BASE_URL), it should also resolve 'backend'.
+      # However, if DNS doesn't work, use host.docker.internal (Mac/Windows) or add extra_hosts.
+      # The backend port is exposed, so browsers should be able to reach it via service name.
       - VITE_BACKEND_URL=http://backend:${BACKEND_PORT:-8000}
     healthcheck:
       test:
@@ -59,6 +60,10 @@ services:
         condition: service_healthy
       backend:
         condition: service_healthy
+    # Add extra_hosts for host.docker.internal (Linux compatibility)
+    # This allows browsers to access exposed host ports if Docker service names don't resolve
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
       - BASE_URL=http://frontend:3000
       - PLAYWRIGHT_BASE_URL=http://frontend:3000
@@ -88,6 +93,10 @@ services:
         curl -s http://backend:$${BACKEND_PORT:-8000}/v1/entities/users/ > /dev/null || true &&
         curl -s http://backend:$${BACKEND_PORT:-8000}/v1/entities/organizations/ > /dev/null || true &&
         curl -s http://backend:$${BACKEND_PORT:-8000}/v1/entities/events/ > /dev/null || true &&
+        echo "Verifying backend is accessible from e2e-test container..." &&
+        curl -v http://backend:$${BACKEND_PORT:-8000}/v1/schema/ 2>&1 | head -10 || echo "Backend not reachable via service name" &&
+        echo "Testing if host.docker.internal works..." &&
+        curl -v http://host.docker.internal:$${BACKEND_PORT:-8000}/v1/schema/ 2>&1 | head -10 || echo "host.docker.internal not reachable" &&
         echo "Waiting 3 seconds for backend to fully initialize..." &&
         sleep 3 &&
         echo "Container up and running....." &&
