@@ -1,7 +1,7 @@
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
   <Form
-    @submit="handleSubmit"
+    @submit="onSubmit"
     :initial-values="formData as undefined"
     :schema="schema"
     :submit-label="$t(submitLabel)"
@@ -83,7 +83,7 @@ import type { Resource } from "~/types/content/resource";
 
 import { TopicEnum } from "~/types/content/topics";
 
-defineProps<{
+const props = defineProps<{
   formData?: Resource;
   handleSubmit: (values: unknown) => Promise<void>;
   submitLabel: string;
@@ -91,6 +91,10 @@ defineProps<{
 }>();
 
 const { t } = useI18n();
+
+const onSubmit = (values: unknown) => {
+  props.handleSubmit(values).catch(() => {});
+};
 
 const schema = z.object({
   name: z.string().min(1, t("i18n.components.form_resource.name_required")),
