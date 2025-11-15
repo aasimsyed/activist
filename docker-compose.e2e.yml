@@ -15,6 +15,11 @@ services:
       start_period: 120s
 
   # Override frontend service for E2E: add --host 0.0.0.0 and fix health check
+  # Browsers launched by Playwright in Docker use the container's network, so they can
+  # access other services via Docker service names. However, browsers don't resolve Docker
+  # DNS by default. Since backend port is exposed, use localhost which works when the
+  # browser can access exposed ports, or we'll need to configure DNS resolution.
+  # The key fix from CI: ensure backend is fully warmed up before tests start.
   frontend:
     command: sh -c "
       corepack enable && yarn install &&
@@ -30,7 +35,10 @@ services:
     environment:
       - USE_PREVIEW=${USE_PREVIEW:-false}
       - FRONTEND_PORT=${FRONTEND_PORT}
-      - VITE_BACKEND_URL=${VITE_BACKEND_URL}
+      # In Docker, browsers launched by Playwright run in the e2e-test container's network.
+      # They can access other containers on the same Docker network using service names.
+      # The key is that the browser and backend must be on the same network (they are via Compose).
+      - VITE_BACKEND_URL=http://backend:${BACKEND_PORT:-8000}
     healthcheck:
       test:
         ["CMD-SHELL", "curl -f http://localhost:$FRONTEND_PORT/ || exit 1"]
