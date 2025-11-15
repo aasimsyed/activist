@@ -96,9 +96,10 @@ services:
       - "24678:24678"
     environment:
       - USE_PREVIEW=${USE_PREVIEW:-false}
+      - FRONTEND_PORT=${FRONTEND_PORT}
     healthcheck:
       test:
-        ["CMD-SHELL", "curl -f http://localhost:${FRONTEND_PORT}/ || exit 1"]
+        ["CMD-SHELL", "curl -f http://localhost:$FRONTEND_PORT/ || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
