@@ -72,6 +72,8 @@ services:
       # Set CI=true to ensure global-setup.ts runs full server readiness check
       # (checks for Nuxt compilation completion, not just basic HTTP response)
       - CI=true
+      # Use 1 worker in Docker for better resource utilization and stability
+      - PLAYWRIGHT_WORKERS=1
     volumes:
       - ./frontend:/app
     command:

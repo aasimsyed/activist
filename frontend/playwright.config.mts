@@ -48,8 +48,13 @@ export default defineConfig({
   /* Retry on both CI and local - helps with flaky tests. */
   retries: 2,
   /* Enhanced parallel execution with test sharding. */
-  /* Reduced from 4 to 2 in CI to prevent browser context exhaustion in long test runs */
-  workers: process.env.CI ? 2 : 1,
+  /* Use PLAYWRIGHT_WORKERS if set, otherwise 2 in CI or 1 locally */
+  /* Docker E2E uses 1 worker for better resource utilization and stability */
+  workers: process.env.PLAYWRIGHT_WORKERS
+    ? parseInt(process.env.PLAYWRIGHT_WORKERS, 10)
+    : process.env.CI
+      ? 2
+      : 1,
   /* Fail on flaky tests to ensure stability. */
   failOnFlakyTests: !!process.env.CI,
   /* Global test timeout - applies to all tests unless overridden */
@@ -115,7 +120,11 @@ export default defineConfig({
       name: "Desktop Chrome",
       grep: matchDesktop,
       // Dedicated workers for desktop tests.
-      workers: process.env.CI ? 2 : 1,
+      workers: process.env.PLAYWRIGHT_WORKERS
+        ? parseInt(process.env.PLAYWRIGHT_WORKERS, 10)
+        : process.env.CI
+          ? 2
+          : 1,
       use: {
         ...devices["Desktop Chrome"],
         // Memory optimization: Add launch options to prevent browser crashes in long test runs
@@ -140,8 +149,12 @@ export default defineConfig({
     {
       name: "Mobile Chrome",
       grep: matchMobile,
-      // More workers for mobile tests.
-      workers: process.env.CI ? 2 : 1,
+      // Workers for mobile tests.
+      workers: process.env.PLAYWRIGHT_WORKERS
+        ? parseInt(process.env.PLAYWRIGHT_WORKERS, 10)
+        : process.env.CI
+          ? 2
+          : 1,
       use: {
         ...devices["Pixel 7"],
         isMobile: true,
