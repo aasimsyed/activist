@@ -32,6 +32,13 @@ services:
           echo "Backend not ready yet, waiting..."
           sleep 2
         done &&
+        echo "Warming up backend endpoints..." &&
+        curl -s -X OPTIONS http://backend:$${BACKEND_PORT:-8000}/v1/auth/sign_in > /dev/null || true &&
+        curl -s http://backend:$${BACKEND_PORT:-8000}/v1/entities/users/ > /dev/null || true &&
+        curl -s http://backend:$${BACKEND_PORT:-8000}/v1/entities/organizations/ > /dev/null || true &&
+        curl -s http://backend:$${BACKEND_PORT:-8000}/v1/entities/events/ > /dev/null || true &&
+        echo "Waiting 3 seconds for backend to fully initialize..." &&
+        sleep 3 &&
         echo "Container up and running....." &&
         corepack enable &&
         yarn install --immutable &&
