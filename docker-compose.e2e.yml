@@ -9,6 +9,8 @@ services:
     depends_on:
       frontend:
         condition: service_healthy
+      backend:
+        condition: service_healthy
     environment:
       - BASE_URL=http://frontend:3000
       - PLAYWRIGHT_BASE_URL=http://frontend:3000
@@ -23,6 +25,11 @@ services:
         echo "Waiting for frontend to be healthy..." &&
         until curl -f http://frontend:3000/ > /dev/null 2>&1; do
           echo "Frontend not ready yet, waiting..."
+          sleep 2
+        done &&
+        echo "Waiting for backend to be healthy..." &&
+        until curl -f http://backend:$${BACKEND_PORT:-8000}/health/ > /dev/null 2>&1; do
+          echo "Backend not ready yet, waiting..."
           sleep 2
         done &&
         echo "Container up and running....." &&
