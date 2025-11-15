@@ -33,7 +33,9 @@ services:
       yarn dev --host 0.0.0.0 --port ${FRONTEND_PORT};
       fi"
     environment:
-      - USE_PREVIEW=${USE_PREVIEW:-false}
+      # Use preview mode for best performance in E2E tests
+      # Pre-built static files are faster than dev server with compilation
+      - USE_PREVIEW=true
       - FRONTEND_PORT=${FRONTEND_PORT}
       # Browsers launched by Playwright may have DNS resolution issues. Since the browser can
       # access http://frontend:3000 (via PLAYWRIGHT_BASE_URL), it should also resolve 'backend'.
