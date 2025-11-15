@@ -83,7 +83,7 @@ services:
       - -c
       - |
         corepack enable &&
-        yarn install --immutable &&
+        yarn install &&
         yarn playwright install &&
         echo "Running Playwright tests..." &&
         yarn test:local
