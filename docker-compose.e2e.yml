@@ -13,6 +13,7 @@ services:
       - BASE_URL=http://frontend:3000
       - PLAYWRIGHT_BASE_URL=http://frontend:3000
       - TEST_ENV=local
+      - SKIP_WEBSERVER=true
     volumes:
       - ./frontend:/app
     command:
