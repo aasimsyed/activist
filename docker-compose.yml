@@ -63,11 +63,12 @@ services:
       test:
         [
           "CMD-SHELL",
-          "curl -f http://localhost:$BACKEND_PORT/health/ || exit 1",
+          "curl -f http://localhost:$BACKEND_PORT/ || exit 1",
         ]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 120s
     volumes:
       - ./backend/media:/app/media
 

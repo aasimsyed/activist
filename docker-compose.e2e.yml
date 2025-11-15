@@ -28,7 +28,7 @@ services:
           sleep 2
         done &&
         echo "Waiting for backend to be healthy..." &&
-        until curl -f http://backend:$${BACKEND_PORT:-8000}/health/ > /dev/null 2>&1; do
+        until curl -f http://backend:$${BACKEND_PORT:-8000}/ > /dev/null 2>&1; do
           echo "Backend not ready yet, waiting..."
           sleep 2
         done &&
