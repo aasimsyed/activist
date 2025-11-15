@@ -1,4 +1,44 @@
 services:
+  # Override backend service for E2E: fix health check and add start period
+  backend:
+    environment:
+      - BACKEND_PORT=${BACKEND_PORT}
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -f http://localhost:$BACKEND_PORT/ || exit 1",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 120s
+
+  # Override frontend service for E2E: add --host 0.0.0.0 and fix health check
+  frontend:
+    command: sh -c "
+      corepack enable && yarn install &&
+      if [ \"$${USE_PREVIEW}\" = \"true\" ]; then
+      echo '🏗️  Building frontend for preview mode...' &&
+      yarn build &&
+      echo '▶️  Starting preview server on port ${FRONTEND_PORT}...' &&
+      yarn preview --host 0.0.0.0 --port ${FRONTEND_PORT};
+      else
+      echo '▶️  Starting dev server...' &&
+      yarn dev --host 0.0.0.0 --port ${FRONTEND_PORT};
+      fi"
+    environment:
+      - USE_PREVIEW=${USE_PREVIEW:-false}
+      - FRONTEND_PORT=${FRONTEND_PORT}
+      - VITE_BACKEND_URL=${VITE_BACKEND_URL}
+    healthcheck:
+      test:
+        ["CMD-SHELL", "curl -f http://localhost:$FRONTEND_PORT/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+
   e2e-test:
     env_file:
       - .env.dev
