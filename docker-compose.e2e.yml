@@ -23,25 +23,20 @@ services:
       retries: 5
       start_period: 120s
 
-  # Override frontend service for E2E: add --host 0.0.0.0, fix health check, and use preview mode
+  # Override frontend service for E2E: always use preview mode for best performance
+  # Preview mode is required for E2E tests - guarantees pre-built static files
   frontend:
     extends:
       file: docker-compose.yml
       service: frontend
     command: sh -c "
       corepack enable && yarn install &&
-      if [ \"$${USE_PREVIEW}\" = \"true\" ]; then
       echo '🏗️  Building frontend for preview mode...' &&
       yarn build &&
       echo '▶️  Starting preview server on port ${FRONTEND_PORT}...' &&
-      yarn preview --host 0.0.0.0 --port ${FRONTEND_PORT};
-      else
-      echo '▶️  Starting dev server...' &&
-      yarn dev --host 0.0.0.0 --port ${FRONTEND_PORT};
-      fi"
+      yarn preview --host 0.0.0.0 --port ${FRONTEND_PORT}"
     environment:
-      # Use preview mode for best performance in E2E tests
-      # Pre-built static files are faster than dev server with compilation
+      # Preview mode is hardcoded for E2E - no conditional check
       - USE_PREVIEW=true
       - FRONTEND_PORT=${FRONTEND_PORT}
       # Browsers launched by Playwright may have DNS resolution issues. Since the browser can
