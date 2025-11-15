@@ -64,6 +64,9 @@ services:
       - PLAYWRIGHT_BASE_URL=http://frontend:3000
       - TEST_ENV=local
       - SKIP_WEBSERVER=true
+      # Set CI=true to ensure global-setup.ts runs full server readiness check
+      # (checks for Nuxt compilation completion, not just basic HTTP response)
+      - CI=true
     volumes:
       - ./frontend:/app
     command:
