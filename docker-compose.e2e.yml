@@ -65,10 +65,8 @@ services:
       dockerfile: Dockerfile.e2e
     container_name: e2e-test
     depends_on:
-      frontend:
-        condition: service_healthy
-      backend:
-        condition: service_healthy
+      - frontend
+      - backend
     # Add extra_hosts for host.docker.internal (Linux compatibility)
     # This allows browsers to access exposed host ports if Docker service names don't resolve
     extra_hosts:
@@ -89,24 +87,6 @@ services:
       - sh
       - -c
       - |
-        echo "Waiting for frontend to be healthy..." &&
-        until curl -f http://frontend:3000/ > /dev/null 2>&1; do
-          echo "Frontend not ready yet, waiting..."
-          sleep 2
-        done &&
-        echo "Waiting for backend to be healthy..." &&
-        until curl -f http://backend:$${BACKEND_PORT:-8000}/v1/schema/ > /dev/null 2>&1; do
-          echo "Backend not ready yet, waiting..."
-          sleep 2
-        done &&
-        echo "Warming up backend endpoints..." &&
-        curl -s -X OPTIONS http://backend:$${BACKEND_PORT:-8000}/v1/auth/sign_in > /dev/null || true &&
-        curl -s http://backend:$${BACKEND_PORT:-8000}/v1/entities/users/ > /dev/null || true &&
-        curl -s http://backend:$${BACKEND_PORT:-8000}/v1/entities/organizations/ > /dev/null || true &&
-        curl -s http://backend:$${BACKEND_PORT:-8000}/v1/entities/events/ > /dev/null || true &&
-        echo "Waiting 3 seconds for backend to fully initialize..." &&
-        sleep 3 &&
-        echo "Container up and running....." &&
         corepack enable &&
         yarn install --immutable &&
         yarn playwright install &&
