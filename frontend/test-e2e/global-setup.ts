@@ -106,38 +106,6 @@ async function globalSetup(config: FullConfig) {
     const context = await browser.newContext({ baseURL });
     const page = await context.newPage();
 
-    // Enable request/response logging for debugging
-    page.on("request", (request) => {
-      // eslint-disable-next-line no-console
-      console.log(`🌐 REQUEST: ${request.method()} ${request.url()}`);
-    });
-
-    page.on("response", (response) => {
-      // eslint-disable-next-line no-console
-      console.log(
-        `📥 RESPONSE: ${response.status()} ${response.url()} (${response.statusText()})`
-      );
-    });
-
-    page.on("requestfailed", (request) => {
-      // eslint-disable-next-line no-console
-      console.error(`❌ REQUEST FAILED: ${request.method()} ${request.url()}`);
-      // eslint-disable-next-line no-console
-      console.error(`   Failure: ${request.failure()?.errorText}`);
-    });
-
-    // Log console messages
-    page.on("console", (msg) => {
-      // eslint-disable-next-line no-console
-      console.log(`📋 CONSOLE [${msg.type()}]: ${msg.text()}`);
-    });
-
-    // Log page errors
-    page.on("pageerror", (error) => {
-      // eslint-disable-next-line no-console
-      console.error(`🚨 PAGE ERROR: ${error.message}`);
-    });
-
     try {
       if (attempt > 1) {
         // eslint-disable-next-line no-console
@@ -146,39 +114,7 @@ async function globalSetup(config: FullConfig) {
       }
 
       // Navigate to sign-in page directly.
-      // eslint-disable-next-line no-console
-      console.log(`🔗 Navigating to ${baseURL}/auth/sign-in...`);
       await page.goto("/auth/sign-in", { waitUntil: "load", timeout: 60000 });
-
-      // eslint-disable-next-line no-console
-      console.log(`📍 Current URL after navigation: ${page.url()}`);
-
-      // Check what backend URL is configured in the browser
-      const backendURL = await page.evaluate(() => {
-        // @ts-expect-error - accessing global env vars
-        return window.__NUXT__?.config?.public?.runtimeConfig || {};
-      });
-      // eslint-disable-next-line no-console
-      console.log(
-        `🔍 Frontend runtime config (backend URL): ${JSON.stringify(backendURL)}`
-      );
-
-      // Check environment variables
-      const envVars = await page.evaluate(() => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const win = window as any;
-        return {
-          VITE_BACKEND_URL: win.__VITE_BACKEND_URL || "not found",
-          VITE_API_URL: win.__VITE_API_URL || "not found",
-        };
-      });
-      // eslint-disable-next-line no-console
-      console.log(
-        `🔍 Environment variables in browser: ${JSON.stringify(envVars)}`
-      );
-
-      // eslint-disable-next-line no-console
-      console.log("📝 Filling in credentials...");
 
       // Sign in without navigating again (skipNavigation = true).
       await signInAsAdmin(page, "admin", "admin", true);
@@ -200,35 +136,6 @@ async function globalSetup(config: FullConfig) {
       break;
     } catch (error) {
       lastError = error as Error;
-
-      // Debug: Get current URL and page content
-      try {
-        const currentURL = page.url();
-        // eslint-disable-next-line no-console
-        console.error(`📍 Current URL at error: ${currentURL}`);
-        const pageTitle = await page.title();
-        // eslint-disable-next-line no-console
-        console.error(`📄 Page title: ${pageTitle}`);
-        const pageText = await page.textContent("body");
-        // eslint-disable-next-line no-console
-        console.error(
-          `📄 Page body preview: ${pageText?.substring(0, 500)}...`
-        );
-
-        // Take screenshot for debugging
-        await page.screenshot({
-          path: `/tmp/auth-failure-attempt-${attempt}.png`,
-          fullPage: true,
-        });
-        // eslint-disable-next-line no-console
-        console.error(
-          `📸 Screenshot saved to /tmp/auth-failure-attempt-${attempt}.png`
-        );
-      } catch (debugError) {
-        // eslint-disable-next-line no-console
-        console.error(`⚠️  Could not capture debug info: ${debugError}`);
-      }
-
       await browser.close();
 
       if (attempt === maxAuthRetries) {

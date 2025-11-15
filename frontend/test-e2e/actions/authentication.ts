@@ -28,71 +28,23 @@ export async function signInAsAdmin(
   const signInPage = newSignInPage(page);
 
   // Wait for page to be ready and fill credentials.
-  // eslint-disable-next-line no-console
-  console.log("⏳ Waiting for username input to be visible...");
   await signInPage.usernameInput.waitFor({ state: "visible", timeout: 30000 });
-  // eslint-disable-next-line no-console
-  console.log("✅ Username input visible, filling credentials...");
   await signInPage.usernameInput.fill(username);
   await signInPage.passwordInput.fill(password);
-  // eslint-disable-next-line no-console
-  console.log("✅ Credentials filled");
 
   // Click CAPTCHA if present.
   const { captcha } = signInPage;
   try {
     if (await captcha.isVisible({ timeout: 2000 })) {
-      // eslint-disable-next-line no-console
-      console.log("🤖 CAPTCHA detected, clicking...");
       await captcha.click();
     }
   } catch {
     // CAPTCHA not present, continue.
-    // eslint-disable-next-line no-console
-    console.log("ℹ️  No CAPTCHA present");
   }
 
-  // Submit form and wait for successful navigation to home page with explicit timeout.
-  // eslint-disable-next-line no-console
-  console.log(`📍 Current URL before submit: ${page.url()}`);
-  // eslint-disable-next-line no-console
-  console.log("🖱️  Clicking sign-in button...");
-
-  // Wait for navigation to start
-  const navigationPromise = page.waitForURL("**/home", { timeout: 60000 });
+  // Submit form and wait for successful navigation to home page.
   await signInPage.signInButton.click();
-
-  // eslint-disable-next-line no-console
-  console.log("⏳ Waiting for navigation to /home...");
-
-  try {
-    await navigationPromise;
-    // eslint-disable-next-line no-console
-    console.log(`✅ Successfully navigated to: ${page.url()}`);
-  } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error(`❌ Navigation failed. Current URL: ${page.url()}`);
-
-    // Check for error messages on the page
-    try {
-      const errorElements = await page.$$(
-        '[class*="error"], [class*="Error"], .text-red, .text-error'
-      );
-      if (errorElements.length > 0) {
-        // eslint-disable-next-line no-console
-        console.error("🚨 Error elements found on page:");
-        for (const element of errorElements) {
-          const text = await element.textContent();
-          // eslint-disable-next-line no-console
-          console.error(`   - ${text}`);
-        }
-      }
-    } catch {
-      // Ignore errors when checking for error messages
-    }
-
-    throw error;
-  }
+  await page.waitForURL("**/home", { timeout: 60000 });
 }
 
 /**
