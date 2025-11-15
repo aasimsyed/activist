@@ -1,6 +1,15 @@
 services:
+  # Reuse services from docker-compose.yml using extends
+  db:
+    extends:
+      file: docker-compose.yml
+      service: db
+
   # Override backend service for E2E: fix health check and add start period
   backend:
+    extends:
+      file: docker-compose.yml
+      service: backend
     environment:
       - BACKEND_PORT=${BACKEND_PORT}
     healthcheck:
@@ -14,13 +23,11 @@ services:
       retries: 5
       start_period: 120s
 
-  # Override frontend service for E2E: add --host 0.0.0.0 and fix health check
-  # Browsers launched by Playwright in Docker use the container's network, so they can
-  # access other services via Docker service names. However, browsers don't resolve Docker
-  # DNS by default. Since backend port is exposed, use localhost which works when the
-  # browser can access exposed ports, or we'll need to configure DNS resolution.
-  # The key fix from CI: ensure backend is fully warmed up before tests start.
+  # Override frontend service for E2E: add --host 0.0.0.0, fix health check, and use preview mode
   frontend:
+    extends:
+      file: docker-compose.yml
+      service: frontend
     command: sh -c "
       corepack enable && yarn install &&
       if [ \"$${USE_PREVIEW}\" = \"true\" ]; then
@@ -97,10 +104,6 @@ services:
         curl -s http://backend:$${BACKEND_PORT:-8000}/v1/entities/users/ > /dev/null || true &&
         curl -s http://backend:$${BACKEND_PORT:-8000}/v1/entities/organizations/ > /dev/null || true &&
         curl -s http://backend:$${BACKEND_PORT:-8000}/v1/entities/events/ > /dev/null || true &&
-        echo "Verifying backend is accessible from e2e-test container..." &&
-        curl -v http://backend:$${BACKEND_PORT:-8000}/v1/schema/ 2>&1 | head -10 || echo "Backend not reachable via service name" &&
-        echo "Testing if host.docker.internal works..." &&
-        curl -v http://host.docker.internal:$${BACKEND_PORT:-8000}/v1/schema/ 2>&1 | head -10 || echo "host.docker.internal not reachable" &&
         echo "Waiting 3 seconds for backend to fully initialize..." &&
         sleep 3 &&
         echo "Container up and running....." &&
