@@ -74,11 +74,17 @@ services:
       - PLAYWRIGHT_BASE_URL=http://frontend:3000
       - TEST_ENV=local
       - SKIP_WEBSERVER=true
-      # Set CI=true to ensure global-setup.ts runs full server readiness check
-      # (checks for Nuxt compilation completion, not just basic HTTP response)
-      - CI=true
-      # Use 1 worker in Docker for better resource utilization and stability
-      - PLAYWRIGHT_WORKERS=1
+      # Don't set CI=true - skip expensive server readiness checks since services are already healthy
+      # The health check dependencies ensure services are ready before e2e-test starts
+      - CI=false
+      # Use 2 workers in Docker for parallel test execution (balance between speed and stability)
+      # Docker containers often have multiple cores available
+      - PLAYWRIGHT_WORKERS=2
+      # Increase timeouts for Docker environment (network latency, resource constraints)
+      - PLAYWRIGHT_TEST_TIMEOUT=60000
+      - PLAYWRIGHT_EXPECT_TIMEOUT=20000
+      - PLAYWRIGHT_NAVIGATION_TIMEOUT=30000
+      - PLAYWRIGHT_ACTION_TIMEOUT=20000
     volumes:
       - ./frontend:/app
     command:

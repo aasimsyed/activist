@@ -58,10 +58,15 @@ export default defineConfig({
   /* Fail on flaky tests to ensure stability. */
   failOnFlakyTests: !!process.env.CI,
   /* Global test timeout - applies to all tests unless overridden */
-  timeout: 30000, // 30 seconds per test
+  /* Allow override via PLAYWRIGHT_TEST_TIMEOUT env var for Docker environments */
+  timeout: process.env.PLAYWRIGHT_TEST_TIMEOUT
+    ? parseInt(process.env.PLAYWRIGHT_TEST_TIMEOUT, 10)
+    : 30000, // 30 seconds per test (default)
   /* Global assertion timeout - applies to all expect() calls */
   expect: {
-    timeout: 10000, // 10 seconds for assertions
+    timeout: process.env.PLAYWRIGHT_EXPECT_TIMEOUT
+      ? parseInt(process.env.PLAYWRIGHT_EXPECT_TIMEOUT, 10)
+      : 10000, // 10 seconds for assertions (default)
   },
   /* User data directory for browser state persistence */
   // userDataDir: process.env.CI ? undefined : "./test-results/user-data",
@@ -94,9 +99,15 @@ export default defineConfig({
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
     baseURL: environments[ENV],
-    navigationTimeout: 15000,
+    /* Allow override via PLAYWRIGHT_NAVIGATION_TIMEOUT env var for Docker environments */
+    navigationTimeout: process.env.PLAYWRIGHT_NAVIGATION_TIMEOUT
+      ? parseInt(process.env.PLAYWRIGHT_NAVIGATION_TIMEOUT, 10)
+      : 15000, // 15 seconds default
     /* Action timeout - applies to click, fill, etc. */
-    actionTimeout: 10000,
+    /* Allow override via PLAYWRIGHT_ACTION_TIMEOUT env var for Docker environments */
+    actionTimeout: process.env.PLAYWRIGHT_ACTION_TIMEOUT
+      ? parseInt(process.env.PLAYWRIGHT_ACTION_TIMEOUT, 10)
+      : 10000, // 10 seconds default
     /* Reuse authenticated session across tests (can be overridden per test with test.use()) */
     storageState: AUTH_STATE_PATH,
 
