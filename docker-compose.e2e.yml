@@ -50,7 +50,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 60s
+      # Longer start period for preview mode build (yarn build can take 2-3 minutes)
+      start_period: 180s
 
   e2e-test:
     env_file:
@@ -60,8 +61,10 @@ services:
       dockerfile: Dockerfile.e2e
     container_name: e2e-test
     depends_on:
-      - frontend
-      - backend
+      frontend:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
     # Add extra_hosts for host.docker.internal (Linux compatibility)
     # This allows browsers to access exposed host ports if Docker service names don't resolve
     extra_hosts:
