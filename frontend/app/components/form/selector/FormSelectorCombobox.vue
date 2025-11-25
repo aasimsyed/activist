@@ -1,19 +1,12 @@
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
-  <Combobox
-    :id="id"
-    v-model="internalSelectedOptions"
-    @update:open="isComboboxOpen = $event"
-    as="div"
-    multiple
-    :open="isComboboxOpen"
-  >
+  <Combobox :id="id" v-model="internalSelectedOptions" as="div" multiple>
     <div class="relative">
       <ComboboxInput v-slot="{ id: inputId, onBlur }" as="div" class="flex">
         <FormTextInput
           :id="inputId"
-          @click="() => (isComboboxOpen = true)"
-          @focus="() => (isComboboxOpen = true)"
+          @click="handleInputClick"
+          @focus="handleInputClick"
           @update:modelValue="(val) => (query = val)"
           :label="label"
           :modelValue="query"
@@ -21,6 +14,18 @@
           :placeholder="label"
         />
       </ComboboxInput>
+      <!-- Minimal visible button to open combobox - required for Headless UI v1 -->
+      <ComboboxButton
+        :ref="
+          (el: unknown) => {
+            buttonRef = el as HTMLElement | null;
+          }
+        "
+        :aria-label="label"
+        class="absolute inset-y-0 right-0 flex items-center pr-3 text-primary-text dark:text-cta-orange"
+      >
+        <Icon :name="IconMap.CHEVRON_EXPAND" />
+      </ComboboxButton>
     </div>
     <ComboboxOptions :id="`${id}-options`">
       <ComboboxOption
@@ -80,6 +85,7 @@
 <script setup lang="ts">
 import {
   Combobox,
+  ComboboxButton,
   ComboboxInput,
   ComboboxOption,
   ComboboxOptions,
@@ -103,7 +109,19 @@ const props = withDefaults(defineProps<Props>(), {
   hasColOptions: true,
 });
 const query = ref("");
-const isComboboxOpen = ref(false);
+const buttonRef = ref<HTMLElement | null>(null);
+
+function handleInputClick() {
+  // When input is clicked or focused, trigger the button to open the combobox
+  // This ensures options are displayed immediately on focus/click
+  nextTick(() => {
+    setTimeout(() => {
+      if (buttonRef.value) {
+        buttonRef.value.click();
+      }
+    }, 0);
+  });
+}
 
 const onClick = (option: Option) => {
   internalSelectedOptions.value = internalSelectedOptions.value.filter(
