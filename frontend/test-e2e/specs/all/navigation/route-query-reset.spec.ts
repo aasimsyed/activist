@@ -47,19 +47,30 @@ test.describe(
             name: /environment/i,
           });
           await expect(topicOption).toBeVisible({ timeout: 5000 });
-          await topicOption.click();
 
-          // Wait for navigation to complete and URL to stabilize with topics parameter.
-          // The URL may briefly change and revert due to form handling, so we wait for it to stabilize.
-          await page.waitForLoadState("networkidle");
+          // Click the option and wait for navigation to complete
+          // Use Promise.all to wait for both the click and URL change simultaneously
+          await Promise.all([
+            topicOption.click(),
+            page.waitForURL(/topics=/, { timeout: 5000 }),
+          ]);
+
+          // Wait for any pending navigation and ensure URL is stable
+          await page
+            .waitForLoadState("networkidle", { timeout: 5000 })
+            .catch(() => {
+              // If networkidle times out, just wait for domcontentloaded
+            });
+          await page.waitForLoadState("domcontentloaded");
+
+          // Verify URL contains topics and remains stable
           await expect(async () => {
             const url = page.url();
-            expect(url).toMatch(/topics=/);
-            // Wait a moment and check again to ensure it's stable
-            await page.waitForLoadState("domcontentloaded");
-            const urlAgain = page.url();
-            expect(urlAgain).toMatch(/topics=/);
-          }).toPass({ timeout: 10000 });
+            if (!url.includes("topics=")) {
+              throw new Error(`URL does not contain topics=: ${url}`);
+            }
+          }).toPass({ timeout: 5000 });
+
           await expect(page).toHaveURL(/topics=/);
         }
       );

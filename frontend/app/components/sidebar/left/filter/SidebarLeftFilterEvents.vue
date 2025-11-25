@@ -274,11 +274,23 @@ const handleSubmit = (_values: unknown) => {
     if (route.query.name && route.query.name !== "")
       values["name"] = route.query.name;
   });
-  router.push({
-    query: {
-      ...(values as LocationQueryRaw),
-      view: viewType.value,
-    },
-  });
+
+  // Build the new query object
+  const newQuery: LocationQueryRaw = {
+    ...(values as LocationQueryRaw),
+    view: viewType.value,
+  };
+
+  // Compare with current route query to prevent unnecessary navigation
+  // This helps prevent race conditions where form submits multiple times
+  const currentQuery = { ...route.query };
+  const queryChanged =
+    JSON.stringify(newQuery) !== JSON.stringify(currentQuery);
+
+  if (queryChanged) {
+    router.push({
+      query: newQuery,
+    });
+  }
 };
 </script>
