@@ -1,9 +1,22 @@
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
-  <Combobox :id="id" v-model="internalSelectedOptions" as="div" multiple>
-    <ComboboxInput v-slot="{ id: inputId, onBlur }" as="div" class="flex">
+  <Combobox
+    :id="id"
+    v-slot="{ open }"
+    v-model="internalSelectedOptions"
+    as="div"
+    multiple
+  >
+    <ComboboxInput
+      :ref="comboboxInputRef"
+      v-slot="{ id: inputId, onBlur }"
+      as="div"
+      class="flex"
+    >
       <FormTextInput
         :id="inputId"
+        @click="() => handleInputFocus(open)"
+        @focus="() => handleInputFocus(open)"
         @update:modelValue="(val) => (query = val)"
         :label="label"
         :modelValue="query"
@@ -11,7 +24,7 @@
         :placeholder="label"
       />
     </ComboboxInput>
-    <ComboboxOptions>
+    <ComboboxOptions :id="`${id}-options`">
       <ComboboxOption
         v-for="option in filteredOptions"
         :key="option.id"
@@ -92,6 +105,8 @@ const props = withDefaults(defineProps<Props>(), {
   hasColOptions: true,
 });
 const query = ref("");
+const comboboxInputRef = ref<HTMLElement | null>(null);
+
 const onClick = (option: Option) => {
   internalSelectedOptions.value = internalSelectedOptions.value.filter(
     (o: Option) => o.id !== option.id
@@ -101,6 +116,25 @@ const onClick = (option: Option) => {
 const emit = defineEmits<{
   (e: "update:selectedOptions", value: unknown[]): void;
 }>();
+
+function handleInputFocus(open: (() => void) | boolean | undefined) {
+  // When input is focused or clicked, ensure the combobox opens to display all options.
+  // Headless UI's Combobox in multiple mode doesn't automatically open on focus,
+  // so we need to programmatically trigger it.
+
+  // Use setTimeout to ensure this happens after Headless UI's internal focus handling.
+  setTimeout(() => {
+    if (typeof open === "function") {
+      // If open is a function (Headless UI pattern), call it directly.
+      open();
+    } else if (open === false && comboboxInputRef.value) {
+      // If open is a boolean and false, trigger a click on the ComboboxInput wrapper
+      // to force Headless UI to open the options list.
+      comboboxInputRef.value.click();
+    }
+  }, 0);
+}
+
 const filteredOptions = computed(() =>
   query.value !== ""
     ? props.options.filter((option: Option) =>
