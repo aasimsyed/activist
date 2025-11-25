@@ -32,11 +32,15 @@ test.describe(
           await sidebarLeft.open();
 
           // Apply a topic filter via the topics combobox.
+          // Click the button (not the input) to open the dropdown.
           const eventsFilter = newEventsFilter(page);
-          const topicsCombobox =
-            eventsFilter.topicsSection.getByRole("combobox");
-          await expect(topicsCombobox).toBeVisible();
-          await topicsCombobox.click();
+          const topicsSection = eventsFilter.topicsSection;
+          // The button is the one that opens the combobox dropdown
+          const topicsComboboxButton = topicsSection.getByRole("button", {
+            name: /topics/i,
+          });
+          await expect(topicsComboboxButton).toBeVisible();
+          await topicsComboboxButton.click();
 
           // Wait for options to appear and select a topic (e.g., "Environment").
           const topicOption = page.getByRole("option", {
@@ -92,11 +96,15 @@ test.describe(
         "Apply a topic filter on events page",
         async () => {
           // Apply a topic filter via the topics combobox.
+          // Click the button (not the input) to open the dropdown.
           const eventsFilter = newEventsFilter(page);
-          const topicsCombobox =
-            eventsFilter.topicsSection.getByRole("combobox");
-          await expect(topicsCombobox).toBeVisible();
-          await topicsCombobox.click();
+          const topicsSection = eventsFilter.topicsSection;
+          // The button is the one that opens the combobox dropdown
+          const topicsComboboxButton = topicsSection.getByRole("button", {
+            name: /topics/i,
+          });
+          await expect(topicsComboboxButton).toBeVisible();
+          await topicsComboboxButton.click();
 
           // Wait for options to appear and select a topic.
           const topicOption = page.getByRole("option", {
