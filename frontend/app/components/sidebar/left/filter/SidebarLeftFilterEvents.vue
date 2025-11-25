@@ -109,6 +109,7 @@
 <script setup lang="ts">
 import type { LocationQueryRaw } from "vue-router";
 
+import { useDebounceFn } from "@vueuse/core";
 import { z } from "zod";
 
 const { t } = useI18n();
@@ -250,7 +251,26 @@ watch(
   },
   { immediate: true }
 );
-const handleSubmit = (_values: unknown) => {
+
+// Helper function to normalize query objects for comparison
+const normalizeQuery = (query: LocationQueryRaw): LocationQueryRaw => {
+  const normalized: LocationQueryRaw = {};
+  for (const [key, value] of Object.entries(query)) {
+    if (value === null || value === undefined || value === "") {
+      continue;
+    }
+    // Sort arrays for consistent comparison
+    if (Array.isArray(value)) {
+      normalized[key] = [...value].sort();
+    } else {
+      normalized[key] = value;
+    }
+  }
+  return normalized;
+};
+
+// Core submit logic
+const performSubmit = (_values: unknown) => {
   const values: Record<string, unknown> = {};
   const input = (_values || {}) as Record<string, unknown>;
   Object.keys(input).forEach((key) => {
@@ -281,11 +301,14 @@ const handleSubmit = (_values: unknown) => {
     view: viewType.value,
   };
 
-  // Compare with current route query to prevent unnecessary navigation
-  // This helps prevent race conditions where form submits multiple times
-  const currentQuery = { ...route.query };
+  // Normalize and compare queries to prevent unnecessary navigation
+  const normalizedNewQuery = normalizeQuery(newQuery);
+  const normalizedCurrentQuery = normalizeQuery(
+    route.query as LocationQueryRaw
+  );
   const queryChanged =
-    JSON.stringify(newQuery) !== JSON.stringify(currentQuery);
+    JSON.stringify(normalizedNewQuery) !==
+    JSON.stringify(normalizedCurrentQuery);
 
   if (queryChanged) {
     router.push({
@@ -293,4 +316,7 @@ const handleSubmit = (_values: unknown) => {
     });
   }
 };
+
+// Debounce handleSubmit to prevent rapid-fire submissions that cause URL reversion
+const handleSubmit = useDebounceFn(performSubmit, 300);
 </script>
