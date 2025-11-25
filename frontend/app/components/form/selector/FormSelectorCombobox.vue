@@ -2,7 +2,12 @@
 <template>
   <Combobox :id="id" v-model="internalSelectedOptions" as="div" multiple>
     <div class="relative">
-      <ComboboxInput v-slot="{ id: inputId, onBlur }" as="div" class="flex">
+      <ComboboxInput
+        :ref="setupInputWrapper"
+        v-slot="{ id: inputId, onBlur }"
+        as="div"
+        class="flex"
+      >
         <FormTextInput
           :id="inputId"
           @update:modelValue="(val) => (query = val)"
@@ -102,6 +107,27 @@ const props = withDefaults(defineProps<Props>(), {
   hasColOptions: true,
 });
 const query = ref("");
+
+// Workaround: Headless UI tries to call setSelectionRange on the wrapper div
+// when using as="div", but divs don't have this method. We add a no-op method
+// to prevent the error. The actual input is inside FormTextInput and manages
+// its own selection range properly.
+function setupInputWrapper(el: unknown) {
+  if (!el) return;
+
+  nextTick(() => {
+    // Get the actual DOM element (could be component instance or DOM element)
+    const element = ((el as { $el?: HTMLElement })?.$el ||
+      el) as HTMLElement & { setSelectionRange?: () => void };
+
+    // Add a no-op setSelectionRange to prevent Headless UI errors
+    if (element && !element.setSelectionRange) {
+      element.setSelectionRange = () => {
+        // No-op: FormTextInput's internal input handles selection range
+      };
+    }
+  });
+}
 
 const onClick = (option: Option) => {
   internalSelectedOptions.value = internalSelectedOptions.value.filter(
