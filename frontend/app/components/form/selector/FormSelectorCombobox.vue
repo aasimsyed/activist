@@ -7,23 +7,31 @@
     as="div"
     multiple
   >
-    <ComboboxInput
-      :ref="comboboxInputRef"
-      v-slot="{ id: inputId, onBlur }"
-      as="div"
-      class="flex"
-    >
-      <FormTextInput
-        :id="inputId"
-        @click="() => handleInputFocus(open)"
-        @focus="() => handleInputFocus(open)"
-        @update:modelValue="(val) => (query = val)"
-        :label="label"
-        :modelValue="query"
-        :onBlur="onBlur"
-        :placeholder="label"
+    <div class="relative">
+      <ComboboxInput v-slot="{ id: inputId, onBlur }" as="div" class="flex">
+        <FormTextInput
+          :id="inputId"
+          @click="() => handleInputFocus(open)"
+          @focus="() => handleInputFocus(open)"
+          @update:modelValue="(val) => (query = val)"
+          :label="label"
+          :modelValue="query"
+          :onBlur="onBlur"
+          :placeholder="label"
+        />
+      </ComboboxInput>
+      <!-- Hidden button used only for programmatic control to open combobox -->
+      <ComboboxButton
+        :ref="
+          (el: unknown) => {
+            comboboxButtonRef = el as HTMLElement | null;
+          }
+        "
+        :aria-hidden="true"
+        class="hidden"
+        tabindex="-1"
       />
-    </ComboboxInput>
+    </div>
     <ComboboxOptions :id="`${id}-options`">
       <ComboboxOption
         v-for="option in filteredOptions"
@@ -82,6 +90,7 @@
 <script setup lang="ts">
 import {
   Combobox,
+  ComboboxButton,
   ComboboxInput,
   ComboboxOption,
   ComboboxOptions,
@@ -105,7 +114,7 @@ const props = withDefaults(defineProps<Props>(), {
   hasColOptions: true,
 });
 const query = ref("");
-const comboboxInputRef = ref<HTMLElement | null>(null);
+const comboboxButtonRef = ref<HTMLElement | null>(null);
 
 const onClick = (option: Option) => {
   internalSelectedOptions.value = internalSelectedOptions.value.filter(
@@ -117,22 +126,18 @@ const emit = defineEmits<{
   (e: "update:selectedOptions", value: unknown[]): void;
 }>();
 
-function handleInputFocus(open: (() => void) | boolean | undefined) {
+function handleInputFocus(open: boolean | undefined) {
   // When input is focused or clicked, ensure the combobox opens to display all options.
   // Headless UI's Combobox in multiple mode doesn't automatically open on focus,
-  // so we need to programmatically trigger it.
-
-  // Use setTimeout to ensure this happens after Headless UI's internal focus handling.
-  setTimeout(() => {
-    if (typeof open === "function") {
-      // If open is a function (Headless UI pattern), call it directly.
-      open();
-    } else if (open === false && comboboxInputRef.value) {
-      // If open is a boolean and false, trigger a click on the ComboboxInput wrapper
-      // to force Headless UI to open the options list.
-      comboboxInputRef.value.click();
-    }
-  }, 0);
+  // so we programmatically click the hidden button to trigger it.
+  if (!open) {
+    // Use setTimeout to ensure this happens after Headless UI's internal focus handling.
+    setTimeout(() => {
+      if (comboboxButtonRef.value) {
+        comboboxButtonRef.value.click();
+      }
+    }, 0);
+  }
 }
 
 const filteredOptions = computed(() =>
