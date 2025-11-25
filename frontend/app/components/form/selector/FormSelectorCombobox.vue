@@ -14,7 +14,7 @@
           :placeholder="label"
         />
       </ComboboxInput>
-      <!-- Hidden button used only for programmatic control to open combobox -->
+      <!-- Invisible button used only for programmatic control to open combobox -->
       <ComboboxButton
         :ref="
           (el: unknown) => {
@@ -22,7 +22,7 @@
           }
         "
         :aria-hidden="true"
-        class="hidden"
+        class="pointer-events-none absolute inset-0 opacity-0"
         tabindex="-1"
       />
     </div>
@@ -122,17 +122,30 @@ const emit = defineEmits<{
 
 function handleInputFocus() {
   // When input is focused or clicked, ensure the combobox opens to display all options.
-  // Headless UI's Combobox in multiple mode doesn't automatically open on focus,
-  // so we programmatically click the hidden button to trigger it.
-  setTimeout(() => {
-    const optionsElement = document.getElementById(`${props.id}-options`);
-    const isVisible = optionsElement?.offsetParent;
+  // Headless UI's Combobox in multiple mode doesn't automatically open on focus.
+  // Use nextTick to ensure DOM is ready, then trigger the invisible button.
+  nextTick(() => {
+    setTimeout(() => {
+      const optionsElement = document.getElementById(`${props.id}-options`);
+      const isVisible = optionsElement?.offsetParent;
 
-    // If the dropdown is not visible, click the hidden button to open it.
-    if (!isVisible && comboboxButtonRef.value) {
-      comboboxButtonRef.value.click();
-    }
-  }, 100);
+      // If the dropdown is not visible, trigger the invisible button to open it.
+      if (!isVisible && comboboxButtonRef.value) {
+        // Make button temporarily visible and clickable for the click event
+        const originalStyles = {
+          opacity: comboboxButtonRef.value.style.opacity,
+          pointerEvents: comboboxButtonRef.value.style.pointerEvents,
+        };
+        comboboxButtonRef.value.style.opacity = "1";
+        comboboxButtonRef.value.style.pointerEvents = "auto";
+        comboboxButtonRef.value.click();
+        // Restore invisibility
+        comboboxButtonRef.value.style.opacity = originalStyles.opacity || "0";
+        comboboxButtonRef.value.style.pointerEvents =
+          originalStyles.pointerEvents || "none";
+      }
+    }, 50);
+  });
 }
 
 const filteredOptions = computed(() =>
