@@ -29,39 +29,42 @@
       >
         <Icon :name="IconMap.CHEVRON_EXPAND" />
       </ComboboxButton>
-    </div>
-    <ComboboxOptions :id="`${id}-options`">
-      <ComboboxOption
-        v-for="option in filteredOptions"
-        :key="option.id"
-        v-slot="{ selected, active }"
-        as="template"
-        :value="option"
+      <ComboboxOptions
+        :id="`${id}-options`"
+        class="elem-shadow-lg absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-layer-1 text-base ring-1 ring-black/5 focus:outline-none sm:text-sm"
       >
-        <li
-          class="relative cursor-default select-none py-2 pl-10 pr-4"
-          :class="{
-            'bg-cta-orange/80 text-primary-text dark:bg-cta-orange/40 dark:text-cta-orange':
-              active,
-            'text-primary-text': !active,
-          }"
+        <ComboboxOption
+          v-for="option in filteredOptions"
+          :key="option.id"
+          v-slot="{ selected, active }"
+          as="template"
+          :value="option"
         >
-          <span class="block truncate">
-            {{ $t(option.label) }}
-          </span>
-          <span
-            v-if="selected"
-            class="absolute inset-y-0 left-0 flex items-center pl-3"
+          <li
+            class="relative cursor-default select-none py-2 pl-10 pr-4"
             :class="{
-              'text-primary-text dark:text-cta-orange': active,
-              'text-cta-orange dark:text-cta-orange': !active,
+              'bg-cta-orange/80 text-primary-text dark:bg-cta-orange/40 dark:text-cta-orange':
+                active,
+              'text-primary-text': !active,
             }"
           >
-            <Icon :name="IconMap.CHECK" />
-          </span>
-        </li>
-      </ComboboxOption>
-    </ComboboxOptions>
+            <span class="block truncate">
+              {{ $t(option.label) }}
+            </span>
+            <span
+              v-if="selected"
+              class="absolute inset-y-0 left-0 flex items-center pl-3"
+              :class="{
+                'text-primary-text dark:text-cta-orange': active,
+                'text-cta-orange dark:text-cta-orange': !active,
+              }"
+            >
+              <Icon :name="IconMap.CHECK" />
+            </span>
+          </li>
+        </ComboboxOption>
+      </ComboboxOptions>
+    </div>
     <ul
       v-if="internalSelectedOptions.length > 0"
       class="mt-2 flex"
