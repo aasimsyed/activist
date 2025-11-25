@@ -1,12 +1,19 @@
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
-  <Combobox :id="id" v-model="internalSelectedOptions" as="div" multiple>
+  <Combobox
+    :id="id"
+    v-model="internalSelectedOptions"
+    @update:open="isComboboxOpen = $event"
+    as="div"
+    multiple
+    :open="isComboboxOpen"
+  >
     <div class="relative">
       <ComboboxInput v-slot="{ id: inputId, onBlur }" as="div" class="flex">
         <FormTextInput
           :id="inputId"
-          @click="handleInputFocus"
-          @focus="handleInputFocus"
+          @click="() => (isComboboxOpen = true)"
+          @focus="() => (isComboboxOpen = true)"
           @update:modelValue="(val) => (query = val)"
           :label="label"
           :modelValue="query"
@@ -14,17 +21,6 @@
           :placeholder="label"
         />
       </ComboboxInput>
-      <!-- Invisible button used only for programmatic control to open combobox -->
-      <ComboboxButton
-        :ref="
-          (el: unknown) => {
-            comboboxButtonRef = el as HTMLElement | null;
-          }
-        "
-        :aria-hidden="true"
-        class="pointer-events-none absolute inset-0 opacity-0"
-        tabindex="-1"
-      />
     </div>
     <ComboboxOptions :id="`${id}-options`">
       <ComboboxOption
@@ -84,7 +80,6 @@
 <script setup lang="ts">
 import {
   Combobox,
-  ComboboxButton,
   ComboboxInput,
   ComboboxOption,
   ComboboxOptions,
@@ -108,7 +103,7 @@ const props = withDefaults(defineProps<Props>(), {
   hasColOptions: true,
 });
 const query = ref("");
-const comboboxButtonRef = ref<HTMLElement | null>(null);
+const isComboboxOpen = ref(false);
 
 const onClick = (option: Option) => {
   internalSelectedOptions.value = internalSelectedOptions.value.filter(
@@ -119,34 +114,6 @@ const onClick = (option: Option) => {
 const emit = defineEmits<{
   (e: "update:selectedOptions", value: unknown[]): void;
 }>();
-
-function handleInputFocus() {
-  // When input is focused or clicked, ensure the combobox opens to display all options.
-  // Headless UI's Combobox in multiple mode doesn't automatically open on focus.
-  // Use nextTick to ensure DOM is ready, then trigger the invisible button.
-  nextTick(() => {
-    setTimeout(() => {
-      const optionsElement = document.getElementById(`${props.id}-options`);
-      const isVisible = optionsElement?.offsetParent;
-
-      // If the dropdown is not visible, trigger the invisible button to open it.
-      if (!isVisible && comboboxButtonRef.value) {
-        // Make button temporarily visible and clickable for the click event
-        const originalStyles = {
-          opacity: comboboxButtonRef.value.style.opacity,
-          pointerEvents: comboboxButtonRef.value.style.pointerEvents,
-        };
-        comboboxButtonRef.value.style.opacity = "1";
-        comboboxButtonRef.value.style.pointerEvents = "auto";
-        comboboxButtonRef.value.click();
-        // Restore invisibility
-        comboboxButtonRef.value.style.opacity = originalStyles.opacity || "0";
-        comboboxButtonRef.value.style.pointerEvents =
-          originalStyles.pointerEvents || "none";
-      }
-    }, 50);
-  });
-}
 
 const filteredOptions = computed(() =>
   query.value !== ""
