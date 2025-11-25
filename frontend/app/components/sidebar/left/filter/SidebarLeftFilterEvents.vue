@@ -109,7 +109,6 @@
 <script setup lang="ts">
 import type { LocationQueryRaw } from "vue-router";
 
-import { useDebounceFn } from "@vueuse/core";
 import { z } from "zod";
 
 const { t } = useI18n();
@@ -240,6 +239,7 @@ const viewType = ref(ViewType.MAP);
 const formData = ref({});
 const isSubmitting = ref(false);
 const pendingQuery = ref<LocationQueryRaw | null>(null);
+const lastSubmittedQuery = ref<string | null>(null);
 
 // Helper function to normalize query objects for comparison
 const normalizeQuery = (query: LocationQueryRaw): LocationQueryRaw => {
@@ -282,6 +282,10 @@ watch(
           Object.values(ViewType).includes(view as ViewType)
             ? (view as ViewType)
             : ViewType.MAP;
+        // Clear lastSubmittedQuery after a delay to allow future submissions
+        setTimeout(() => {
+          lastSubmittedQuery.value = null;
+        }, 500);
       }
       // Always return during submission to prevent formData updates
       return;
@@ -299,6 +303,11 @@ watch(
 
 // Core submit logic
 const performSubmit = (_values: unknown) => {
+  // Block submissions if we're already submitting to prevent race conditions
+  if (isSubmitting.value) {
+    return;
+  }
+
   // Set submitting flag to prevent route watcher from interfering
   isSubmitting.value = true;
 
@@ -338,13 +347,21 @@ const performSubmit = (_values: unknown) => {
     const normalizedCurrentQuery = normalizeQuery(
       route.query as LocationQueryRaw
     );
+    const newQueryString = JSON.stringify(normalizedNewQuery);
     const queryChanged =
-      JSON.stringify(normalizedNewQuery) !==
-      JSON.stringify(normalizedCurrentQuery);
+      newQueryString !== JSON.stringify(normalizedCurrentQuery);
+
+    // Prevent submitting the same query twice in quick succession
+    if (lastSubmittedQuery.value === newQueryString) {
+      isSubmitting.value = false;
+      pendingQuery.value = null;
+      return;
+    }
 
     if (queryChanged) {
       // Store the query we're about to push so route watcher can recognize it
       pendingQuery.value = newQuery;
+      lastSubmittedQuery.value = newQueryString;
       router.push({
         query: newQuery,
       });
@@ -359,6 +376,34 @@ const performSubmit = (_values: unknown) => {
   }
 };
 
-// Debounce handleSubmit to prevent rapid-fire submissions that cause URL reversion
-const handleSubmit = useDebounceFn(performSubmit, 300);
+// Use a ref to store the latest values, avoiding closure issues
+const latestSubmissionValues = ref<unknown>(null);
+let submissionTimeout: ReturnType<typeof setTimeout> | null = null;
+
+const handleSubmit = (_values: unknown) => {
+  // Ignore submissions entirely if we're already in the middle of processing one
+  // This prevents any submissions from queuing up while we're handling navigation
+  if (isSubmitting.value) {
+    return;
+  }
+
+  // Always store the latest values
+  latestSubmissionValues.value = _values;
+
+  // Cancel any pending submission
+  if (submissionTimeout) {
+    clearTimeout(submissionTimeout);
+    submissionTimeout = null;
+  }
+
+  // Use a short delay to batch rapid changes, always using the latest values
+  submissionTimeout = setTimeout(() => {
+    // Double-check we're not submitting (might have started during the timeout)
+    if (!isSubmitting.value && latestSubmissionValues.value !== null) {
+      performSubmit(latestSubmissionValues.value);
+      latestSubmissionValues.value = null;
+    }
+    submissionTimeout = null;
+  }, 100);
+};
 </script>
