@@ -238,9 +238,14 @@ const updateViewType = (
 
 const viewType = ref(ViewType.MAP);
 const formData = ref({});
+const isSubmitting = ref(false);
 watch(
   route,
   (form) => {
+    // Skip route watcher updates if we're currently submitting to prevent circular updates
+    if (isSubmitting.value) {
+      return;
+    }
     const { view, ...rest } = (form.query as Record<string, unknown>) || {};
     formData.value = { ...rest };
     viewType.value =
@@ -271,49 +276,66 @@ const normalizeQuery = (query: LocationQueryRaw): LocationQueryRaw => {
 
 // Core submit logic
 const performSubmit = (_values: unknown) => {
-  const values: Record<string, unknown> = {};
-  const input = (_values || {}) as Record<string, unknown>;
-  Object.keys(input).forEach((key) => {
-    if (input[key] && input[key] !== "") {
-      if (key === "days") {
-        values["active_on"] = new Date(
-          new Date().setDate(new Date().getDate() + +(input[key] as string))
-        ).toISOString();
-        return;
+  // Set submitting flag to prevent route watcher from interfering
+  isSubmitting.value = true;
+
+  try {
+    const values: Record<string, unknown> = {};
+    const input = (_values || {}) as Record<string, unknown>;
+    Object.keys(input).forEach((key) => {
+      if (input[key] && input[key] !== "") {
+        if (key === "days") {
+          values["active_on"] = new Date(
+            new Date().setDate(new Date().getDate() + +(input[key] as string))
+          ).toISOString();
+          return;
+        }
+        if (
+          key === "topics" &&
+          Array.isArray(input[key]) &&
+          input[key].length === 0
+        ) {
+          return;
+        }
+        if (key === "view") return;
+        values[key] = input[key];
       }
-      if (
-        key === "topics" &&
-        Array.isArray(input[key]) &&
-        input[key].length === 0
-      ) {
-        return;
-      }
-      if (key === "view") return;
-      values[key] = input[key];
-    }
-    if (route.query.name && route.query.name !== "")
-      values["name"] = route.query.name;
-  });
-
-  // Build the new query object
-  const newQuery: LocationQueryRaw = {
-    ...(values as LocationQueryRaw),
-    view: viewType.value,
-  };
-
-  // Normalize and compare queries to prevent unnecessary navigation
-  const normalizedNewQuery = normalizeQuery(newQuery);
-  const normalizedCurrentQuery = normalizeQuery(
-    route.query as LocationQueryRaw
-  );
-  const queryChanged =
-    JSON.stringify(normalizedNewQuery) !==
-    JSON.stringify(normalizedCurrentQuery);
-
-  if (queryChanged) {
-    router.push({
-      query: newQuery,
+      if (route.query.name && route.query.name !== "")
+        values["name"] = route.query.name;
     });
+
+    // Build the new query object
+    const newQuery: LocationQueryRaw = {
+      ...(values as LocationQueryRaw),
+      view: viewType.value,
+    };
+
+    // Normalize and compare queries to prevent unnecessary navigation
+    const normalizedNewQuery = normalizeQuery(newQuery);
+    const normalizedCurrentQuery = normalizeQuery(
+      route.query as LocationQueryRaw
+    );
+    const queryChanged =
+      JSON.stringify(normalizedNewQuery) !==
+      JSON.stringify(normalizedCurrentQuery);
+
+    if (queryChanged) {
+      router.push({
+        query: newQuery,
+      });
+      // Wait for route to update, then clear the flag
+      // Use nextTick twice to ensure route watcher has processed
+      nextTick(() => {
+        nextTick(() => {
+          isSubmitting.value = false;
+        });
+      });
+    } else {
+      isSubmitting.value = false;
+    }
+  } catch (error) {
+    isSubmitting.value = false;
+    throw error;
   }
 };
 
