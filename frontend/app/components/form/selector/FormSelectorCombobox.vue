@@ -5,8 +5,6 @@
       <ComboboxInput v-slot="{ id: inputId, onBlur }" as="div" class="flex">
         <FormTextInput
           :id="inputId"
-          @click="handleInputClick"
-          @focus="handleInputClick"
           @update:modelValue="(val) => (query = val)"
           :label="label"
           :modelValue="query"
@@ -16,11 +14,6 @@
       </ComboboxInput>
       <!-- Minimal visible button to open combobox - required for Headless UI v1 -->
       <ComboboxButton
-        :ref="
-          (el: unknown) => {
-            buttonRef = el as HTMLElement | null;
-          }
-        "
         :aria-label="label"
         class="absolute inset-y-0 right-0 flex items-center pr-3 text-primary-text dark:text-cta-orange"
       >
@@ -109,19 +102,6 @@ const props = withDefaults(defineProps<Props>(), {
   hasColOptions: true,
 });
 const query = ref("");
-const buttonRef = ref<HTMLElement | null>(null);
-
-function handleInputClick() {
-  // When input is clicked or focused, trigger the button to open the combobox
-  // This ensures options are displayed immediately on focus/click
-  nextTick(() => {
-    setTimeout(() => {
-      if (buttonRef.value) {
-        buttonRef.value.click();
-      }
-    }, 0);
-  });
-}
 
 const onClick = (option: Option) => {
   internalSelectedOptions.value = internalSelectedOptions.value.filter(
