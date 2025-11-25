@@ -239,23 +239,7 @@ const updateViewType = (
 const viewType = ref(ViewType.MAP);
 const formData = ref({});
 const isSubmitting = ref(false);
-watch(
-  route,
-  (form) => {
-    // Skip route watcher updates if we're currently submitting to prevent circular updates
-    if (isSubmitting.value) {
-      return;
-    }
-    const { view, ...rest } = (form.query as Record<string, unknown>) || {};
-    formData.value = { ...rest };
-    viewType.value =
-      typeof view === "string" &&
-      Object.values(ViewType).includes(view as ViewType)
-        ? (view as ViewType)
-        : ViewType.MAP;
-  },
-  { immediate: true }
-);
+const pendingQuery = ref<LocationQueryRaw | null>(null);
 
 // Helper function to normalize query objects for comparison
 const normalizeQuery = (query: LocationQueryRaw): LocationQueryRaw => {
@@ -273,6 +257,45 @@ const normalizeQuery = (query: LocationQueryRaw): LocationQueryRaw => {
   }
   return normalized;
 };
+
+// Watch route changes and update formData, but skip during form submission
+watch(
+  route,
+  (form) => {
+    // Skip route watcher updates if we're currently submitting to prevent circular updates
+    if (isSubmitting.value && pendingQuery.value) {
+      // Check if this route change matches what we just submitted
+      const currentRouteQuery = normalizeQuery(form.query as LocationQueryRaw);
+      const normalizedPendingQuery = normalizeQuery(pendingQuery.value);
+
+      if (
+        JSON.stringify(normalizedPendingQuery) ===
+        JSON.stringify(currentRouteQuery)
+      ) {
+        // This is our own submission completing, clear the flag and update formData
+        const { view, ...rest } = (form.query as Record<string, unknown>) || {};
+        pendingQuery.value = null;
+        isSubmitting.value = false;
+        formData.value = { ...rest };
+        viewType.value =
+          typeof view === "string" &&
+          Object.values(ViewType).includes(view as ViewType)
+            ? (view as ViewType)
+            : ViewType.MAP;
+      }
+      // Always return during submission to prevent formData updates
+      return;
+    }
+    const { view, ...rest } = (form.query as Record<string, unknown>) || {};
+    formData.value = { ...rest };
+    viewType.value =
+      typeof view === "string" &&
+      Object.values(ViewType).includes(view as ViewType)
+        ? (view as ViewType)
+        : ViewType.MAP;
+  },
+  { immediate: true }
+);
 
 // Core submit logic
 const performSubmit = (_values: unknown) => {
@@ -320,18 +343,15 @@ const performSubmit = (_values: unknown) => {
       JSON.stringify(normalizedCurrentQuery);
 
     if (queryChanged) {
+      // Store the query we're about to push so route watcher can recognize it
+      pendingQuery.value = newQuery;
       router.push({
         query: newQuery,
       });
-      // Wait for route to update, then clear the flag
-      // Use nextTick twice to ensure route watcher has processed
-      nextTick(() => {
-        nextTick(() => {
-          isSubmitting.value = false;
-        });
-      });
+      // Don't clear isSubmitting here - let the route watcher do it when it sees the change
     } else {
       isSubmitting.value = false;
+      pendingQuery.value = null;
     }
   } catch (error) {
     isSubmitting.value = false;
