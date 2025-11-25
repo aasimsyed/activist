@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
+import { newEventsFilter } from "~/test-e2e/component-objects/EventsFilter";
 import { newMainNavOptions } from "~/test-e2e/component-objects/MainNavOptions";
 import { newSidebarLeft } from "~/test-e2e/component-objects/SidebarLeft";
 import { expect, test } from "~/test-e2e/global-fixtures";
@@ -31,7 +32,9 @@ test.describe(
           await sidebarLeft.open();
 
           // Apply a topic filter via the topics combobox.
-          const topicsCombobox = page.getByRole("combobox").first();
+          const eventsFilter = newEventsFilter(page);
+          const topicsCombobox =
+            eventsFilter.topicsSection.getByRole("combobox");
           await expect(topicsCombobox).toBeVisible();
           await topicsCombobox.click();
 
@@ -89,7 +92,9 @@ test.describe(
         "Apply a topic filter on events page",
         async () => {
           // Apply a topic filter via the topics combobox.
-          const topicsCombobox = page.getByRole("combobox").first();
+          const eventsFilter = newEventsFilter(page);
+          const topicsCombobox =
+            eventsFilter.topicsSection.getByRole("combobox");
           await expect(topicsCombobox).toBeVisible();
           await topicsCombobox.click();
 
@@ -297,7 +302,9 @@ test.describe(
         async () => {
           await sidebarLeft.open();
 
-          const topicsCombobox = page.getByRole("combobox").first();
+          const eventsFilter = newEventsFilter(page);
+          const topicsCombobox =
+            eventsFilter.topicsSection.getByRole("combobox");
           await expect(topicsCombobox).toBeVisible();
           await topicsCombobox.click();
 
