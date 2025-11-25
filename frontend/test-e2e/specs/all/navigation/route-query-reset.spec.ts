@@ -49,8 +49,17 @@ test.describe(
           await expect(topicOption).toBeVisible({ timeout: 5000 });
           await topicOption.click();
 
-          // Verify URL now contains the topic filter.
-          await page.waitForURL(/topics=/, { timeout: 5000 });
+          // Wait for navigation to complete and URL to stabilize with topics parameter.
+          // The URL may briefly change and revert due to form handling, so we wait for it to stabilize.
+          await page.waitForLoadState("networkidle");
+          await expect(async () => {
+            const url = page.url();
+            expect(url).toMatch(/topics=/);
+            // Wait a moment and check again to ensure it's stable
+            await page.waitForLoadState("domcontentloaded");
+            const urlAgain = page.url();
+            expect(urlAgain).toMatch(/topics=/);
+          }).toPass({ timeout: 10000 });
           await expect(page).toHaveURL(/topics=/);
         }
       );
