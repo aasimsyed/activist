@@ -10,6 +10,11 @@
       >
         <FormTextInput
           :id="inputId"
+          :ref="
+            (el: unknown) => {
+              formInputRef = el as { $el?: HTMLElement } | null;
+            }
+          "
           @update:modelValue="(val) => (query = val)"
           :label="label"
           :modelValue="query"
@@ -107,27 +112,99 @@ const props = withDefaults(defineProps<Props>(), {
   hasColOptions: true,
 });
 const query = ref("");
+const formInputRef = ref<{ $el?: HTMLElement } | null>(null);
+const actualInputRef = ref<HTMLInputElement | null>(null);
 
 // Workaround: Headless UI tries to call setSelectionRange on the wrapper div
-// when using as="div", but divs don't have this method. We add a no-op method
-// to prevent the error. The actual input is inside FormTextInput and manages
-// its own selection range properly.
+// when using as="div", but divs don't have this method. We forward the call
+// to the actual input element inside FormTextInput.
 function setupInputWrapper(el: unknown) {
   if (!el) return;
 
-  nextTick(() => {
-    // Get the actual DOM element (could be component instance or DOM element)
-    const element = ((el as { $el?: HTMLElement })?.$el ||
-      el) as HTMLElement & { setSelectionRange?: () => void };
+  // Get the actual DOM element (could be component instance or DOM element)
+  const element = ((el as { $el?: HTMLElement })?.$el || el) as HTMLElement & {
+    setSelectionRange?: (
+      selectionStart: number,
+      selectionEnd: number,
+      selectionDirection?: "forward" | "backward" | "none"
+    ) => void;
+  };
 
-    // Add a no-op setSelectionRange to prevent Headless UI errors
-    if (element && !element.setSelectionRange) {
-      element.setSelectionRange = () => {
-        // No-op: FormTextInput's internal input handles selection range
-      };
+  // Forward setSelectionRange to the actual input element
+  if (element && !element.setSelectionRange) {
+    element.setSelectionRange = (
+      selectionStart: number,
+      selectionEnd: number,
+      selectionDirection?: "forward" | "backward" | "none"
+    ) => {
+      // Use cached input reference if available, otherwise find it
+      let inputElement = actualInputRef.value;
+      if (!inputElement && formInputRef.value?.$el) {
+        inputElement = formInputRef.value.$el.querySelector(
+          "input"
+        ) as HTMLInputElement | null;
+        if (inputElement) {
+          actualInputRef.value = inputElement;
+        }
+      }
+
+      if (
+        inputElement &&
+        typeof inputElement.setSelectionRange === "function"
+      ) {
+        try {
+          inputElement.setSelectionRange(
+            selectionStart,
+            selectionEnd,
+            selectionDirection
+          );
+        } catch {
+          // Silently ignore if selection range can't be set
+        }
+      }
+    };
+  }
+
+  // Try to find and cache the input element immediately
+  nextTick(() => {
+    if (formInputRef.value?.$el && !actualInputRef.value) {
+      const inputElement = formInputRef.value.$el.querySelector(
+        "input"
+      ) as HTMLInputElement | null;
+      if (inputElement) {
+        actualInputRef.value = inputElement;
+      }
     }
   });
 }
+
+// Watch for formInputRef changes and cache the input element immediately
+watch(
+  formInputRef,
+  (newRef) => {
+    if (newRef?.$el && !actualInputRef.value) {
+      nextTick(() => {
+        const inputElement = newRef.$el?.querySelector(
+          "input"
+        ) as HTMLInputElement | null;
+        if (inputElement) {
+          actualInputRef.value = inputElement;
+        }
+      });
+    }
+  },
+  { immediate: true }
+);
+
+// Ensure setSelectionRange is set up on mount
+onMounted(() => {
+  nextTick(() => {
+    // Re-run setup in case refs weren't ready initially
+    if (formInputRef.value?.$el && actualInputRef.value) {
+      // Input is already cached, method should already be set up via ref callback
+    }
+  });
+});
 
 const onClick = (option: Option) => {
   internalSelectedOptions.value = internalSelectedOptions.value.filter(
