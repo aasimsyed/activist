@@ -1,18 +1,12 @@
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
-  <Combobox
-    :id="id"
-    v-slot="{ open }"
-    v-model="internalSelectedOptions"
-    as="div"
-    multiple
-  >
+  <Combobox :id="id" v-model="internalSelectedOptions" as="div" multiple>
     <div class="relative">
       <ComboboxInput v-slot="{ id: inputId, onBlur }" as="div" class="flex">
         <FormTextInput
           :id="inputId"
-          @click="() => handleInputFocus(open)"
-          @focus="() => handleInputFocus(open)"
+          @click="handleInputFocus"
+          @focus="handleInputFocus"
           @update:modelValue="(val) => (query = val)"
           :label="label"
           :modelValue="query"
@@ -126,18 +120,19 @@ const emit = defineEmits<{
   (e: "update:selectedOptions", value: unknown[]): void;
 }>();
 
-function handleInputFocus(open: boolean | undefined) {
+function handleInputFocus() {
   // When input is focused or clicked, ensure the combobox opens to display all options.
   // Headless UI's Combobox in multiple mode doesn't automatically open on focus,
   // so we programmatically click the hidden button to trigger it.
-  if (!open) {
-    // Use setTimeout to ensure this happens after Headless UI's internal focus handling.
-    setTimeout(() => {
-      if (comboboxButtonRef.value) {
-        comboboxButtonRef.value.click();
-      }
-    }, 0);
-  }
+  setTimeout(() => {
+    const optionsElement = document.getElementById(`${props.id}-options`);
+    const isVisible = optionsElement?.offsetParent;
+
+    // If the dropdown is not visible, click the hidden button to open it.
+    if (!isVisible && comboboxButtonRef.value) {
+      comboboxButtonRef.value.click();
+    }
+  }, 100);
 }
 
 const filteredOptions = computed(() =>
