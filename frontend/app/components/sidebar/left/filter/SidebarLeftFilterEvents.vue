@@ -107,6 +107,7 @@
 </template>
 
 <script setup lang="ts">
+/* eslint-disable no-console */
 import type { LocationQueryRaw } from "vue-router";
 
 import { z } from "zod";
@@ -262,16 +263,38 @@ const normalizeQuery = (query: LocationQueryRaw): LocationQueryRaw => {
 watch(
   route,
   (form) => {
+    console.log("[ROUTE WATCHER] Route changed:", {
+      url: window.location.href,
+      query: form.query,
+      isSubmitting: isSubmitting.value,
+      pendingQuery: pendingQuery.value,
+      lastSubmittedQuery: lastSubmittedQuery.value,
+    });
+
     // Skip route watcher updates if we're currently submitting to prevent circular updates
     if (isSubmitting.value && pendingQuery.value) {
+      console.log(
+        "[ROUTE WATCHER] Currently submitting, checking if this matches our pending query"
+      );
       // Check if this route change matches what we just submitted
       const currentRouteQuery = normalizeQuery(form.query as LocationQueryRaw);
       const normalizedPendingQuery = normalizeQuery(pendingQuery.value);
+
+      console.log("[ROUTE WATCHER] Comparing queries:", {
+        currentRouteQuery,
+        normalizedPendingQuery,
+        match:
+          JSON.stringify(normalizedPendingQuery) ===
+          JSON.stringify(currentRouteQuery),
+      });
 
       if (
         JSON.stringify(normalizedPendingQuery) ===
         JSON.stringify(currentRouteQuery)
       ) {
+        console.log(
+          "[ROUTE WATCHER] ✓ This is our own submission completing - updating formData"
+        );
         // This is our own submission completing
         const { view, ...rest } = (form.query as Record<string, unknown>) || {};
         pendingQuery.value = null;
@@ -281,21 +304,29 @@ watch(
           Object.values(ViewType).includes(view as ViewType)
             ? (view as ViewType)
             : ViewType.MAP;
+        console.log("[ROUTE WATCHER] Setting formData to:", rest);
         formData.value = { ...rest };
         // Clear submission flag after formData is updated, but use nextTick to prevent immediate re-submit
         nextTick(() => {
+          console.log("[ROUTE WATCHER] Clearing isSubmitting flag");
           isSubmitting.value = false;
           // Clear lastSubmittedQuery after a short delay to prevent immediate duplicate submissions
           setTimeout(() => {
+            console.log("[ROUTE WATCHER] Clearing lastSubmittedQuery");
             lastSubmittedQuery.value = null;
           }, 300);
         });
         return;
       }
+      console.log(
+        "[ROUTE WATCHER] Route change doesn't match pending query, returning early"
+      );
       // Always return during submission to prevent formData updates
       return;
     }
+    console.log("[ROUTE WATCHER] Not submitting, updating formData from route");
     const { view, ...rest } = (form.query as Record<string, unknown>) || {};
+    console.log("[ROUTE WATCHER] Setting formData to:", rest);
     formData.value = { ...rest };
     viewType.value =
       typeof view === "string" &&
@@ -308,21 +339,38 @@ watch(
 
 // Core submit logic
 const performSubmit = (_values: unknown) => {
+  console.log("[PERFORM SUBMIT] Called with values:", _values);
+  console.log("[PERFORM SUBMIT] Current state:", {
+    isSubmitting: isSubmitting.value,
+    currentRoute: route.query,
+    pendingQuery: pendingQuery.value,
+    lastSubmittedQuery: lastSubmittedQuery.value,
+    url: window.location.href,
+  });
+
   // Block submissions if we're already submitting to prevent race conditions
   if (isSubmitting.value) {
+    console.log("[PERFORM SUBMIT] ⛔ Already submitting, blocking");
     return;
   }
 
   // Set submitting flag to prevent route watcher from interfering
   isSubmitting.value = true;
+  console.log("[PERFORM SUBMIT] ✓ Set isSubmitting = true");
 
   // IMPORTANT: If the incoming values would produce the exact same query as current route,
   // skip submission entirely to prevent unnecessary navigation
   const currentRouteQuery = normalizeQuery(route.query as LocationQueryRaw);
+  console.log(
+    "[PERFORM SUBMIT] Normalized current route query:",
+    currentRouteQuery
+  );
 
   try {
     const values: Record<string, unknown> = {};
     const input = (_values || {}) as Record<string, unknown>;
+
+    console.log("[PERFORM SUBMIT] Processing input:", input);
 
     // Build the values object from input
     Object.keys(input).forEach((key) => {
@@ -347,6 +395,8 @@ const performSubmit = (_values: unknown) => {
         values["name"] = route.query.name;
     });
 
+    console.log("[PERFORM SUBMIT] Values after processing:", values);
+
     // IMPORTANT: If topics is missing or empty in input, preserve it from route.query or pendingQuery
     // to prevent clearing topics unintentionally
     const inputTopics = input.topics;
@@ -354,12 +404,31 @@ const performSubmit = (_values: unknown) => {
       !values.topics ||
       (Array.isArray(inputTopics) && inputTopics.length === 0)
     ) {
+      console.log(
+        "[PERFORM SUBMIT] Topics missing/empty in input, checking for preservation:",
+        {
+          pendingQueryTopics: pendingQuery.value?.topics,
+          routeQueryTopics: route.query.topics,
+        }
+      );
       // First check pendingQuery (if we just submitted with topics), then fall back to route.query
       if (pendingQuery.value?.topics) {
         values.topics = pendingQuery.value.topics;
+        console.log(
+          "[PERFORM SUBMIT] ✓ Preserved topics from pendingQuery:",
+          values.topics
+        );
       } else if (route.query.topics) {
         values.topics = route.query.topics;
+        console.log(
+          "[PERFORM SUBMIT] ✓ Preserved topics from route.query:",
+          values.topics
+        );
+      } else {
+        console.log("[PERFORM SUBMIT] No topics to preserve");
       }
+    } else {
+      console.log("[PERFORM SUBMIT] Topics already present:", values.topics);
     }
 
     // Build the new query object
@@ -368,16 +437,28 @@ const performSubmit = (_values: unknown) => {
       view: viewType.value,
     };
 
+    console.log("[PERFORM SUBMIT] Built new query:", newQuery);
+
     // Normalize and compare queries to prevent unnecessary navigation
     const normalizedNewQuery = normalizeQuery(newQuery);
     const newQueryString = JSON.stringify(normalizedNewQuery);
+    console.log("[PERFORM SUBMIT] Normalized new query:", normalizedNewQuery);
 
     // Check if this submission would produce the same query as current route
     const queryMatchesCurrentRoute =
       newQueryString === JSON.stringify(currentRouteQuery);
 
+    console.log("[PERFORM SUBMIT] Query comparison:", {
+      newQueryString,
+      currentRouteQueryString: JSON.stringify(currentRouteQuery),
+      queryMatchesCurrentRoute,
+      lastSubmittedQuery: lastSubmittedQuery.value,
+      matchesLastSubmitted: lastSubmittedQuery.value === newQueryString,
+    });
+
     // Prevent submitting the same query twice in quick succession
     if (lastSubmittedQuery.value === newQueryString) {
+      console.log("[PERFORM SUBMIT] ⛔ Same as last submitted query, skipping");
       isSubmitting.value = false;
       pendingQuery.value = null;
       return;
@@ -385,6 +466,9 @@ const performSubmit = (_values: unknown) => {
 
     // If query matches current route exactly, no need to navigate
     if (queryMatchesCurrentRoute) {
+      console.log(
+        "[PERFORM SUBMIT] ⛔ Query matches current route, skipping navigation"
+      );
       isSubmitting.value = false;
       pendingQuery.value = null;
       return;
@@ -393,11 +477,17 @@ const performSubmit = (_values: unknown) => {
     // Store the query we're about to push so route watcher can recognize it
     pendingQuery.value = newQuery;
     lastSubmittedQuery.value = newQueryString;
+    console.log("[PERFORM SUBMIT] ✓ About to push route with query:", newQuery);
+    console.log("[PERFORM SUBMIT] URL before push:", window.location.href);
     router.push({
       query: newQuery,
     });
+    console.log(
+      "[PERFORM SUBMIT] ✓ router.push called, waiting for route watcher"
+    );
     // Don't clear isSubmitting here - let the route watcher do it when it sees the change
   } catch (error) {
+    console.error("[PERFORM SUBMIT] ❌ Error:", error);
     isSubmitting.value = false;
     throw error;
   }
@@ -408,9 +498,17 @@ const latestSubmissionValues = ref<unknown>(null);
 let submissionTimeout: ReturnType<typeof setTimeout> | null = null;
 
 const handleSubmit = (_values: unknown) => {
+  console.log("[HANDLE SUBMIT] Called with values:", _values);
+  console.log("[HANDLE SUBMIT] Current state:", {
+    isSubmitting: isSubmitting.value,
+    currentRoute: route.query,
+    url: window.location.href,
+  });
+
   // Ignore submissions entirely if we're already in the middle of processing one
   // This prevents any submissions from queuing up while we're handling navigation
   if (isSubmitting.value) {
+    console.log("[HANDLE SUBMIT] ⛔ Already submitting, blocking");
     return;
   }
 
@@ -419,16 +517,27 @@ const handleSubmit = (_values: unknown) => {
 
   // Cancel any pending submission
   if (submissionTimeout) {
+    console.log("[HANDLE SUBMIT] Cancelling previous timeout");
     clearTimeout(submissionTimeout);
     submissionTimeout = null;
   }
 
   // Use a short delay to batch rapid changes, always using the latest values
+  console.log("[HANDLE SUBMIT] Setting timeout to call performSubmit");
   submissionTimeout = setTimeout(() => {
+    console.log("[HANDLE SUBMIT] Timeout fired, checking if we should submit");
     // Double-check we're not submitting (might have started during the timeout)
     if (!isSubmitting.value && latestSubmissionValues.value !== null) {
+      console.log("[HANDLE SUBMIT] ✓ Calling performSubmit");
       performSubmit(latestSubmissionValues.value);
       latestSubmissionValues.value = null;
+    } else {
+      console.log(
+        "[HANDLE SUBMIT] ⛔ Skipping submit - isSubmitting:",
+        isSubmitting.value,
+        "values:",
+        latestSubmissionValues.value
+      );
     }
     submissionTimeout = null;
   }, 100);

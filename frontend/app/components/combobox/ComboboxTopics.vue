@@ -83,6 +83,7 @@
 </template>
 
 <script setup lang="ts">
+/* eslint-disable no-console */
 import {
   Combobox,
   ComboboxButton,
@@ -115,9 +116,17 @@ const selectedTopics = ref<{ label: string; value: TopicEnum; id: string }[]>(
 
 watch(
   () => props.receivedSelectedTopics,
-  (newVal) => {
+  (newVal, oldVal) => {
+    console.log("[HEADER COMBOBOX] receivedSelectedTopics prop changed:", {
+      oldVal,
+      newVal,
+    });
     selectedTopics.value = options.value.filter((option) =>
       newVal?.includes(option.value)
+    );
+    console.log(
+      "[HEADER COMBOBOX] Updated selectedTopics.value to:",
+      selectedTopics.value.map((t) => t.value)
     );
   },
   { immediate: true }
@@ -126,7 +135,11 @@ watch(
 // Re-sort options when selectedTopics changes to keep selected items on top.
 watch(
   selectedTopics,
-  (newVal) => {
+  (newVal, oldVal) => {
+    console.log("[HEADER COMBOBOX] selectedTopics changed:", {
+      oldVal: oldVal?.map((t) => t.value),
+      newVal: newVal?.map((t) => t.value),
+    });
     options.value = options.value.sort((a, b) => {
       const aSelected = newVal.some(
         (selected: { label: string; value: TopicEnum; id: string }) =>
@@ -147,17 +160,19 @@ watch(
       }
     });
     // Emit only the values of the selected topics.
-    emit(
-      "update:selectedTopics",
-      options.value
-        .filter((option) =>
-          newVal.some(
-            (selected: { label: string; value: TopicEnum; id: string }) =>
-              selected.value === option.value
-          )
+    const topicsToEmit = options.value
+      .filter((option) =>
+        newVal.some(
+          (selected: { label: string; value: TopicEnum; id: string }) =>
+            selected.value === option.value
         )
-        .map((option) => option.value)
+      )
+      .map((option) => option.value);
+    console.log(
+      "[HEADER COMBOBOX] Emitting update:selectedTopics:",
+      topicsToEmit
     );
+    emit("update:selectedTopics", topicsToEmit);
   },
   { immediate: true, deep: true }
 );
