@@ -272,21 +272,23 @@ watch(
         JSON.stringify(normalizedPendingQuery) ===
         JSON.stringify(currentRouteQuery)
       ) {
-        // This is our own submission completing - DO NOT update formData
-        // Updating formData would trigger the form to re-submit
-        const { view } = (form.query as Record<string, unknown>) || {};
+        // This is our own submission completing
+        const { view, ...rest } = (form.query as Record<string, unknown>) || {};
         pendingQuery.value = null;
         isSubmitting.value = false;
-        // Only update viewType, not formData
+        // Update viewType immediately
         viewType.value =
           typeof view === "string" &&
           Object.values(ViewType).includes(view as ViewType)
             ? (view as ViewType)
             : ViewType.MAP;
-        // Clear lastSubmittedQuery after a delay to allow future submissions
+        // Update formData after a delay to avoid triggering form re-submission
+        // This ensures form state is in sync with route but doesn't cause immediate re-submit
         setTimeout(() => {
+          formData.value = { ...rest };
           lastSubmittedQuery.value = null;
-        }, 500);
+        }, 200);
+        return;
       }
       // Always return during submission to prevent formData updates
       return;
