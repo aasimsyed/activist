@@ -114,6 +114,9 @@ const selectedTopics = ref<{ label: string; value: TopicEnum; id: string }[]>(
   []
 );
 
+// Flag to prevent emitting when updating from props
+const isUpdatingFromProps = ref(false);
+
 watch(
   () => props.receivedSelectedTopics,
   (newVal, oldVal) => {
@@ -121,6 +124,8 @@ watch(
       oldVal,
       newVal,
     });
+    // Set flag to prevent emission during prop update
+    isUpdatingFromProps.value = true;
     selectedTopics.value = options.value.filter((option) =>
       newVal?.includes(option.value)
     );
@@ -128,6 +133,10 @@ watch(
       "[HEADER COMBOBOX] Updated selectedTopics.value to:",
       selectedTopics.value.map((t) => t.value)
     );
+    // Clear flag after update completes
+    nextTick(() => {
+      isUpdatingFromProps.value = false;
+    });
   },
   { immediate: true }
 );
@@ -139,6 +148,7 @@ watch(
     console.log("[HEADER COMBOBOX] selectedTopics changed:", {
       oldVal: oldVal?.map((t) => t.value),
       newVal: newVal?.map((t) => t.value),
+      isUpdatingFromProps: isUpdatingFromProps.value,
     });
     options.value = options.value.sort((a, b) => {
       const aSelected = newVal.some(
@@ -159,20 +169,25 @@ watch(
         return 0;
       }
     });
-    // Emit only the values of the selected topics.
-    const topicsToEmit = options.value
-      .filter((option) =>
-        newVal.some(
-          (selected: { label: string; value: TopicEnum; id: string }) =>
-            selected.value === option.value
+    // Only emit if this change came from user interaction, not from prop update
+    if (!isUpdatingFromProps.value) {
+      // Emit only the values of the selected topics.
+      const topicsToEmit = options.value
+        .filter((option) =>
+          newVal.some(
+            (selected: { label: string; value: TopicEnum; id: string }) =>
+              selected.value === option.value
+          )
         )
-      )
-      .map((option) => option.value);
-    console.log(
-      "[HEADER COMBOBOX] Emitting update:selectedTopics:",
-      topicsToEmit
-    );
-    emit("update:selectedTopics", topicsToEmit);
+        .map((option) => option.value);
+      console.log(
+        "[HEADER COMBOBOX] Emitting update:selectedTopics (user interaction):",
+        topicsToEmit
+      );
+      emit("update:selectedTopics", topicsToEmit);
+    } else {
+      console.log("[HEADER COMBOBOX] Skipping emit - change from prop update");
+    }
   },
   { immediate: true, deep: true }
 );
