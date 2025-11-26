@@ -29,6 +29,28 @@ test.describe(
         testInfo,
         "Open sidebar and apply a topic filter on events page",
         async () => {
+          // Capture console logs from the browser
+          const consoleMessages: Array<{
+            type: string;
+            text: string;
+            timestamp: number;
+          }> = [];
+
+          page.on("console", (msg) => {
+            const text = msg.text();
+            // Only capture our debug logs (they start with [)
+            if (text.includes("[")) {
+              consoleMessages.push({
+                type: msg.type(),
+                text,
+                timestamp: Date.now(),
+              });
+              // Also output to test console immediately
+              // eslint-disable-next-line no-console
+              console.log(`[BROWSER ${msg.type().toUpperCase()}]`, text);
+            }
+          });
+
           await sidebarLeft.open();
 
           // Apply a topic filter via the topics combobox.
@@ -63,15 +85,41 @@ test.describe(
             });
           await page.waitForLoadState("domcontentloaded");
 
+          // Wait a bit more to capture any delayed console logs
+          await page.waitForTimeout(1000);
+
           // Verify URL contains topics and remains stable
           await expect(async () => {
             const url = page.url();
             if (!url.includes("topics=")) {
+              // Log console messages if URL doesn't contain topics
+              // eslint-disable-next-line no-console
+              console.log(
+                "\n=== CONSOLE MESSAGES (URL verification failed) ==="
+              );
+              consoleMessages.forEach((msg) => {
+                // eslint-disable-next-line no-console
+                console.log(`[${msg.type}] ${msg.text}`);
+              });
+              // eslint-disable-next-line no-console
+              console.log("=== END CONSOLE MESSAGES ===\n");
               throw new Error(`URL does not contain topics=: ${url}`);
             }
           }).toPass({ timeout: 5000 });
 
           await expect(page).toHaveURL(/topics=/);
+
+          // Output all captured console messages at the end
+          if (consoleMessages.length > 0) {
+            // eslint-disable-next-line no-console
+            console.log("\n=== ALL CAPTURED CONSOLE MESSAGES ===");
+            consoleMessages.forEach((msg) => {
+              // eslint-disable-next-line no-console
+              console.log(`[${msg.type}] ${msg.text}`);
+            });
+            // eslint-disable-next-line no-console
+            console.log("=== END ALL CONSOLE MESSAGES ===\n");
+          }
         }
       );
 
