@@ -275,19 +275,21 @@ watch(
         // This is our own submission completing
         const { view, ...rest } = (form.query as Record<string, unknown>) || {};
         pendingQuery.value = null;
-        isSubmitting.value = false;
-        // Update viewType immediately
+        // Update viewType and formData immediately to keep form in sync
         viewType.value =
           typeof view === "string" &&
           Object.values(ViewType).includes(view as ViewType)
             ? (view as ViewType)
             : ViewType.MAP;
-        // Update formData after a delay to avoid triggering form re-submission
-        // This ensures form state is in sync with route but doesn't cause immediate re-submit
-        setTimeout(() => {
-          formData.value = { ...rest };
-          lastSubmittedQuery.value = null;
-        }, 200);
+        formData.value = { ...rest };
+        // Clear submission flag after formData is updated, but use nextTick to prevent immediate re-submit
+        nextTick(() => {
+          isSubmitting.value = false;
+          // Clear lastSubmittedQuery after a short delay to prevent immediate duplicate submissions
+          setTimeout(() => {
+            lastSubmittedQuery.value = null;
+          }, 300);
+        });
         return;
       }
       // Always return during submission to prevent formData updates
@@ -313,6 +315,10 @@ const performSubmit = (_values: unknown) => {
 
   // Set submitting flag to prevent route watcher from interfering
   isSubmitting.value = true;
+
+  // IMPORTANT: If the incoming values would produce the exact same query as current route,
+  // skip submission entirely to prevent unnecessary navigation
+  const currentRouteQuery = normalizeQuery(route.query as LocationQueryRaw);
 
   try {
     const values: Record<string, unknown> = {};
@@ -341,15 +347,17 @@ const performSubmit = (_values: unknown) => {
         values["name"] = route.query.name;
     });
 
-    // IMPORTANT: If topics is missing or empty in input but we have it in route.query,
-    // preserve it from route.query to prevent clearing topics
-    // Also prevent clearing topics if input explicitly has empty array while route has topics
+    // IMPORTANT: If topics is missing or empty in input, preserve it from route.query or pendingQuery
+    // to prevent clearing topics unintentionally
     const inputTopics = input.topics;
     if (
       !values.topics ||
       (Array.isArray(inputTopics) && inputTopics.length === 0)
     ) {
-      if (route.query.topics) {
+      // First check pendingQuery (if we just submitted with topics), then fall back to route.query
+      if (pendingQuery.value?.topics) {
+        values.topics = pendingQuery.value.topics;
+      } else if (route.query.topics) {
         values.topics = route.query.topics;
       }
     }
@@ -362,12 +370,11 @@ const performSubmit = (_values: unknown) => {
 
     // Normalize and compare queries to prevent unnecessary navigation
     const normalizedNewQuery = normalizeQuery(newQuery);
-    const normalizedCurrentQuery = normalizeQuery(
-      route.query as LocationQueryRaw
-    );
     const newQueryString = JSON.stringify(normalizedNewQuery);
-    const queryChanged =
-      newQueryString !== JSON.stringify(normalizedCurrentQuery);
+
+    // Check if this submission would produce the same query as current route
+    const queryMatchesCurrentRoute =
+      newQueryString === JSON.stringify(currentRouteQuery);
 
     // Prevent submitting the same query twice in quick succession
     if (lastSubmittedQuery.value === newQueryString) {
@@ -376,18 +383,20 @@ const performSubmit = (_values: unknown) => {
       return;
     }
 
-    if (queryChanged) {
-      // Store the query we're about to push so route watcher can recognize it
-      pendingQuery.value = newQuery;
-      lastSubmittedQuery.value = newQueryString;
-      router.push({
-        query: newQuery,
-      });
-      // Don't clear isSubmitting here - let the route watcher do it when it sees the change
-    } else {
+    // If query matches current route exactly, no need to navigate
+    if (queryMatchesCurrentRoute) {
       isSubmitting.value = false;
       pendingQuery.value = null;
+      return;
     }
+
+    // Store the query we're about to push so route watcher can recognize it
+    pendingQuery.value = newQuery;
+    lastSubmittedQuery.value = newQueryString;
+    router.push({
+      query: newQuery,
+    });
+    // Don't clear isSubmitting here - let the route watcher do it when it sees the change
   } catch (error) {
     isSubmitting.value = false;
     throw error;
