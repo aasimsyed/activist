@@ -24,6 +24,7 @@
       </ComboboxInput>
       <!-- Minimal visible button to open combobox - required for Headless UI v1 -->
       <ComboboxButton
+        @click="handleButtonClick"
         :aria-label="label"
         class="absolute inset-y-0 right-0 flex items-center pr-3 text-primary-text dark:text-cta-orange"
       >
@@ -208,6 +209,28 @@ onMounted(() => {
     }
   });
 });
+
+// Handle button click to ensure dropdown opens, especially after page refresh
+const handleButtonClick = (_event: MouseEvent) => {
+  // Get the input element and focus it to ensure dropdown opens
+  nextTick(() => {
+    const inputElement = actualInputRef.value;
+    if (!inputElement && formInputRef.value?.$el) {
+      const foundInput = formInputRef.value.$el.querySelector(
+        "input"
+      ) as HTMLInputElement | null;
+      if (foundInput) {
+        actualInputRef.value = foundInput;
+        foundInput.focus();
+        // Click the input to ensure Headless UI opens the dropdown
+        foundInput.click();
+      }
+    } else if (inputElement) {
+      inputElement.focus();
+      inputElement.click();
+    }
+  });
+};
 
 const onClick = (option: Option) => {
   internalSelectedOptions.value = internalSelectedOptions.value.filter(

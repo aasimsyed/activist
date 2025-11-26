@@ -315,6 +315,8 @@ const performSubmit = (_values: unknown) => {
   try {
     const values: Record<string, unknown> = {};
     const input = (_values || {}) as Record<string, unknown>;
+
+    // Build the values object from input
     Object.keys(input).forEach((key) => {
       if (input[key] && input[key] !== "") {
         if (key === "days") {
@@ -336,6 +338,12 @@ const performSubmit = (_values: unknown) => {
       if (route.query.name && route.query.name !== "")
         values["name"] = route.query.name;
     });
+
+    // IMPORTANT: If topics is missing or empty in input but we have it in route.query,
+    // preserve it from route.query to prevent clearing topics
+    if (!values.topics && route.query.topics) {
+      values.topics = route.query.topics;
+    }
 
     // Build the new query object
     const newQuery: LocationQueryRaw = {
