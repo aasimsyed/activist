@@ -343,8 +343,15 @@ const performSubmit = (_values: unknown) => {
 
     // IMPORTANT: If topics is missing or empty in input but we have it in route.query,
     // preserve it from route.query to prevent clearing topics
-    if (!values.topics && route.query.topics) {
-      values.topics = route.query.topics;
+    // Also prevent clearing topics if input explicitly has empty array while route has topics
+    const inputTopics = input.topics;
+    if (
+      !values.topics ||
+      (Array.isArray(inputTopics) && inputTopics.length === 0)
+    ) {
+      if (route.query.topics) {
+        values.topics = route.query.topics;
+      }
     }
 
     // Build the new query object
