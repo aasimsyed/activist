@@ -272,11 +272,12 @@ watch(
         JSON.stringify(normalizedPendingQuery) ===
         JSON.stringify(currentRouteQuery)
       ) {
-        // This is our own submission completing, clear the flag and update formData
-        const { view, ...rest } = (form.query as Record<string, unknown>) || {};
+        // This is our own submission completing - DO NOT update formData
+        // Updating formData would trigger the form to re-submit
+        const { view } = (form.query as Record<string, unknown>) || {};
         pendingQuery.value = null;
         isSubmitting.value = false;
-        formData.value = { ...rest };
+        // Only update viewType, not formData
         viewType.value =
           typeof view === "string" &&
           Object.values(ViewType).includes(view as ViewType)
