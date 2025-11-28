@@ -307,7 +307,11 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024  # 5MB
 
 # MARK: API Settings
 
-django.setup()
+# Only call django.setup() if Django hasn't been configured yet.
+# Management commands already set up Django, so this prevents
+# "RuntimeError: populate() isn't reentrant" errors.
+if not django.apps.apps.ready:
+    django.setup()
 
 from rest_framework import viewsets  # noqa: E402
 
