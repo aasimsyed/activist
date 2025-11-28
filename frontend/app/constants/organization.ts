@@ -7,7 +7,6 @@ export const defaultOrganizationText = {
   id: 0,
   orgId: "",
   iso: "",
-  primary: false,
   description: "",
   getInvolved: "",
   donationPrompt: "",

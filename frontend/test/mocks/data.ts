@@ -50,7 +50,6 @@ export const defaultEventTextData = {
   id: 1,
   eventId: "event-1",
   iso: "en",
-  primary: true,
   description: "Test event description",
   getInvolved: "Get involved text",
 } as const;
@@ -75,7 +74,6 @@ export const defaultOrganizationTextData = {
   id: 1,
   orgId: "org-1",
   iso: "en",
-  primary: true,
   description: "Test organization description",
   getInvolved: "Get involved text",
   donationPrompt: "Donate now",
@@ -101,7 +99,6 @@ export const defaultGroupTextData = {
   id: 1,
   groupId: "group-1",
   iso: "en",
-  primary: true,
   description: "Test group description",
   getInvolved: "Get involved text",
   donationPrompt: "Donate now",

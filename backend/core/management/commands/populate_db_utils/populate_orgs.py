@@ -102,8 +102,11 @@ def create_organization(
     # MARK: Texts
 
     assigned_texts = assigned.get("texts", {})
-    org_texts = OrganizationTextFactory(iso="en", primary=True, **assigned_texts)
+    org_texts = OrganizationTextFactory(iso="en", **assigned_texts)
     user_org.texts.set([org_texts])
+    # Ensure default_iso matches the text ISO
+    user_org.default_iso = org_texts.iso
+    user_org.save()
 
     # MARK: Social Links
 

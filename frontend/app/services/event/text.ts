@@ -12,7 +12,6 @@ export async function updateEventTexts(
     await put(
       `/events/event_texts/${textId}`,
       {
-        primary: true,
         description: data.description,
         getInvolved: data.getInvolved,
         getInvolvedUrl: data.getInvolvedUrl,

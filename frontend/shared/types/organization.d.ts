@@ -8,6 +8,7 @@ interface OrganizationBase extends Entity {
   location: PhysicalLocation;
   socialLinks: OrganizationSocialLink[];
   status: number;
+  defaultIso: string; // ISO code for default text (e.g., "en", "fr")
   // statusUpdated?: string;
   // acceptanceDate?: string;
   // deletionDate?: string;
@@ -61,7 +62,6 @@ export interface OrganizationText {
   id: number;
   orgId: string;
   iso: string;
-  primary: boolean;
   description: string;
   getInvolved: string;
   getInvolvedUrl?: string;

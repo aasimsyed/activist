@@ -104,8 +104,11 @@ def create_org_events(
         # MARK: Texts
 
         texts = spec.get("texts", {}) if spec else {}
-        event_texts = EventTextFactory(iso="en", primary=True, **texts)
+        event_texts = EventTextFactory(iso="en", **texts)
         user_org_event.texts.set([event_texts])
+        # Ensure default_iso matches the primary text ISO
+        user_org_event.default_iso = event_texts.iso
+        user_org_event.save()
 
         # MARK: Social Links
 

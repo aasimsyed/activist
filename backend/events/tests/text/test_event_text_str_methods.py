@@ -19,7 +19,6 @@ def test_event_text_str_method() -> None:
     event_text = EventText.objects.create(
         event=event,
         iso="en",
-        primary=True,
         description="Test description",
         get_involved="Get involved text",
     )

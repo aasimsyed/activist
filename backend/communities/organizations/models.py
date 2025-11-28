@@ -6,6 +6,7 @@ Models for the communities app.
 from typing import Any
 from uuid import uuid4
 
+from backend.utils.models import ISO_CHOICES
 from django.db import models
 
 from authentication import enums
@@ -48,6 +49,17 @@ class Organization(models.Model):
     deletion_date = models.DateTimeField(blank=True, null=True)
 
     topics = models.ManyToManyField("content.Topic", blank=True)
+
+    # ISO code for the default text. This determines which text entry
+    # is used as fallback when user's locale doesn't match any text.
+    default_iso = models.CharField(
+        max_length=3,
+        choices=ISO_CHOICES,
+        default="en",
+        null=False,
+        blank=False,
+        help_text="ISO code for the default text language (e.g., 'en', 'fr')",
+    )
 
     discussions = models.ManyToManyField("content.Discussion", blank=True)
 

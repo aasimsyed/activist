@@ -25,7 +25,6 @@ describe("services/communities/group/text", () => {
     );
 
     expectJsonRequest(fetchMock, "/communities/group_texts/txt-1", "PUT", {
-      primary: true,
       description: payload.description,
       getInvolved: payload.getInvolved,
       getInvolvedUrl: payload.getInvolvedUrl,

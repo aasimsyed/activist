@@ -24,29 +24,28 @@ def test_group_text_languages() -> None:
     """
     group = GroupFactory()
 
-    # 1. Test primary language text.
-    primary_text = GroupTextFactory(
+    # 1. Test default language text.
+    group.default_iso = "eng"
+    group.save()
+    default_text = GroupTextFactory(
         group=group,
         iso="eng",
-        primary=True,
-        description="Primary description",
+        description="Default description",
         get_involved="Get involved text",
         donate_prompt="Donation prompt",
     )
-    assert primary_text.primary is True
-    assert primary_text.iso == "eng"
-    assert primary_text.description == "Primary description"
+    assert default_text.iso == "eng"
+    assert default_text.description == "Default description"
+    assert group.default_iso == default_text.iso
 
-    # 2. Test secondary language text.
+    # 2. Test additional language text.
     secondary_text = GroupTextFactory(
         group=group,
         iso="spa",
-        primary=False,
         description="Description",
         get_involved="How to participate",
         donate_prompt="Donation prompt",
     )
-    assert secondary_text.primary is False
     assert secondary_text.iso == "spa"
     assert secondary_text.description == "Description"
 

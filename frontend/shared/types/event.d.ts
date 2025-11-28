@@ -8,6 +8,7 @@ interface EventBase extends Entity {
   onlineLocationLink?: string;
   offlineLocation?: PhysicalLocation;
   socialLinks: EventSocialLink[];
+  defaultIso: string; // ISO code for default text (e.g., "en", "fr")
   faqEntries?: FaqEntry[];
   startTime: string;
   endTime?: string;
@@ -55,7 +56,6 @@ export interface EventText {
   id: number;
   eventId: string;
   iso: string;
-  primary: boolean;
   description: string;
   getInvolved: string;
   getInvolvedUrl?: string;

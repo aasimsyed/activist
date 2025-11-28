@@ -8,6 +8,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, Union
 from uuid import UUID
 
+from backend.utils.models import ISO_CHOICES
 from django.utils.dateparse import parse_datetime
 from rest_framework import serializers
 
@@ -325,6 +326,20 @@ class EventSerializer(serializers.ModelSerializer[Event]):
             raise serializers.ValidationError(
                 "You must accept the terms of service to create an event."
             )
+
+        # Validate default_iso is a valid ISO code
+        default_iso = data.get("default_iso")
+        if default_iso:
+            valid_isos = [choice[0] for choice in ISO_CHOICES]
+            if default_iso not in valid_isos:
+                raise serializers.ValidationError(
+                    {
+                        "default_iso": (
+                            f"'{default_iso}' is not a valid ISO code. "
+                            f"Must be one of: {', '.join(valid_isos)}"
+                        )
+                    }
+                )
 
         return data
 

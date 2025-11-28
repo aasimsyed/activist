@@ -11,6 +11,7 @@ interface GroupBase extends Entity {
   location: PhysicalLocation;
   socialLinks: GroupSocialLink[];
   org: Organization;
+  defaultIso: string; // ISO code for default text (e.g., "en", "fr")
   events?: CommunityEvent[];
   faqEntries?: FaqEntry[];
   resources?: Resource[];
@@ -48,7 +49,6 @@ export interface GroupText {
   id: number;
   groupId: string;
   iso: string;
-  primary: boolean;
   description: string;
   getInvolved: string;
   getInvolvedUrl?: string;

@@ -320,7 +320,6 @@ class Text(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     iso = models.CharField(max_length=3, choices=ISO_CHOICES)
-    primary = models.BooleanField(default=False)
     description = models.TextField(max_length=2500)
     get_involved = models.TextField(max_length=500, blank=True)
     get_involved_url = models.URLField(blank=True)

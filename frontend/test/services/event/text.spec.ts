@@ -18,7 +18,6 @@ describe("services/event/text", () => {
     } as unknown as Parameters<typeof updateEventTexts>[2]);
 
     expectJsonRequest(fetchMock, "/events/event_texts/txt-1", "PUT", {
-      primary: true,
       description: "d",
       getInvolved: "g",
       getInvolvedUrl: "u",
