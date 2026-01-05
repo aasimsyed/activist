@@ -60,6 +60,10 @@ const schema = z.object({
 const route = useRoute();
 const router = useRouter();
 const formData = ref({});
+
+// Track if this is the initial mount to prevent race condition with old query params
+const isInitialMount = ref(true);
+
 watch(
   route,
   (form) => {
@@ -67,7 +71,22 @@ watch(
   },
   { immediate: true }
 );
+
+// After initial mount, allow form submissions
+onMounted(() => {
+  // Use nextTick to ensure the form has initialized before allowing submissions
+  nextTick(() => {
+    isInitialMount.value = false;
+  });
+});
+
 const handleSubmit = (_values: unknown) => {
+  // Skip submission on initial mount to prevent query params from persisting
+  // across route changes (race condition where old route.query is read before update)
+  if (isInitialMount.value) {
+    return;
+  }
+
   const values: LocationQueryRaw = {};
   const input = (_values || {}) as Record<string, LocationQueryRaw[string]>;
   Object.keys(input).forEach((key) => {
