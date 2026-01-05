@@ -61,32 +61,19 @@ const route = useRoute();
 const router = useRouter();
 const formData = ref({});
 
-// Track if this is the initial mount to prevent race condition with old query params
-const isInitialMount = ref(true);
-
+// Only sync query params when actually on the /organizations route
+// This prevents stale query params from persisting when navigating between routes
 watch(
   route,
-  (form) => {
-    formData.value = { ...form.query };
+  (newRoute) => {
+    if (newRoute.path === "/organizations") {
+      formData.value = { ...newRoute.query };
+    }
   },
   { immediate: true }
 );
 
-// After initial mount, allow form submissions
-onMounted(() => {
-  // Use nextTick to ensure the form has initialized before allowing submissions
-  nextTick(() => {
-    isInitialMount.value = false;
-  });
-});
-
 const handleSubmit = (_values: unknown) => {
-  // Skip submission on initial mount to prevent query params from persisting
-  // across route changes (race condition where old route.query is read before update)
-  if (isInitialMount.value) {
-    return;
-  }
-
   const values: LocationQueryRaw = {};
   const input = (_values || {}) as Record<string, LocationQueryRaw[string]>;
   Object.keys(input).forEach((key) => {
@@ -104,7 +91,7 @@ const handleSubmit = (_values: unknown) => {
       values["name"] = route.query.name;
   });
   router.push({
-    query: values, // use the normalized values object
+    query: values,
   });
 };
 </script>
