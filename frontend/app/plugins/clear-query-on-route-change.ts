@@ -43,9 +43,12 @@ export default defineNuxtPlugin(() => {
       topLevelRoutes.has(fromBase) &&
       toBase !== fromBase;
 
-    const hasQueryParams = Object.keys(to.query).length > 0;
+    // Check both source and destination for query params
+    // Source params might get copied to destination during navigation
+    const toHasQueryParams = Object.keys(to.query).length > 0;
+    const fromHasQueryParams = Object.keys(from.query).length > 0;
 
-    if (isTopLevelChange && hasQueryParams) {
+    if (isTopLevelChange && (toHasQueryParams || fromHasQueryParams)) {
       // Redirect to same path without query params
       return { path: to.path, query: {} };
     }

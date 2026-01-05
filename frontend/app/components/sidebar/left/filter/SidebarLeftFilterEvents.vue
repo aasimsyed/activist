@@ -253,7 +253,24 @@ const normalizeQuery = (query: LocationQueryRaw): LocationQueryRaw => {
 // Watch route changes and update formData, but skip during form submission
 watch(
   route,
-  (form) => {
+  (form, oldForm) => {
+    // Skip if navigating away from events page to prevent interference with navigation
+    const getBaseRoute = (path: string) => {
+      const segments = path.replace(/^\//, "").split("/");
+      const firstSegment = segments[0] || "";
+      // Skip locale segment if present (2-letter codes like 'en', 'de', etc.)
+      const isLocale = /^[a-z]{2}(-[a-z]{2})?$/i.test(firstSegment);
+      return isLocale && segments.length > 1 ? segments[1] || "" : firstSegment;
+    };
+
+    const newBase = getBaseRoute(form.path);
+    const oldBase = oldForm ? getBaseRoute(oldForm.path) : "";
+
+    // If navigating to a different base route, skip processing to avoid interference
+    if (oldBase === "events" && newBase !== "events") {
+      return;
+    }
+
     // Skip route watcher updates if we're currently submitting to prevent circular updates
     if (isSubmitting.value && pendingQuery.value) {
       // Check if this route change matches what we just submitted

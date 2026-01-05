@@ -29,7 +29,6 @@
 
 <script setup lang="ts">
 const localePath = useLocalePath();
-const router = useRouter();
 
 export interface Props {
   to?: string;
@@ -41,9 +40,18 @@ const props = withDefaults(defineProps<Props>(), {
   isAddStyles: true,
 });
 
-function navigateWithoutQuery() {
+async function navigateWithoutQuery() {
   if (props.to) {
-    router.push({ path: localePath(props.to), query: {} });
+    // Use navigateTo with explicit empty query to clear params from previous route
+    await navigateTo(
+      {
+        path: localePath(props.to),
+        query: {},
+      },
+      {
+        replace: false,
+      }
+    );
   }
 }
 </script>
