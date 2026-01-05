@@ -107,7 +107,6 @@
 </template>
 
 <script setup lang="ts">
- 
 import type { LocationQueryRaw } from "vue-router";
 
 import { z } from "zod";
