@@ -8,7 +8,7 @@
       'style-menu-option': !selected && isAddStyles,
       'p-2': isAddStyles,
     }"
-    :to="localePath(`${to}`)"
+    :to="{ path: localePath(to), query: {} }"
   >
     <slot />
   </NuxtLink>

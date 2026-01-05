@@ -136,7 +136,8 @@ const selectedMenuItem = ref<MenuEntry | undefined>(undefined);
 
 const handleItemClick = (menuEntry: MenuEntry) => {
   const router = useRouter();
-  router.push(menuEntry.routeUrl);
+  // Clear query parameters when navigating to a new route
+  router.push({ path: menuEntry.routeUrl, query: {} });
 };
 
 watchEffect(() => {
