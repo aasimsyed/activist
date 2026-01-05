@@ -1,17 +1,18 @@
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <template>
-  <NuxtLink
+  <a
     v-if="to"
-    class="font-md group relative flex w-full basis-full items-center justify-center rounded-md text-left text-sm transition duration-200 focus-brand"
+    @click.prevent="navigateWithoutQuery"
+    class="font-md group relative flex w-full basis-full cursor-pointer items-center justify-center rounded-md text-left text-sm transition duration-200 focus-brand"
     :class="{
       'style-menu-option-cta': selected,
       'style-menu-option': !selected && isAddStyles,
       'p-2': isAddStyles,
     }"
-    :to="{ path: localePath(to), query: {} }"
+    :href="localePath(to)"
   >
     <slot />
-  </NuxtLink>
+  </a>
   <button
     v-else
     class="font-md group relative flex w-full basis-full cursor-pointer items-center justify-center rounded-md text-left text-sm transition duration-200 focus-brand"
@@ -28,6 +29,7 @@
 
 <script setup lang="ts">
 const localePath = useLocalePath();
+const router = useRouter();
 
 export interface Props {
   to?: string;
@@ -35,7 +37,13 @@ export interface Props {
   isAddStyles?: boolean;
 }
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   isAddStyles: true,
 });
+
+function navigateWithoutQuery() {
+  if (props.to) {
+    router.push({ path: localePath(props.to), query: {} });
+  }
+}
 </script>

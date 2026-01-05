@@ -37,33 +37,19 @@ export default defineNuxtPlugin(() => {
     const toBase = getBaseRoute(to.path);
     const fromBase = getBaseRoute(from.path);
 
-    // Only clear query params when navigating between different top-level routes
-    // and when the destination has no explicit query params set
+    // When navigating between different top-level routes, clear query params
     const isTopLevelChange =
       topLevelRoutes.has(toBase) &&
       topLevelRoutes.has(fromBase) &&
       toBase !== fromBase;
 
-    // Check if the current navigation already has query params
-    // (meaning they were intentionally set, not carried over)
     const hasQueryParams = Object.keys(to.query).length > 0;
 
     if (isTopLevelChange && hasQueryParams) {
-      // Check if these query params were explicitly set or inherited
-      // by comparing with the from route
-      const inheritedParams = Object.keys(from.query).filter(
-        (key) => to.query[key] === from.query[key]
-      );
-
-      // If all query params in `to` match `from`, they were inherited
-      if (
-        inheritedParams.length > 0 &&
-        inheritedParams.length === Object.keys(to.query).length
-      ) {
-        // Redirect to same path without query params
-        return { path: to.path, query: {} };
-      }
+      // Redirect to same path without query params
+      return { path: to.path, query: {} };
     }
+
     return true;
   });
 });
