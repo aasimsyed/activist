@@ -39,52 +39,40 @@
 </template>
 
 <script setup lang="ts">
-/* eslint-disable no-console */
 const viewType = ref<ViewType>(ViewType.MAP);
 const route = useRoute();
 const router = useRouter();
 const loadingFetchMore = ref(false);
 
 const filters = computed<EventFilters>(() => {
-  const { view, ...rest } = route.query; // omit view
-  return rest as unknown as EventFilters;
+  const { view, topics, ...rest } = route.query; // omit view
+  const normalizedFilters: EventFilters = rest as unknown as EventFilters;
+
+  // Normalize topics to always be an array (Vue Router returns string for single value).
+  normalizedFilters.topics = normalizeArrayFromURLQuery(topics) as TopicEnum[];
+
+  if (normalizedFilters.days_ahead) {
+    normalizedFilters.days_ahead = +normalizedFilters.days_ahead;
+  }
+
+  return normalizedFilters;
 });
 const selectedTopics = ref<TopicEnum[]>([]);
 watch(
   () => route.query.topics,
-  (newVal, oldVal) => {
-    console.log("[HEADER TOPICS WATCHER] Route query.topics changed:", {
-      oldVal,
-      newVal,
-      url: window.location.href,
-    });
-    if (Array.isArray(newVal)) {
-      selectedTopics.value = newVal as TopicEnum[];
-    } else if (typeof newVal === "string") {
-      selectedTopics.value = [newVal as TopicEnum];
-    } else {
-      selectedTopics.value = [];
-    }
-    console.log(
-      "[HEADER TOPICS WATCHER] Updated selectedTopics.value to:",
-      selectedTopics.value
-    );
+  (newVal) => {
+    selectedTopics.value = normalizeArrayFromURLQuery(newVal) as TopicEnum[];
   },
   { immediate: true }
 );
 const handleSelectedTopicsUpdate = (selectedTopics: TopicEnum[]) => {
-  console.log("[HEADER TOPICS UPDATE] Called with:", selectedTopics);
-  console.log("[HEADER TOPICS UPDATE] Current route query:", route.query);
-  console.log("[HEADER TOPICS UPDATE] Current URL:", window.location.href);
   const query = { ...route.query };
   if (selectedTopics.length > 0) {
     query.topics = selectedTopics;
   } else {
     delete query.topics;
   }
-  console.log("[HEADER TOPICS UPDATE] Replacing route with query:", query);
   router.replace({ query });
-  console.log("[HEADER TOPICS UPDATE] router.replace called");
 };
 
 watch(
@@ -104,7 +92,7 @@ const changeFetchMore = () => {
 };
 
 useCustomInfiniteScroll({
-  sentinel: bottomSentinel,
+  sentinel: bottomSentinel as Ref<HTMLElement | null>,
   fetchMore: getMore,
   canFetchMore,
   callback: changeFetchMore,

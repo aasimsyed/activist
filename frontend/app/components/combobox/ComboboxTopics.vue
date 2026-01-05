@@ -48,7 +48,7 @@
               v-slot="{ selected, active }"
               @click="inputFocussed = false"
               as="template"
-              :value="topic"
+              :value="topic.value"
             >
               <li
                 class="relative cursor-default select-none py-2 pl-10 pr-4"
@@ -83,7 +83,6 @@
 </template>
 
 <script setup lang="ts">
-/* eslint-disable no-console */
 import {
   Combobox,
   ComboboxButton,
@@ -100,64 +99,31 @@ const { t } = useI18n();
 
 const { data: topics } = useGetTopics();
 
-const options = ref<{ label: string; value: TopicEnum; id: string }[]>([]);
-options.value = topics.value.map((topic: Topic) => ({
-  label: t(GLOBAL_TOPICS.find((t) => t.topic === topic.type)?.label || ""),
-  value: topic.type as TopicEnum,
-  id: topic.id,
-}));
 const emit = defineEmits<{
   (e: "update:selectedTopics", value: TopicEnum[]): void;
 }>();
 
-const selectedTopics = ref<{ label: string; value: TopicEnum; id: string }[]>(
-  []
-);
+const selectedTopics = ref<TopicEnum[]>([]);
+// Flag to prevent emitting when updating from props (prevents infinite loop).
+const isSyncingFromProps = ref(false);
 
-// Flag to prevent emitting when updating from props
-const isUpdatingFromProps = ref(false);
-
-watch(
-  () => props.receivedSelectedTopics,
-  (newVal, oldVal) => {
-    console.log("[HEADER COMBOBOX] receivedSelectedTopics prop changed:", {
-      oldVal,
-      newVal,
-    });
-    // Set flag to prevent emission during prop update
-    isUpdatingFromProps.value = true;
-    selectedTopics.value = options.value.filter((option) =>
-      newVal?.includes(option.value)
-    );
-    console.log(
-      "[HEADER COMBOBOX] Updated selectedTopics.value to:",
-      selectedTopics.value.map((t) => t.value)
-    );
-    // Clear flag after update completes
-    nextTick(() => {
-      isUpdatingFromProps.value = false;
-    });
-  },
-  { immediate: true }
-);
-
-// Re-sort options when selectedTopics changes to keep selected items on top.
-watch(
-  selectedTopics,
-  (newVal, oldVal) => {
-    console.log("[HEADER COMBOBOX] selectedTopics changed:", {
-      oldVal: oldVal?.map((t) => t.value),
-      newVal: newVal?.map((t) => t.value),
-      isUpdatingFromProps: isUpdatingFromProps.value,
-    });
-    options.value = options.value.sort((a, b) => {
-      const aSelected = newVal.some(
-        (selected: { label: string; value: TopicEnum; id: string }) =>
-          selected.value === a.value
+const options = computed<{ label: string; value: TopicEnum; id: string }[]>(
+  () => {
+    const topicsOptions = topics.value
+      .map((topic: Topic) => ({
+        label: t(
+          GLOBAL_TOPICS.find((t) => t.topic === topic.type)?.label || ""
+        ),
+        value: topic.type as TopicEnum,
+        id: topic.id,
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+    return topicsOptions.sort((a, b) => {
+      const aSelected = selectedTopics.value.some(
+        (selected: TopicEnum) => selected === a.value
       );
-      const bSelected = newVal.some(
-        (selected: { label: string; value: TopicEnum; id: string }) =>
-          selected.value === b.value
+      const bSelected = selectedTopics.value.some(
+        (selected: TopicEnum) => selected === b.value
       );
 
       if (aSelected && !bSelected) {
@@ -165,31 +131,44 @@ watch(
       }
       if (!aSelected && bSelected) {
         return 1;
-      } else {
-        return 0;
       }
+      return a.label.localeCompare(b.label);
     });
-    // Only emit if this change came from user interaction, not from prop update
-    if (!isUpdatingFromProps.value) {
-      // Emit only the values of the selected topics.
-      const topicsToEmit = options.value
-        .filter((option) =>
-          newVal.some(
-            (selected: { label: string; value: TopicEnum; id: string }) =>
-              selected.value === option.value
-          )
-        )
-        .map((option) => option.value);
-      console.log(
-        "[HEADER COMBOBOX] Emitting update:selectedTopics (user interaction):",
-        topicsToEmit
-      );
-      emit("update:selectedTopics", topicsToEmit);
+  }
+);
+watch(
+  () => props.receivedSelectedTopics,
+  (newValReceived: TopicEnum[] | undefined) => {
+    // Set flag to prevent emission during prop update.
+    isSyncingFromProps.value = true;
+
+    // if incoming prop is empty, clear the local selection.
+    if (!newValReceived || newValReceived.length === 0) {
+      selectedTopics.value = [];
     } else {
-      console.log("[HEADER COMBOBOX] Skipping emit - change from prop update");
+      // sync selected topics (store primitives).
+      selectedTopics.value = [...newValReceived];
+    }
+
+    // Clear flag after sync completes.
+    nextTick(() => {
+      isSyncingFromProps.value = false;
+    });
+  },
+  { immediate: true }
+);
+// Re-sort options when selectedTopics changes to keep selected items on top.
+watch(
+  selectedTopics,
+  (newVal) => {
+    // Only emit if this change came from user interaction, not from prop update.
+    if (!isSyncingFromProps.value) {
+      // Emit all changes, including empty arrays to allow URL query param clearing.
+      // Empty arrays are emitted when user deselects all options.
+      emit("update:selectedTopics", newVal ? [...newVal] : []);
     }
   },
-  { immediate: true, deep: true }
+  { immediate: true }
 );
 const query = ref("");
 const inputFocussed = ref(false);
