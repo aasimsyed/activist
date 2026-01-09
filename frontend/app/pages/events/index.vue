@@ -39,13 +39,17 @@
 </template>
 
 <script setup lang="ts">
-const viewType = ref<ViewType>(ViewType.MAP);
 const route = useRoute();
 const router = useRouter();
 const loadingFetchMore = ref(false);
 
+// Use localStorage for view preference instead of URL query param
+// This persists across route changes while keeping query params clean
+// Note: viewType is set by SidebarLeftFilterEvents component, not here
+const { viewType } = useViewPreference("events", ViewType.MAP);
+
 const filters = computed<EventFilters>(() => {
-  const { view, topics, ...rest } = route.query; // omit view
+  const { view, name, topics, ...rest } = route.query; // omit view and name (handled via localStorage)
   const normalizedFilters: EventFilters = rest as unknown as EventFilters;
 
   // Normalize topics to always be an array (Vue Router returns string for single value).
@@ -108,13 +112,6 @@ const showEvents = computed(() => {
   return false;
 });
 
-watchEffect(() => {
-  const q = route.query.view;
-  if (
-    typeof q === "string" &&
-    Object.values(ViewType).includes(q as ViewType)
-  ) {
-    viewType.value = q as ViewType;
-  }
-});
+// View preference is now handled via localStorage, not query params
+// The viewType is automatically loaded from localStorage via useViewPreference
 </script>

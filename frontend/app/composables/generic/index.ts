@@ -6,5 +6,6 @@ export * from "./useDraggableKeyboardNavigation";
 export * from "./useModalHandlers";
 export * from "./useSortableList";
 export * from "./useTabNavigationEmit";
-export * from "./useRouteQuerySync";
+export * from "./useSearchQuery";
 export * from "./useToaster";
+export * from "./useViewPreference";

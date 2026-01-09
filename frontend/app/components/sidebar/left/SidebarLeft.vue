@@ -91,25 +91,17 @@ const routeName = computed(() => {
   }
   return "";
 });
-const modelValue = ref(route.query.name as string | undefined);
-watch(
-  route,
-  (newName) => {
-    if (newName.query.name && newName.query.name !== modelValue.value) {
-      modelValue.value = newName.query.name as string | undefined;
-    }
-  },
-  { immediate: true }
-);
-onMounted(() => {
-  if (route.query.name && route.query.name !== modelValue.value) {
-    modelValue.value = route.query.name as string | undefined;
-  }
+
+// Use localStorage for search query instead of URL query param
+// This persists across route changes while keeping query params clean
+const { searchQuery, setSearchQuery } = useSearchQuery();
+const modelValue = computed({
+  get: () => searchQuery.value,
+  set: (value: string) => setSearchQuery(value || ""),
 });
+
 const handleChange = (value: string) => {
-  modelValue.value = value;
-  const query = { ...route.query, name: modelValue.value };
-  useRouter().push({ query });
+  setSearchQuery(value);
 };
 
 const isOrgPage = computed(() =>

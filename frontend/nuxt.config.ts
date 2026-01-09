@@ -78,7 +78,11 @@ export default defineNuxtConfig({
     enabled: true,
   },
 
-  plugins: ["~/plugins/i18n-head.ts", "~/plugins/i18n-iso-countries.ts"],
+  plugins: [
+    "~/plugins/i18n-head.ts",
+    "~/plugins/i18n-iso-countries.ts",
+    "~/plugins/route-query-flush.ts",
+  ],
   // Auto import services and stores.
   imports: {
     dirs: ["./constants", "./services", "./stores"],

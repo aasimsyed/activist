@@ -61,13 +61,18 @@ const route = useRoute();
 const router = useRouter();
 const formData = ref({});
 
-// Route-scoped query sync - only syncs when on /organizations route
-// Prevents stale query params from persisting when navigating between routes
-// Fix for: https://github.com/activist-org/activist/issues/1738
-const { watchRouteQuery } = useRouteQuerySync("organizations");
-watchRouteQuery((query) => {
-  formData.value = { ...query };
-});
+// Watch route query params for filter values (topics, location, etc.)
+// Note: name is handled via localStorage, not query params
+// All query params are flushed on route change by global navigation guard
+watch(
+  () => route.query,
+  (query) => {
+    // Extract all filter params except name (handled via localStorage)
+    const { name, ...rest } = (query as Record<string, unknown>) || {};
+    formData.value = { ...rest };
+  },
+  { immediate: true, deep: true }
+);
 const handleSubmit = (_values: unknown) => {
   const values: LocationQueryRaw = {};
   const input = (_values || {}) as Record<string, LocationQueryRaw[string]>;
@@ -82,11 +87,9 @@ const handleSubmit = (_values: unknown) => {
       }
       values[key] = input[key];
     }
-    if (route.query.name && route.query.name !== "")
-      values["name"] = route.query.name;
   });
   router.push({
-    query: values, // use the normalized values object
+    query: values,
   });
 };
 </script>

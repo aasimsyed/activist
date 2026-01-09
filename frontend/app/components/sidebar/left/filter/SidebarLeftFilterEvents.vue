@@ -209,6 +209,11 @@ const optionLocations = [
 
 const route = useRoute();
 const router = useRouter();
+
+// Use localStorage for view preference instead of URL query param
+// This persists across route changes while keeping query params clean
+const { viewType, setViewType } = useViewPreference("events", ViewType.MAP);
+
 const updateViewType = (
   value: string | number | boolean | Record<string, unknown> | undefined
 ) => {
@@ -216,34 +221,25 @@ const updateViewType = (
     typeof value === "string" &&
     Object.values(ViewType).includes(value as ViewType)
   ) {
-    viewType.value = value as ViewType;
-    router.push({
-      query: {
-        ...route.query,
-        view: value,
-      },
-    });
+    setViewType(value as ViewType);
     return;
   }
 };
 
-const viewType = ref(ViewType.MAP);
 const formData = ref({});
 
-// Route-scoped query sync - only syncs when on /events route
-// Prevents stale query params from persisting when navigating between routes
-// Fix for: https://github.com/activist-org/activist/issues/1738
-const { watchRouteQuery } = useRouteQuerySync("events");
-watchRouteQuery((query) => {
-  const { view, ...rest } = (query as Record<string, unknown>) || {};
-  const topics = normalizeArrayFromURLQuery(query.topics);
-  formData.value = { ...rest, topics };
-  viewType.value =
-    typeof view === "string" &&
-    Object.values(ViewType).includes(view as ViewType)
-      ? (view as ViewType)
-      : ViewType.MAP;
-});
+// Watch route query params for filter values (topics, days, type, etc.)
+// Note: view and name are handled via localStorage, not query params
+watch(
+  () => route.query,
+  (query) => {
+    const topics = normalizeArrayFromURLQuery(query.topics);
+    // Extract all filter params except view and name
+    const { view, name, ...rest } = (query as Record<string, unknown>) || {};
+    formData.value = { ...rest, topics };
+  },
+  { immediate: true, deep: true }
+);
 const handleSubmit = (_values: unknown) => {
   const values: Record<string, unknown> = {};
   const input = (_values || {}) as Record<string, unknown>;
@@ -260,17 +256,11 @@ const handleSubmit = (_values: unknown) => {
       ) {
         return;
       }
-      if (key === "view") return;
       values[key] = input[key];
     }
-    if (route.query.name && route.query.name !== "")
-      values["name"] = route.query.name;
   });
   router.push({
-    query: {
-      ...(values as LocationQueryRaw),
-      view: viewType.value,
-    },
+    query: values as LocationQueryRaw,
   });
 };
 </script>
