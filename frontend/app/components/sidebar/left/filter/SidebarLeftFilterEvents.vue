@@ -12,7 +12,9 @@
         :options="optionViews"
       />
     </div>
+
     <Form
+      :key="formKey"
       @submit="handleSubmit"
       class="px-1"
       :initial-values="formData"
@@ -32,6 +34,7 @@
           @update:modelValue="handleChange"
           :modelValue="(value.value as string)"
           :options="optionDays"
+          :toggleable="true"
         />
       </FormItem>
       <FormItem
@@ -46,6 +49,7 @@
           @update:modelValue="handleChange"
           :modelValue="(value.value as string)"
           :options="optionEventTypes"
+          :toggleable="true"
         />
       </FormItem>
       <FormItem
@@ -60,6 +64,7 @@
           @update:modelValue="handleChange"
           :modelValue="(value.value as string)"
           :options="optionLocations"
+          :toggleable="true"
         />
       </FormItem>
       <FormItem
@@ -209,11 +214,7 @@ const optionLocations = [
 
 const route = useRoute();
 const router = useRouter();
-
-// Use localStorage for view preference instead of URL query param
-// This persists across route changes while keeping query params clean
-const { viewType, setViewType } = useViewPreference("events", ViewType.MAP);
-
+const formKey = ref(0);
 const updateViewType = (
   value: string | number | boolean | Record<string, unknown> | undefined
 ) => {
@@ -221,28 +222,37 @@ const updateViewType = (
     typeof value === "string" &&
     Object.values(ViewType).includes(value as ViewType)
   ) {
-    setViewType(value as ViewType);
+    viewType.value = value as ViewType;
+    router.push({
+      query: {
+        ...route.query,
+        view: value,
+      },
+    });
     return;
   }
 };
 
+const viewType = ref(ViewType.MAP);
 const formData = ref({});
-
-// Watch route query params for filter values (topics, days, type, etc.)
-// Note: view and name are handled via localStorage, not query params
 watch(
-  () => route.query,
-  (query) => {
-    const topics = normalizeArrayFromURLQuery(query.topics);
-    // Extract all filter params except view and name
-    const { view, name, ...rest } = (query as Record<string, unknown>) || {};
+  route,
+  (form) => {
+    const { view, ...rest } = (form.query as Record<string, unknown>) || {};
+    const topics = normalizeArrayFromURLQuery(form.query.topics);
     formData.value = { ...rest, topics };
+    viewType.value =
+      typeof view === "string" &&
+      Object.values(ViewType).includes(view as ViewType)
+        ? (view as ViewType)
+        : ViewType.MAP;
   },
-  { immediate: true, deep: true }
+  { immediate: true }
 );
 const handleSubmit = (_values: unknown) => {
   const values: Record<string, unknown> = {};
   const input = (_values || {}) as Record<string, unknown>;
+
   Object.keys(input).forEach((key) => {
     if (input[key] && input[key] !== "") {
       if (key === "days") {
@@ -256,11 +266,18 @@ const handleSubmit = (_values: unknown) => {
       ) {
         return;
       }
+      if (key === "view") return;
       values[key] = input[key];
     }
   });
+  if (route.query.name && route.query.name !== "")
+    values["name"] = route.query.name;
+
   router.push({
-    query: values as LocationQueryRaw,
+    query: {
+      ...(values as LocationQueryRaw),
+      view: viewType.value,
+    },
   });
 };
 </script>
