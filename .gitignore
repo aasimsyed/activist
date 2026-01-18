@@ -71,6 +71,7 @@ backend/media/images/*
 !backend/media/images/.keep
 
 # LLMs
+.cursor/
 .cursorrules
 
 # Scratch/temp development files
