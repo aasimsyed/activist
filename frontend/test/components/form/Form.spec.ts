@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-import { fireEvent, screen } from "@testing-library/vue";
+import { fireEvent, screen, waitFor } from "@testing-library/vue";
 import { describe, expect, it } from "vitest";
 
 import FormTemplate from "../../../app/components/form/FormTemplate.vue";
@@ -49,7 +49,23 @@ describe("Form component", () => {
 
     await fireEvent.click(submitBtn);
 
-    // Could check for successful event if the form has a message or emitted handler.
+    // Verify form submission succeeded by checking that no validation errors appear
+    // When form submission is successful, validation errors should not be present
+    await waitFor(
+      () => {
+        const nameError = screen.queryByTestId("form-item-name-error");
+        const emailError = screen.queryByTestId("form-item-email-error");
+        const familyMemberError = screen.queryByTestId(
+          "form-item-familyMembers.0.name-error"
+        );
+
+        // All validation errors should be absent, indicating successful submission
+        expect(nameError).toBeNull();
+        expect(emailError).toBeNull();
+        expect(familyMemberError).toBeNull();
+      },
+      { timeout: 1000 }
+    );
   });
 
   it("shows and clears error for family member after invalid and valid input", async () => {

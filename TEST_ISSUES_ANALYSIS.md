@@ -15,7 +15,7 @@ This document identifies tests that may be working around bugs instead of failin
 - Only dummy tests remain: `it("true is true", () => { expect(true).toBe(true); })`
 - Tests note says: "disabled because authentication is handled by @sidebase/nuxt-auth"
 
-**Impact:** 
+**Impact:**
 - These test files provide no real test coverage
 - Bugs in sign-in/set-password functionality won't be caught
 - Tests should either be fixed to work with new auth system or removed
@@ -79,7 +79,7 @@ console.warn = (...args: unknown[]) => {
 it("submits when fields are valid", async () => {
   // ... test code ...
   await fireEvent.click(submitBtn);
-  
+
   // Could check for successful event if the form has a message or emitted handler.
 });
 ```
@@ -124,14 +124,14 @@ import CardSearchResultEntityOrganization from "../../../app/components/card/sea
 ```typescript
 it("store is not updated when API fails", async () => {
   mockGetEventService.mockRejectedValue(new Error("Failed"));
-  
+
   try {
     const event = await mockGetEventService("event-123");
     mockSetEvent(event);
   } catch {
     // Don't call setEvent on error.
   }
-  
+
   expect(mockSetEvent).not.toHaveBeenCalled();
 });
 ```

@@ -69,7 +69,7 @@ beforeEach(() => {
 3. **Isolation** - Test only YOUR code, not external dependencies.
 4. **Control** - Make mocks return exactly what you need for testing.
 
-**Real-world analogy:** 
+**Real-world analogy:**
 - Testing a car's radio without actually playing music = you mock the radio
 - Testing a payment system without charging real money = you mock the payment API
 
@@ -153,7 +153,7 @@ beforeEach(() => {
 
 it("calls useLocalePath with correct path", async () => {
   await render(BtnRouteInternal, { props: { linkTo: "/test" } });
-  
+
   // Verify the spy was called with "/test"
   expect(mockLocalePath).toHaveBeenCalledWith("/test");
 });
@@ -284,7 +284,7 @@ beforeEach(() => {
 
 it("renders NuxtLink with localized path", async () => {
   await renderButton(BtnRouteInternal, { linkTo: "/test-page" });
-  
+
   // Verify the function was called correctly
   expect(mockLocalePath).toHaveBeenCalledWith("/test-page");
 });

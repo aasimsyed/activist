@@ -1,15 +1,18 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-import { describe, expect, it } from "vitest";
-// import SetPassword from "@/pages/auth/set-password.vue";
-// import render from "@/test/render";
-// import { fireEvent, screen, waitFor, within } from "@testing-library/vue";
+/**
+ * NOTE: Set-password functionality testing was moved to Playwright e2e tests.
+ * Password validation is tested in: frontend/test-e2e/specs/all/authentication/sign-in/sign-in-validation.spec.ts
+ *
+ * Unit tests were disabled because the component requires @sidebase/nuxt-auth
+ * which needs a full browser environment. Password strength validation and UI
+ * behavior are comprehensively tested in Playwright tests.
+ */
+import { describe } from "vitest";
 
-// import {
-//   PASSWORD_STRENGTH_COLOR as COLOR,
-//   PASSWORD_RATING as RATING,
-// } from "../../constants";
-
-// describe("reset-password", () => {
+describe.skip("set-password", () => {
+  // All tests moved to Playwright e2e tests
+  // Password validation tested in: frontend/test-e2e/specs/all/authentication/sign-in/sign-in-validation.spec.ts
+});
 //   it("shows error border on blur when password invalid", async () => {
 //     await render(SetPassword);
 
@@ -207,8 +210,3 @@ import { describe, expect, it } from "vitest";
 //     }
 //   });
 // });
-describe("set-password", () => {
-  it("true", () => {
-    expect(true).toBe(true);
-  });
-});

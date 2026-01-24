@@ -172,15 +172,17 @@ const originalError = console.error;
 
 beforeEach(() => {
   // Suppress Vue warnings for known test-related issues.
+  // Only suppress specific, documented issues - not generic prop warnings that could hide bugs.
   // eslint-disable-next-line no-console
   console.warn = (...args: unknown[]) => {
     const message = String(args[0] || "");
-    // Skip warnings for known test component issues.
+    // Skip warnings for specific known test component issues only.
+    // These are documented test environment limitations, not bugs:
+    // - FriendlyCaptcha: Missing modelValue prop in test environment (from sign-up.spec.ts)
+    // - Draggable: Missing itemKey prop in test environment (from ImageFileDropzoneMultiple.spec.ts)
     if (
-      message.includes("FriendlyCaptcha") ||
-      message.includes("Draggable") ||
-      message.includes("Invalid prop") ||
-      message.includes("Missing required prop")
+      (message.includes("FriendlyCaptcha") && message.includes("modelValue")) ||
+      (message.includes("Draggable") && message.includes("itemKey"))
     ) {
       return;
     }
@@ -190,12 +192,10 @@ beforeEach(() => {
   // eslint-disable-next-line no-console
   console.error = (...args: unknown[]) => {
     const message = String(args[0] || "");
-    // Skip errors for known test component issues.
+    // Skip errors for specific known test component issues only.
     if (
-      message.includes("FriendlyCaptcha") ||
-      message.includes("Draggable") ||
-      message.includes("Invalid prop") ||
-      message.includes("Missing required prop")
+      (message.includes("FriendlyCaptcha") && message.includes("modelValue")) ||
+      (message.includes("Draggable") && message.includes("itemKey"))
     ) {
       return;
     }
