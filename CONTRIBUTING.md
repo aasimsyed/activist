@@ -445,36 +445,112 @@ Please see the [frontend testing guide](FRONTEND_TESTING.md) for information on 
 
 ### End to End Testing (E2E)
 
-#### Run Local E2E Tests
+activist uses [Playwright](https://playwright.dev/) for end to end testing. There are three ways to run the suite locally — pick one:
 
-activist uses [Playwright](https://playwright.dev/) for end to end testing. You'll first need to install/update the browsers installed for Playwright as described in their [updating Playwright documentation](https://playwright.dev/docs/intro#updating-playwright). Run the following command in the frontend:
+1. [Recommended: VS Code Playwright extension](#recommended-run-with-the-vs-code-playwright-extension) — single-IDE workflow, no extra shells, easiest for debugging a single test.
+2. [Run with `run-e2e-tests.sh`](#run-with-run-e2e-testssh) — one command orchestrates Docker, the frontend preview server, and Playwright.
+3. [Run with separate terminals](#advanced-run-with-separate-terminals) — manual, three-shell flow; use when debugging the environment itself.
+
+Before running tests any way, install (or update) the Playwright browsers. Re-run this each time Playwright is upgraded:
 
 ```bash
-# This and all following steps need to be ran each time Playwright is updated.
+# Within ./frontend:
 yarn playwright install --with-deps
 ```
 
-Run the following to run the end to end testing suite:
+See the [frontend testing guide](FRONTEND_TESTING.md) for *writing* E2E tests.
+
+#### Recommended: Run with the VS Code Playwright extension
+
+> [!TIP]
+> Start here. Using the extension keeps everything in one IDE — you avoid juggling three terminals and can run, debug, and step through a single test with one click.
+
+This path uses the official [Playwright Test for VS Code](https://marketplace.visualstudio.com/items?itemName=ms-playwright.playwright) extension (already listed in [Suggested IDE setup](#development-environment)).
+
+**One-time setup**
+
+1. Install the extension above.
+2. From the repo's `frontend/` directory, install Playwright browsers once (see prerequisite block above).
+
+**Before each run**
+
+The extension runs Playwright in your IDE, but it does **not** start the backend, database, or frontend for you. Start those first:
 
 ```bash
-# Note: There may be an installation prompts in the build logs. Hit 'n' to say no.
+# 1. Start the backend and database (USE_PREVIEW skips the full build inside Docker):
+USE_PREVIEW=true docker compose --env-file .env.dev up backend db -d
+
+# 2. In ./frontend, build and serve the frontend preview (Playwright expects http://localhost:3000):
+cd frontend
+set -a && . ../.env.dev && set +a
+export USE_PREVIEW=true
+corepack enable
+yarn install
+rm -rf dist                                   # force nuxi preview to use .output/ (node-server)
+yarn build:local                              # hit 'n' at any install prompts
+nohup env NUXT_SESSION_PASSWORD="$NUXT_SESSION_PASSWORD" NUXT_API_SECRET="" \
+  node .output/server/index.mjs > /dev/null 2>&1 &
+```
+
+Leave those running in the background. Playwright's [`globalSetup`](frontend/test-e2e/global-setup.ts) will create the admin/member auth state on first use and reuse it for up to 20 hours.
+
+**Run tests from VS Code**
+
+1. Open the **Testing** view (beaker icon in the sidebar).
+2. Expand **Playwright** to see the `Desktop Chrome` / `Mobile Chrome` projects.
+3. Click ▶ next to a spec, `describe` block, or single `test` to run it; click the bug icon to debug.
+4. Use **Show browser** in the Playwright panel to run headed, and toggle projects to run desktop-only or mobile-only.
+
+When you're done for the day, stop the background processes:
+
+```bash
+lsof -ti tcp:3000 | xargs kill -9 2>/dev/null || true
+docker compose --env-file .env.dev down
+```
+
+#### Run with `run-e2e-tests.sh`
+
+Use this when you want a single command to bring up Docker, build and serve the frontend, run Playwright, and tear everything down. Run from the **repository root**:
+
+```bash
+# Note: There may be installation prompts in the build logs. Hit 'n' to say no.
 # macOS:
 sh run-e2e-tests.sh
 # Linux or Windows using WSL:
 bash run-e2e-tests.sh
 
-# After the tests finish, run the following to see the Playwright HTML report:
-yarn playwright show-report
+# After the tests finish, view the Playwright HTML report:
+cd frontend && yarn playwright show-report
+```
 
-# Note: If you stop the script before it finishes, please run the following to stop all background processes:
+The script accepts a few flags (see `sh run-e2e-tests.sh -h` for the authoritative list):
+
+| Flag | Effect |
+|------|--------|
+| `-f <path>` | Run a single Playwright spec. `<path>` may be relative to `frontend/` (e.g. `test-e2e/specs/all/landing-page.spec.ts`), prefixed with `frontend/` from the repo root, or absolute. |
+| `-d` | Desktop only (Playwright project `Desktop Chrome`). |
+| `-m` | Mobile only (Playwright project `Mobile Chrome`). |
+| `-h`, `--help` | Print usage and exit without starting Docker or tests. |
+
+With no `-d`/`-m`, both desktop and mobile run (default). Examples:
+
+```bash
+sh run-e2e-tests.sh                                                           # full suite, desktop + mobile
+sh run-e2e-tests.sh -d                                                        # desktop only
+sh run-e2e-tests.sh -f test-e2e/specs/all/landing-page.spec.ts                # one spec, both projects
+sh run-e2e-tests.sh -f frontend/test-e2e/specs/all/landing-page.spec.ts -m    # one spec, mobile only
+```
+
+If you stop the script before it finishes, clean up the background processes:
+
+```bash
 docker compose --env-file .env.dev down
 lsof -ti tcp:3000 | xargs kill -9 2>/dev/null || true
 ```
 
-> [!NOTE]
-> VS Code users can use the [Playwright extension](https://marketplace.visualstudio.com/items?itemName=ms-playwright.playwright) to run the tests. Go to the testing view and then run the test suite. You can also select options including which devices to run and whether to view the browser.
+#### Advanced: Run with separate terminals
 
-Alternatively, to run the end to end tests using separate shells, please run the following:
+Use this path when you need full control (debugging the environment, swapping the preview server for `yarn dev:local`, running Playwright from a non-VS Code tool, etc.). For most contributors, the [extension](#recommended-run-with-the-vs-code-playwright-extension) or the [script](#run-with-run-e2e-testssh) above is simpler.
 
 In a first shell, start the backend and database:
 
@@ -488,8 +564,8 @@ In a second shell, build and serve the frontend in preview mode:
 ```bash
 cd frontend
 
-# Set the environment variables:
-set -a && source ../.env.dev && set +a
+# Set the environment variables (bash/zsh can also use `source ../.env.dev`):
+set -a && . ../.env.dev && set +a
 
 # USE_PREVIEW=true switches Nitro to node-server preset (outputs to .output/)
 # so that `yarn preview` works. Without it the build uses netlify-static (dist/).
@@ -518,8 +594,6 @@ SKIP_WEBSERVER=true yarn test:local
 # After the tests finish, run the following to see the Playwright HTML report:
 yarn playwright show-report
 ```
-
-Or, instead of the third shell, you can also run the whole suite or run individual tests using Playwright's VS Code extension. You can find a link in the [Development environment](#development-environment) section, under Suggested IDE setup.
 
 Thank you for testing locally! ✨
 
