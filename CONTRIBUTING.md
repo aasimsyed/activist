@@ -523,25 +523,32 @@ bash run-e2e-tests.sh
 cd frontend && yarn playwright show-report
 ```
 
-The script accepts a few flags (see `sh run-e2e-tests.sh -h` for the authoritative list):
+The script accepts a few flags (see `./run-e2e-tests.sh -h` for the authoritative list):
 
 | Flag | Effect |
 |------|--------|
 | `-f <path>` | Run a single Playwright spec. `<path>` may be relative to `frontend/` (e.g. `test-e2e/specs/all/landing-page.spec.ts`), prefixed with `frontend/` from the repo root, or absolute. |
 | `-d` | Desktop only (Playwright project `Desktop Chrome`). |
 | `-m` | Mobile only (Playwright project `Mobile Chrome`). |
+| `-s`, `--skip-build` | Reuse the existing `frontend/.output/` build instead of rebuilding. Skips `yarn install` + `yarn build:local` for fast iteration; errors cleanly if no build exists. |
 | `-h`, `--help` | Print usage and exit without starting Docker or tests. |
+| `-- <args>` | Everything after `--` is forwarded to `npx playwright test` (e.g. `--headed`, `--debug`, `--ui`, `-g "<name>"`, `--repeat-each N`, `--update-snapshots`). |
 
 With no `-d`/`-m`, both desktop and mobile run (default). Examples:
 
 ```bash
-sh run-e2e-tests.sh                                                           # full suite, desktop + mobile
-sh run-e2e-tests.sh -d                                                        # desktop only
-sh run-e2e-tests.sh -f test-e2e/specs/all/landing-page.spec.ts                # one spec, both projects
-sh run-e2e-tests.sh -f frontend/test-e2e/specs/all/landing-page.spec.ts -m    # one spec, mobile only
+./run-e2e-tests.sh                                                          # full suite, desktop + mobile
+./run-e2e-tests.sh -d                                                       # desktop only
+./run-e2e-tests.sh -f test-e2e/specs/all/landing-page.spec.ts               # one spec, both projects
+./run-e2e-tests.sh -f frontend/test-e2e/specs/all/landing-page.spec.ts -m   # one spec, mobile only
+./run-e2e-tests.sh -s -f test-e2e/specs/all/landing-page.spec.ts -- --headed  # fast iter, visible browser
+./run-e2e-tests.sh -- --grep "qr code"                                      # filter by test name
 ```
 
-If you stop the script before it finishes, clean up the background processes:
+> [!TIP]
+> The script exits with Playwright's exit code, so `./run-e2e-tests.sh -f … && echo PASS` does what you expect.
+
+If you stop the script before it finishes, cleanup is automatic (the script traps `EXIT`/`INT`/`TERM` and tears down Docker + port 3000). If you ever need to tidy up manually:
 
 ```bash
 docker compose --env-file .env.dev down
