@@ -494,6 +494,9 @@ nohup env NUXT_SESSION_PASSWORD="$NUXT_SESSION_PASSWORD" NUXT_API_SECRET="" \
 
 Leave those running in the background. Playwright's [`globalSetup`](frontend/test-e2e/global-setup.ts) will create the admin/member auth state on first use and reuse it for up to 20 hours.
 
+> [!NOTE]
+> You only need to re-run `yarn build:local` (and restart the `nohup` node server) after changing **frontend source**. When you're only editing tests under `frontend/test-e2e/`, the existing build is fine — just keep the preview server running and re-run tests from VS Code.
+
 **Run tests from VS Code**
 
 1. Open the **Testing** view (beaker icon in the sidebar).

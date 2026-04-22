@@ -123,7 +123,7 @@ while [ $# -gt 0 ]; do
       ;;
     *)
       echo "run-e2e-tests.sh: unknown option: $1" >&2
-      echo "Try '-h' for usage." >&2
+      echo "Try '-h' or '--help' for usage." >&2
       exit 1
       ;;
   esac
@@ -188,8 +188,14 @@ if [ -n "$E2E_FILE" ]; then
   fi
 fi
 
-# Start the backend and database (USE_PREVIEW skips full build inside Docker):
-USE_PREVIEW=true docker compose --env-file .env.dev up backend db -d
+# Start the backend and database (USE_PREVIEW skips full build inside Docker).
+# Fail fast if Docker itself is unreachable, otherwise we'd waste ~2 minutes
+# on the frontend build only to hit a misleading "frontend did not become ready"
+# error downstream.
+USE_PREVIEW=true docker compose --env-file .env.dev up backend db -d || {
+  echo "run-e2e-tests.sh: failed to start Docker services (is the Docker daemon running?)" >&2
+  exit 1
+}
 
 # Set the environment variables and run the frontend:
 cd frontend || {
@@ -267,7 +273,9 @@ fi
 export SKIP_WEBSERVER=true
 export TEST_ENV=local
 
-# Build the --project=... arguments once for every npx playwright branch.
+# Build the --project=... arguments. PROJECT_ARGS is only consumed by the npx
+# branch below; the `yarn test:local*` branches select projects internally via
+# the scripts in frontend/package.json.
 PROJECT_ARGS=()
 MODES=""
 if [ "$E2E_PLATFORM_DESKTOP" -eq 1 ]; then
@@ -279,8 +287,22 @@ if [ "$E2E_PLATFORM_MOBILE" -eq 1 ]; then
   MODES="${MODES:+$MODES, }Mobile Chrome"
 fi
 
+# Note "<full suite>" in the Spec line when passthrough args actually filter
+# the run (--grep, -g, --grep-invert, --shard) so the log isn't misleading.
+spec_display="${PLAYWRIGHT_SPEC:-<full suite>}"
+if [ -z "$PLAYWRIGHT_SPEC" ] && [ ${#PASSTHROUGH[@]} -gt 0 ]; then
+  for arg in "${PASSTHROUGH[@]}"; do
+    case "$arg" in
+      -g|--grep|--grep-invert|--shard|--shard=*)
+        spec_display="<full suite, filtered by passthrough>"
+        break
+        ;;
+    esac
+  done
+fi
+
 echo "Running: $MODES"
-echo "Spec:    ${PLAYWRIGHT_SPEC:-<full suite>}"
+echo "Spec:    $spec_display"
 if [ ${#PASSTHROUGH[@]} -gt 0 ]; then
   echo "Extra:   ${PASSTHROUGH[*]}"
 fi
