@@ -34,11 +34,17 @@ cleanup() {
     kill "$SPINNER_PID" 2>/dev/null || true
     wait "$SPINNER_PID" 2>/dev/null || true
   fi
-  # --no-cleanup/--keep-up: leave Docker + preview server running for debugging
-  # (e.g. poking at the DB, re-running Playwright manually with --ui).
+  # --no-cleanup/--keep-up: leave Docker (and the preview server, on normal
+  # exit) running for debugging. On Ctrl-C the preview server dies with the
+  # rest of the foreground process group; Docker survives because it's
+  # detached. Test for the running server so the message is accurate.
   if [ "$NO_CLEANUP" -eq 1 ]; then
     printf '\n' >&2
-    echo "run-e2e-tests.sh: --no-cleanup set; Docker and preview server left running." >&2
+    if lsof -ti tcp:3000 >/dev/null 2>&1; then
+      echo "run-e2e-tests.sh: --no-cleanup set; Docker and preview server left running." >&2
+    else
+      echo "run-e2e-tests.sh: --no-cleanup set; Docker left running (preview server exited with the run)." >&2
+    fi
     echo "Clean up manually when done:" >&2
     echo "  lsof -ti tcp:3000 | xargs kill -9 2>/dev/null" >&2
     echo "  (cd \"$REPO_ROOT\" && docker compose --env-file .env.dev down)" >&2
@@ -64,9 +70,12 @@ Options:
   -m                Run mobile tests only  (Playwright project: Mobile Chrome).
   -s, --skip-build  Skip yarn install + yarn build:local and reuse the existing
                     frontend/.output/ build. Fails if no build is present.
-  --no-cleanup      Leave Docker containers and the preview server running
-    (--keep-up)     after tests finish (useful for debugging / poking at the DB).
-                    Prints manual cleanup commands on exit.
+  --no-cleanup      Leave Docker containers (and, on normal exit, the preview
+    (--keep-up)     server) running after the script exits, so you can poke
+                    at the DB or re-run Playwright manually. Prints manual
+                    cleanup commands on exit. Note: if you Ctrl-C mid-run,
+                    SIGINT kills the preview server directly (Docker survives
+                    because it's not in the foreground process group).
   -h, --help        Print this message and exit (does not start Docker or tests).
 
 Anything after `--` is forwarded to `npx playwright test`. Useful for:
@@ -152,6 +161,15 @@ if [ ! -f .env.dev ]; then
   exit 1
 fi
 
+# -s/--skip-build requires an existing build. Checked here (before Docker) so
+# a fresh clone with `-s` fails in milliseconds instead of after ~4s of Docker
+# startup.
+if [ "$SKIP_BUILD" -eq 1 ] && [ ! -f frontend/.output/server/index.mjs ]; then
+  echo "run-e2e-tests.sh: -s/--skip-build requires an existing build at frontend/.output/server/index.mjs" >&2
+  echo "Run once without -s, or run 'yarn build:local' manually first." >&2
+  exit 1
+fi
+
 # Resolve the optional -f spec path before starting Docker so a typo does not
 # waste the time needed to bring up backend + db.
 PLAYWRIGHT_SPEC=""
@@ -210,13 +228,9 @@ set -a && . ../.env.dev && set +a
 export USE_PREVIEW=true
 
 # Install dependencies and build + serve the frontend in preview mode.
-# -s / --skip-build reuses the existing .output/ build for fast iteration.
+# -s / --skip-build reuses the existing .output/ build for fast iteration
+# (existence of .output/server/index.mjs is verified in the preflight block).
 if [ "$SKIP_BUILD" -eq 1 ]; then
-  if [ ! -f .output/server/index.mjs ]; then
-    echo "run-e2e-tests.sh: -s/--skip-build requires an existing build at frontend/.output/server/index.mjs" >&2
-    echo "Run once without -s, or run 'yarn build:local' manually first." >&2
-    exit 1
-  fi
   echo "Skipping build; serving existing .output/server/index.mjs"
 else
   corepack enable

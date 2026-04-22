@@ -534,7 +534,7 @@ The script accepts a few flags (see `./run-e2e-tests.sh -h` for the authoritativ
 | `-d` | Desktop only (Playwright project `Desktop Chrome`). |
 | `-m` | Mobile only (Playwright project `Mobile Chrome`). |
 | `-s`, `--skip-build` | Reuse the existing `frontend/.output/` build instead of rebuilding. Skips `yarn install` + `yarn build:local` for fast iteration; errors cleanly if no build exists. |
-| `--no-cleanup` (`--keep-up`) | Leave Docker containers and the preview server on port 3000 running after the script exits. Handy when debugging failures (inspect the DB, re-run Playwright manually with `--ui`). Prints manual cleanup commands on exit. |
+| `--no-cleanup` (`--keep-up`) | Leave Docker containers (and, on normal exit, the preview server on port 3000) running after the script exits. Handy when debugging failures (inspect the DB, re-run Playwright manually with `--ui`). Prints manual cleanup commands on exit. **Caveat:** if you abort with Ctrl-C, SIGINT kills the preview server directly; Docker still stays up. |
 | `-h`, `--help` | Print usage and exit without starting Docker or tests. |
 | `-- <args>` | Everything after `--` is forwarded to `npx playwright test` (e.g. `--headed`, `--debug`, `--ui`, `-g "<name>"`, `--repeat-each N`, `--update-snapshots`). |
 
