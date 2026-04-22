@@ -108,14 +108,26 @@ if [ "$E2E_PLATFORM_DESKTOP" -eq 0 ] && [ "$E2E_PLATFORM_MOBILE" -eq 0 ]; then
   E2E_PLATFORM_MOBILE=1
 fi
 
-# Start the backend and database (USE_PREVIEW skips full build inside Docker):
-USE_PREVIEW=true docker compose --env-file .env.dev up backend db -d
+# Preflight checks: fail fast before touching Docker or the build.
+# Work from the repo root so relative paths resolve deterministically no matter
+# which directory the script was invoked from.
+cd "$REPO_ROOT" || {
+  echo "run-e2e-tests.sh: cannot cd to repo root: $REPO_ROOT" >&2
+  exit 1
+}
 
-# Set the environment variables and run the frontend:
-cd frontend
-set -a && . ../.env.dev && set +a
+if [ ! -d frontend ]; then
+  echo "run-e2e-tests.sh: expected a 'frontend' directory at $REPO_ROOT" >&2
+  exit 1
+fi
 
-# Resolve optional spec path (fail before long build/install).
+if [ ! -f .env.dev ]; then
+  echo "run-e2e-tests.sh: missing .env.dev at $REPO_ROOT (copy from .env.dev.example)" >&2
+  exit 1
+fi
+
+# Resolve the optional -f spec path before starting Docker so a typo does not
+# waste the time needed to bring up backend + db.
 PLAYWRIGHT_SPEC=""
 if [ -n "$E2E_FILE" ]; then
   ef="$E2E_FILE"
@@ -130,11 +142,13 @@ if [ -n "$E2E_FILE" ]; then
       fi
       ;;
     *)
-      if [ -f "$ef" ]; then
+      # Prefer frontend-relative, then strip a leading frontend/ if the user
+      # pasted a repo-root path. Result is always a path valid from frontend/.
+      if [ -f "frontend/$ef" ]; then
         PLAYWRIGHT_SPEC="$ef"
       else
         stripped="${ef#frontend/}"
-        if [ "$stripped" != "$ef" ] && [ -f "$stripped" ]; then
+        if [ "$stripped" != "$ef" ] && [ -f "frontend/$stripped" ]; then
           PLAYWRIGHT_SPEC="$stripped"
         fi
       fi
@@ -147,6 +161,16 @@ if [ -n "$E2E_FILE" ]; then
     exit 1
   fi
 fi
+
+# Start the backend and database (USE_PREVIEW skips full build inside Docker):
+USE_PREVIEW=true docker compose --env-file .env.dev up backend db -d
+
+# Set the environment variables and run the frontend:
+cd frontend || {
+  echo "run-e2e-tests.sh: cannot cd to frontend/" >&2
+  exit 1
+}
+set -a && . ../.env.dev && set +a
 
 # USE_PREVIEW=true switches the Nitro preset to node-server (outputs to .output/)
 # so that `yarn preview` (nuxi preview) can serve it. Without this, the build
@@ -180,16 +204,25 @@ nohup env NUXT_SESSION_PASSWORD="$NUXT_SESSION_PASSWORD" NUXT_API_SECRET="" node
 ) &
 SPINNER_PID=$!
 
+ready=0
 for i in $(seq 1 30); do
   if curl -sf http://localhost:3000/ > /dev/null 2>&1; then
     kill "$SPINNER_PID" 2>/dev/null || true
     wait "$SPINNER_PID" 2>/dev/null || true
     SPINNER_PID=""
     printf "\rFrontend ready.          \n"
+    ready=1
     break
   fi
   sleep 2
 done
+
+# Abort rather than run Playwright against a dead port; the trap handles teardown.
+if [ "$ready" -ne 1 ]; then
+  printf "\n" >&2
+  echo "run-e2e-tests.sh: frontend did not become ready on http://localhost:3000 within 60s" >&2
+  exit 1
+fi
 
 # Run the e2e test suite (SKIP_WEBSERVER tells Playwright to reuse the running server):
 export SKIP_WEBSERVER=true
