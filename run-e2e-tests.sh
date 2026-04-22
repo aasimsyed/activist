@@ -1,7 +1,12 @@
+#!/usr/bin/env bash
 # Run this script to run the activist e2e test suite.
-# macOS: sh run-e2e-tests.sh
-# Linux: bash run-e2e-tests.sh
+# macOS:   sh run-e2e-tests.sh   (or: ./run-e2e-tests.sh after chmod +x)
+# Linux:   bash run-e2e-tests.sh (or: ./run-e2e-tests.sh after chmod +x)
 # Windows: Please download WSL and run the Linux command above.
+#
+# The shebang is bash because the spinner uses bash substring syntax; invoking
+# as `sh run-e2e-tests.sh` still works on macOS (where /bin/sh is bash) but
+# the shebang is the portable path.
 #
 # Run from the repository root. Options:
 #   -f <path>   Run a single Playwright spec. Path may be relative to frontend/
@@ -19,9 +24,30 @@
 #   sh run-e2e-tests.sh -f test-e2e/specs/all/organizations/organization-about/organization-about-qr-code.spec.ts
 #   sh run-e2e-tests.sh -f frontend/test-e2e/specs/all/foo.spec.ts -m
 
+# Resolve the repo root once so the EXIT trap can tear down Docker no matter
+# which directory the script is in when it exits (e.g. after `cd frontend`).
+REPO_ROOT="$(cd "$(dirname "$0")" && pwd)"
+
 E2E_FILE=""
 E2E_PLATFORM_DESKTOP=0
 E2E_PLATFORM_MOBILE=0
+SPINNER_PID=""
+
+# Guaranteed cleanup on any exit path (normal exit, Ctrl-C, or error). Without
+# this, aborted runs leave Docker containers up and the preview server holding
+# port 3000, forcing users to clean up by hand.
+cleanup() {
+  rc=$?
+  trap - EXIT INT TERM
+  if [ -n "$SPINNER_PID" ]; then
+    kill "$SPINNER_PID" 2>/dev/null || true
+    wait "$SPINNER_PID" 2>/dev/null || true
+  fi
+  lsof -ti tcp:3000 2>/dev/null | xargs kill -9 2>/dev/null || true
+  (cd "$REPO_ROOT" && docker compose --env-file .env.dev down) >/dev/null 2>&1 || true
+  exit "$rc"
+}
+trap cleanup EXIT INT TERM
 
 usage() {
   cat <<'EOF'
@@ -118,8 +144,6 @@ if [ -n "$E2E_FILE" ]; then
   if [ -z "$PLAYWRIGHT_SPEC" ]; then
     echo "run-e2e-tests.sh: spec file not found: $E2E_FILE" >&2
     echo "Hint: paths are resolved from frontend/ (e.g. test-e2e/specs/...) or use frontend/... from repo root." >&2
-    cd ..
-    docker compose --env-file .env.dev down
     exit 1
   fi
 fi
@@ -158,8 +182,9 @@ SPINNER_PID=$!
 
 for i in $(seq 1 30); do
   if curl -sf http://localhost:3000/ > /dev/null 2>&1; then
-    kill $SPINNER_PID 2>/dev/null
-    wait $SPINNER_PID 2>/dev/null
+    kill "$SPINNER_PID" 2>/dev/null || true
+    wait "$SPINNER_PID" 2>/dev/null || true
+    SPINNER_PID=""
     printf "\rFrontend ready.          \n"
     break
   fi
@@ -170,28 +195,28 @@ done
 export SKIP_WEBSERVER=true
 export TEST_ENV=local
 
+# Capture Playwright's exit code so a failing test run returns non-zero.
+# `yarn test:local:merge` is best-effort and must not mask a failing test run.
+rc=0
 if [ -n "$PLAYWRIGHT_SPEC" ]; then
   if [ "$E2E_PLATFORM_DESKTOP" -eq 1 ] && [ "$E2E_PLATFORM_MOBILE" -eq 1 ]; then
-    npx playwright test --project='Desktop Chrome' --project='Mobile Chrome' "$PLAYWRIGHT_SPEC"
+    npx playwright test --project='Desktop Chrome' --project='Mobile Chrome' "$PLAYWRIGHT_SPEC" || rc=$?
   elif [ "$E2E_PLATFORM_DESKTOP" -eq 1 ]; then
-    npx playwright test --project='Desktop Chrome' "$PLAYWRIGHT_SPEC"
+    npx playwright test --project='Desktop Chrome' "$PLAYWRIGHT_SPEC" || rc=$?
   else
-    npx playwright test --project='Mobile Chrome' "$PLAYWRIGHT_SPEC"
+    npx playwright test --project='Mobile Chrome' "$PLAYWRIGHT_SPEC" || rc=$?
   fi
 elif [ "$E2E_PLATFORM_DESKTOP" -eq 1 ] && [ "$E2E_PLATFORM_MOBILE" -eq 1 ]; then
-  yarn test:local
+  yarn test:local || rc=$?
 elif [ "$E2E_PLATFORM_DESKTOP" -eq 1 ]; then
   rm -rf blob-report
-  yarn test:local:desktop || true
+  yarn test:local:desktop || rc=$?
   yarn test:local:merge || true
 else
   rm -rf blob-report
-  yarn test:local:mobile || true
+  yarn test:local:mobile || rc=$?
   yarn test:local:merge || true
 fi
 
-# Stop the frontend and Docker processes:
-lsof -ti tcp:3000 | xargs kill -9 2>/dev/null || true
-
-cd ..
-docker compose --env-file .env.dev down
+# Cleanup (port 3000 + docker compose down) is handled by the EXIT trap.
+exit "$rc"
