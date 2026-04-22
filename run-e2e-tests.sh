@@ -19,6 +19,7 @@ E2E_FILE=""
 E2E_PLATFORM_DESKTOP=0
 E2E_PLATFORM_MOBILE=0
 SKIP_BUILD=0
+NO_CLEANUP=0
 PASSTHROUGH=()
 SPINNER_PID=""
 
@@ -28,9 +29,20 @@ SPINNER_PID=""
 cleanup() {
   rc=$?
   trap - EXIT INT TERM
+  # Always stop the spinner so the terminal is usable regardless of mode.
   if [ -n "$SPINNER_PID" ]; then
     kill "$SPINNER_PID" 2>/dev/null || true
     wait "$SPINNER_PID" 2>/dev/null || true
+  fi
+  # --no-cleanup/--keep-up: leave Docker + preview server running for debugging
+  # (e.g. poking at the DB, re-running Playwright manually with --ui).
+  if [ "$NO_CLEANUP" -eq 1 ]; then
+    printf '\n' >&2
+    echo "run-e2e-tests.sh: --no-cleanup set; Docker and preview server left running." >&2
+    echo "Clean up manually when done:" >&2
+    echo "  lsof -ti tcp:3000 | xargs kill -9 2>/dev/null" >&2
+    echo "  (cd \"$REPO_ROOT\" && docker compose --env-file .env.dev down)" >&2
+    exit "$rc"
   fi
   lsof -ti tcp:3000 2>/dev/null | xargs kill -9 2>/dev/null || true
   (cd "$REPO_ROOT" && docker compose --env-file .env.dev down) >/dev/null 2>&1 || true
@@ -52,6 +64,9 @@ Options:
   -m                Run mobile tests only  (Playwright project: Mobile Chrome).
   -s, --skip-build  Skip yarn install + yarn build:local and reuse the existing
                     frontend/.output/ build. Fails if no build is present.
+  --no-cleanup      Leave Docker containers and the preview server running
+    (--keep-up)     after tests finish (useful for debugging / poking at the DB).
+                    Prints manual cleanup commands on exit.
   -h, --help        Print this message and exit (does not start Docker or tests).
 
 Anything after `--` is forwarded to `npx playwright test`. Useful for:
@@ -66,6 +81,7 @@ Examples:
   ./run-e2e-tests.sh -f frontend/test-e2e/specs/all/foo.spec.ts -d
   ./run-e2e-tests.sh -s -f test-e2e/specs/all/foo.spec.ts -- --headed
   ./run-e2e-tests.sh -- --grep "qr code"
+  ./run-e2e-tests.sh --no-cleanup -f test-e2e/specs/all/foo.spec.ts
 EOF
 }
 
@@ -89,6 +105,10 @@ while [ $# -gt 0 ]; do
       ;;
     -s|--skip-build)
       SKIP_BUILD=1
+      shift
+      ;;
+    --no-cleanup|--keep-up)
+      NO_CLEANUP=1
       shift
       ;;
     -h|--help)
