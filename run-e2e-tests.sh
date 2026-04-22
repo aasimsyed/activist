@@ -1,28 +1,15 @@
 #!/usr/bin/env bash
-# Run this script to run the activist e2e test suite.
-# macOS:   sh run-e2e-tests.sh   (or: ./run-e2e-tests.sh after chmod +x)
-# Linux:   bash run-e2e-tests.sh (or: ./run-e2e-tests.sh after chmod +x)
-# Windows: Please download WSL and run the Linux command above.
+# Run the activist end-to-end test suite.
 #
-# The shebang is bash because the spinner uses bash substring syntax; invoking
-# as `sh run-e2e-tests.sh` still works on macOS (where /bin/sh is bash) but
-# the shebang is the portable path.
+# Usage: ./run-e2e-tests.sh [options] [-- <playwright args>]
+# (or equivalently: sh run-e2e-tests.sh / bash run-e2e-tests.sh)
 #
-# Run from the repository root. Options:
-#   -f <path>   Run a single Playwright spec. Path may be relative to frontend/
-#               (e.g. test-e2e/specs/...) or include the frontend/ prefix from repo root.
-#   -d          Desktop only (Playwright project "Desktop Chrome").
-#   -m          Mobile only (Playwright project "Mobile Chrome").
-#   -h, --help  Show usage.
+# Run `./run-e2e-tests.sh -h` for the authoritative list of flags and examples.
+# Windows users: please run this script inside WSL.
 #
-# With no -d/-m, both desktop and mobile run (default). -d and -m together is the same
-# as neither (both projects).
-#
-# Examples:
-#   sh run-e2e-tests.sh
-#   sh run-e2e-tests.sh -d
-#   sh run-e2e-tests.sh -f test-e2e/specs/all/organizations/organization-about/organization-about-qr-code.spec.ts
-#   sh run-e2e-tests.sh -f frontend/test-e2e/specs/all/foo.spec.ts -m
+# Implementation note: the shebang is bash because the spinner uses bash
+# substring syntax. Invoking as `sh run-e2e-tests.sh` still works on macOS
+# (where /bin/sh is bash) but the shebang is the portable path.
 
 # Resolve the repo root once so the EXIT trap can tear down Docker no matter
 # which directory the script is in when it exits (e.g. after `cd frontend`).
@@ -31,6 +18,8 @@ REPO_ROOT="$(cd "$(dirname "$0")" && pwd)"
 E2E_FILE=""
 E2E_PLATFORM_DESKTOP=0
 E2E_PLATFORM_MOBILE=0
+SKIP_BUILD=0
+PASSTHROUGH=()
 SPINNER_PID=""
 
 # Guaranteed cleanup on any exit path (normal exit, Ctrl-C, or error). Without
@@ -51,25 +40,32 @@ trap cleanup EXIT INT TERM
 
 usage() {
   cat <<'EOF'
-Usage: sh run-e2e-tests.sh [options]
+Usage: ./run-e2e-tests.sh [options] [-- <playwright args>]
 
-  -f <path>   Run a single Playwright spec file instead of the full suite.
-              After cd frontend, path may be:
-                - relative to frontend/ (e.g. test-e2e/specs/all/.../foo.spec.ts), or
-                - prefixed with frontend/ when given from the repository root, or
-                - an absolute path to the spec file.
-  -d          Run desktop tests only (Desktop Chrome).
-  -m          Run mobile tests only (Mobile Chrome).
-  -h, --help  Print this message and exit (does not start Docker or run tests).
+Options:
+  -f <path>         Run a single Playwright spec file instead of the full suite.
+                    <path> may be:
+                      - relative to frontend/ (e.g. test-e2e/specs/all/foo.spec.ts),
+                      - prefixed with frontend/ when given from the repo root, or
+                      - an absolute path to the spec file.
+  -d                Run desktop tests only (Playwright project: Desktop Chrome).
+  -m                Run mobile tests only  (Playwright project: Mobile Chrome).
+  -s, --skip-build  Skip yarn install + yarn build:local and reuse the existing
+                    frontend/.output/ build. Fails if no build is present.
+  -h, --help        Print this message and exit (does not start Docker or tests).
+
+Anything after `--` is forwarded to `npx playwright test`. Useful for:
+  --headed  --debug  --ui  -g "<name>"  --repeat-each N  --update-snapshots
 
 If neither -d nor -m is passed, both desktop and mobile run.
 
 Examples:
-  sh run-e2e-tests.sh
-  sh run-e2e-tests.sh -d
-  sh run-e2e-tests.sh -m
-  sh run-e2e-tests.sh -f test-e2e/specs/all/foo.spec.ts
-  sh run-e2e-tests.sh -f frontend/test-e2e/specs/all/foo.spec.ts -d
+  ./run-e2e-tests.sh
+  ./run-e2e-tests.sh -d
+  ./run-e2e-tests.sh -f test-e2e/specs/all/foo.spec.ts
+  ./run-e2e-tests.sh -f frontend/test-e2e/specs/all/foo.spec.ts -d
+  ./run-e2e-tests.sh -s -f test-e2e/specs/all/foo.spec.ts -- --headed
+  ./run-e2e-tests.sh -- --grep "qr code"
 EOF
 }
 
@@ -91,9 +87,19 @@ while [ $# -gt 0 ]; do
       E2E_PLATFORM_MOBILE=1
       shift
       ;;
+    -s|--skip-build)
+      SKIP_BUILD=1
+      shift
+      ;;
     -h|--help)
       usage
       exit 0
+      ;;
+    --)
+      # Everything after -- is forwarded verbatim to `npx playwright test`.
+      shift
+      PASSTHROUGH=("$@")
+      break
       ;;
     *)
       echo "run-e2e-tests.sh: unknown option: $1" >&2
@@ -177,13 +183,23 @@ set -a && . ../.env.dev && set +a
 # uses the netlify-static preset (outputs to dist/) and yarn preview fails.
 export USE_PREVIEW=true
 
-# Install dependencies and build + serve the frontend in preview mode:
-corepack enable
-yarn install
-# Remove any previous static build so nuxi preview uses .output/ (node-server) not dist/ (netlify-static).
-rm -rf dist
-echo "Building frontend (this takes ~2 minutes)..."
-yarn build:local
+# Install dependencies and build + serve the frontend in preview mode.
+# -s / --skip-build reuses the existing .output/ build for fast iteration.
+if [ "$SKIP_BUILD" -eq 1 ]; then
+  if [ ! -f .output/server/index.mjs ]; then
+    echo "run-e2e-tests.sh: -s/--skip-build requires an existing build at frontend/.output/server/index.mjs" >&2
+    echo "Run once without -s, or run 'yarn build:local' manually first." >&2
+    exit 1
+  fi
+  echo "Skipping build; serving existing .output/server/index.mjs"
+else
+  corepack enable
+  yarn install
+  # Remove any previous static build so nuxi preview uses .output/ (node-server) not dist/ (netlify-static).
+  rm -rf dist
+  echo "Building frontend (this takes ~2 minutes)..."
+  yarn build:local
+fi
 echo "Starting frontend server..."
 # Kill any leftover server from a previous run using lsof directly (yarn kill-port can block).
 lsof -ti tcp:3000 | xargs kill -9 2>/dev/null || true
@@ -228,16 +244,34 @@ fi
 export SKIP_WEBSERVER=true
 export TEST_ENV=local
 
+# Build the --project=... arguments once for every npx playwright branch.
+PROJECT_ARGS=()
+MODES=""
+if [ "$E2E_PLATFORM_DESKTOP" -eq 1 ]; then
+  PROJECT_ARGS+=(--project='Desktop Chrome')
+  MODES="Desktop Chrome"
+fi
+if [ "$E2E_PLATFORM_MOBILE" -eq 1 ]; then
+  PROJECT_ARGS+=(--project='Mobile Chrome')
+  MODES="${MODES:+$MODES, }Mobile Chrome"
+fi
+
+echo "Running: $MODES"
+echo "Spec:    ${PLAYWRIGHT_SPEC:-<full suite>}"
+if [ ${#PASSTHROUGH[@]} -gt 0 ]; then
+  echo "Extra:   ${PASSTHROUGH[*]}"
+fi
+
 # Capture Playwright's exit code so a failing test run returns non-zero.
 # `yarn test:local:merge` is best-effort and must not mask a failing test run.
+# When a spec or passthrough args are provided, route through npx directly so
+# the args flow through (yarn's compound scripts don't forward --args cleanly).
 rc=0
-if [ -n "$PLAYWRIGHT_SPEC" ]; then
-  if [ "$E2E_PLATFORM_DESKTOP" -eq 1 ] && [ "$E2E_PLATFORM_MOBILE" -eq 1 ]; then
-    npx playwright test --project='Desktop Chrome' --project='Mobile Chrome' "$PLAYWRIGHT_SPEC" || rc=$?
-  elif [ "$E2E_PLATFORM_DESKTOP" -eq 1 ]; then
-    npx playwright test --project='Desktop Chrome' "$PLAYWRIGHT_SPEC" || rc=$?
+if [ -n "$PLAYWRIGHT_SPEC" ] || [ ${#PASSTHROUGH[@]} -gt 0 ]; then
+  if [ -n "$PLAYWRIGHT_SPEC" ]; then
+    npx playwright test "${PROJECT_ARGS[@]}" "$PLAYWRIGHT_SPEC" "${PASSTHROUGH[@]}" || rc=$?
   else
-    npx playwright test --project='Mobile Chrome' "$PLAYWRIGHT_SPEC" || rc=$?
+    npx playwright test "${PROJECT_ARGS[@]}" "${PASSTHROUGH[@]}" || rc=$?
   fi
 elif [ "$E2E_PLATFORM_DESKTOP" -eq 1 ] && [ "$E2E_PLATFORM_MOBILE" -eq 1 ]; then
   yarn test:local || rc=$?
