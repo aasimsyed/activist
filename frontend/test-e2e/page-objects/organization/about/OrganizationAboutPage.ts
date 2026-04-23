@@ -65,4 +65,5 @@ export const newOrganizationAboutPage = (page: Page) => ({
     .getByTestId("image-carousel")
     .getByTestId("icon-edit"),
   getImageCarouselImages: page.getByTestId("image-carousel").getByRole("img"),
+  getImageCarouselDots: page.locator("swiper-pagination-bullet")
 });

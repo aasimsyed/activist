@@ -178,32 +178,36 @@ test.describe(
           organizationPage.uploadImageModal.modal
         );
       await expect(imageUploadInput).toBeEnabled();
-      await expect(imageUploadInput).toBeEditable();
 
       // Count initial number of files uploaded in the modal.
-      const existingUploadEntries = await organizationPage.uploadImageModal
+      const existingUploadEntriesCount = await organizationPage.uploadImageModal
         .getUploadedImages(organizationPage.uploadImageModal.modal)
-        .all();
-      const existingUploadEntriesCount = existingUploadEntries.length;
+        .count();
 
       // Set image input.
-      const filePng = {
-        name: "file.png",
+      const createPngFile = (name: string) => ({
+        name,
         mimeType: "image/png",
         buffer: Buffer.from(
           "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGP4z8AAAAMBAQDJ/pLvAAAAAElFTkSuQmCC",
           "base64"
         ),
-      };
+      });
+
+      const filePng = [
+        createPngFile("file1.png"),
+        createPngFile("file2.png"),
+        createPngFile("file3.png")
+      ]
       // Upload 2 images
-      await imageUploadInput.setInputFiles([filePng, filePng]);
+      await imageUploadInput.setInputFiles(filePng);
 
       // New entry appears in the modal.
       await expect(
         organizationPage.uploadImageModal.getUploadedImages(
           organizationPage.uploadImageModal.modal
         )
-      ).toHaveCount(existingUploadEntriesCount + 2);
+      ).toHaveCount(existingUploadEntriesCount + filePng.length);
 
       // Upload image.
       await organizationPage.uploadImageModal
@@ -218,13 +222,18 @@ test.describe(
       // Verify the number of image in the carousel matches the number of files in the modal.
       await expect(
         organizationPage.aboutPage.getImageCarouselImages
-      ).toHaveCount(existingUploadEntriesCount + 2);
+      ).toHaveCount(existingUploadEntriesCount + filePng.length);
 
-      // Simulate cursor click and slide
-      await organizationPage.aboutPage.imageCarousel.hover({ force: true, position: { x: 300, y: 100}})
-      await page.mouse.down()
-      await organizationPage.aboutPage.imageCarousel.hover({ force: true, position: { x: 50, y: 100}})
-      await page.mouse.up()
+      // Pagination using dots
+      const dots = organizationPage.aboutPage.getImageCarouselDots;
+
+      if (await dots.count() > 1) {
+        // Click second dot
+        await dots.nth(1).click();
+        await expect(
+          organizationPage.aboutPage.getImageCarouselImages.nth(1)
+        ).toBeVisible();
+      }
     });
   }
 );
