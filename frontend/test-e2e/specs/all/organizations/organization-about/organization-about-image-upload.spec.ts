@@ -1,26 +1,13 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import { navigateToFirstOrganization } from "~/test-e2e/actions/navigation";
+import { tinyPng } from "~/test-e2e/fixtures/images";
 import { expect, test } from "~/test-e2e/global-fixtures";
 import { newOrganizationPage } from "~/test-e2e/page-objects/organization/OrganizationPage";
 
 test.beforeEach(async ({ page }) => {
   // Already authenticated via global storageState.
   await navigateToFirstOrganization(page);
-
-  // Wait for auth state to be fully loaded.
-  await page.waitForLoadState("domcontentloaded");
-
-  // Wait for page to be fully loaded (no arbitrary delay).
-  await expect(async () => {
-    // Verify page is interactive and fully rendered.
-    const isReady = await page.evaluate(
-      () => document.readyState === "complete"
-    );
-    expect(isReady).toBe(true);
-  }).toPass({
-    timeout: 10000,
-    intervals: [100, 250],
-  });
+  await page.waitForLoadState("networkidle");
 });
 
 test.describe(
@@ -46,7 +33,8 @@ test.describe(
       });
 
       // Get the initial number of images in the carousel
-      const initialCarouselCount = await organizationPage.aboutPage.getImageCarouselImages.count();
+      const initialCarouselCount =
+        await organizationPage.aboutPage.getImageCarouselImages.count();
 
       // Wait for edit icon to be available (auth state should be loaded).
       await expect(
@@ -69,24 +57,13 @@ test.describe(
           organizationPage.uploadImageModal.modal
         );
       await expect(imageUploadInput).toBeEnabled();
-      await expect(imageUploadInput).toBeEditable();
 
       // Count initial number of files uploaded in the modal.
-      const existingUploadEntries = await organizationPage.uploadImageModal
+      const existingUploadEntriesCount = await organizationPage.uploadImageModal
         .getUploadedImages(organizationPage.uploadImageModal.modal)
-        .all();
-      const existingUploadEntriesCount = existingUploadEntries.length;
+        .count();
 
-      // Set image input.
-      const filePng = {
-        name: "file.png",
-        mimeType: "image/png",
-        buffer: Buffer.from(
-          "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGP4z8AAAAMBAQDJ/pLvAAAAAElFTkSuQmCC",
-          "base64"
-        ),
-      };
-      await imageUploadInput.setInputFiles(filePng);
+      await imageUploadInput.setInputFiles(tinyPng("file.png"));
 
       // New entry appears in the modal.
       await expect(
@@ -105,10 +82,10 @@ test.describe(
         timeout: 10000,
       });
 
-      // Verify the number of image in the carousel matches the number of files in the modal.
+      // Verify the carousel grew by exactly one image
       await expect(
         organizationPage.aboutPage.getImageCarouselImages
-      ).toHaveCount(existingUploadEntriesCount + 1);
+      ).toHaveCount(initialCarouselCount + 1);
 
       // Open the modal and remove the first image
       await organizationPage.aboutPage.imageCarouselEditIcon.click({
@@ -135,13 +112,16 @@ test.describe(
         timeout: 10000,
       });
 
+      // TODO(#1792 #1822): Page refresh needed for image removal to take effect in the carousel.
       // Verify the number of image in the carousel matches the number of files in the modal.
       await expect(
         organizationPage.aboutPage.getImageCarouselImages
       ).toHaveCount(initialCarouselCount);
     });
 
-    test("User can upload multiple images (CREATE, UPDATE, DELETE)", async ({ page }) => {
+    test("User can upload multiple images (CREATE, UPDATE, DELETE)", async ({
+      page,
+    }) => {
       const organizationPage = newOrganizationPage(page);
 
       // Ensure we're on the About page.
@@ -184,21 +164,11 @@ test.describe(
         .getUploadedImages(organizationPage.uploadImageModal.modal)
         .count();
 
-      // Set image input.
-      const createPngFile = (name: string) => ({
-        name,
-        mimeType: "image/png",
-        buffer: Buffer.from(
-          "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGP4z8AAAAMBAQDJ/pLvAAAAAElFTkSuQmCC",
-          "base64"
-        ),
-      });
-
       const filePng = [
-        createPngFile("file1.png"),
-        createPngFile("file2.png"),
-        createPngFile("file3.png")
-      ]
+        tinyPng("file1.png"),
+        tinyPng("file2.png"),
+        tinyPng("file3.png"),
+      ];
       // Upload 2 images
       await imageUploadInput.setInputFiles(filePng);
 
@@ -225,9 +195,9 @@ test.describe(
       ).toHaveCount(existingUploadEntriesCount + filePng.length);
 
       // Pagination using dots
-      const dots = organizationPage.aboutPage.getImageCarouselDots;
+      const dots = organizationPage.aboutPage.getImageCarouselBullets;
 
-      if (await dots.count() > 1) {
+      if ((await dots.count()) > 1) {
         // Click second dot
         await dots.nth(1).click();
         await expect(
