@@ -44,9 +44,7 @@ test.describe(
       });
 
       // Click the edit icon to open the image upload modal.
-      await organizationPage.aboutPage.imageCarouselEditIcon.click({
-        force: true,
-      });
+      await organizationPage.aboutPage.imageCarouselEditIcon.click();
 
       // Verify the image upload modal appears.
       await expect(organizationPage.uploadImageModal.modal).toBeVisible();
@@ -88,9 +86,7 @@ test.describe(
       ).toHaveCount(initialCarouselCount + 1);
 
       // Open the modal and remove the first image
-      await organizationPage.aboutPage.imageCarouselEditIcon.click({
-        force: true,
-      });
+      await organizationPage.aboutPage.imageCarouselEditIcon.click();
       await organizationPage.uploadImageModal
         .removeButton(organizationPage.uploadImageModal.modal, 0)
         .click();
@@ -145,9 +141,7 @@ test.describe(
       });
 
       // Click the edit icon to open the image upload modal.
-      await organizationPage.aboutPage.imageCarouselEditIcon.click({
-        force: true,
-      });
+      await organizationPage.aboutPage.imageCarouselEditIcon.click();
 
       // Verify the image upload modal appears.
       await expect(organizationPage.uploadImageModal.modal).toBeVisible();
