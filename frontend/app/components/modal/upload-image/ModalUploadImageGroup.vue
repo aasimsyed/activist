@@ -12,8 +12,8 @@
       </DialogTitle>
       <div class="mt-4">
         <ImageMultipleFileDropZone
-          @update:modelValue="(newFiles) => (files = newFiles)"
           @file-deleted="handleFileDeleted"
+          @update:modelValue="(newFiles) => (files = newFiles)"
           :model-value="files"
           :uploadLimit="uploadLimit"
         />

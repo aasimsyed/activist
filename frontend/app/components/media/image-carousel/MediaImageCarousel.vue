@@ -3,10 +3,11 @@
   <div class="relative">
     <swiper-container
       ref="swiperRef"
+      class="swiper card-style h-full w-full cursor-pointer overflow-clip"
+      :data-slide-count="imageUrls?.length ?? 0"
       :data-testid="
         props.fullscreen ? 'image-carousel-fullscreen' : 'image-carousel-main'
       "
-      class="swiper card-style h-full w-full cursor-pointer overflow-clip"
       :keyboard="true"
       :loop="true"
       :pagination="{ clickable: true }"
