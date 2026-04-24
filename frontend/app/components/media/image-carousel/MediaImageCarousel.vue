@@ -3,6 +3,9 @@
   <div class="relative">
     <swiper-container
       ref="swiperRef"
+      :data-testid="
+        props.fullscreen ? 'image-carousel-fullscreen' : 'image-carousel-main'
+      "
       class="swiper card-style h-full w-full cursor-pointer overflow-clip"
       :keyboard="true"
       :loop="true"
