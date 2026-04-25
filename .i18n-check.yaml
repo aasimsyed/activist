@@ -13,5 +13,5 @@ checks:
     active: True
   missing-keys:
     active: False
-  # nonexistent-keys:
-  #   search-dirs: [frontend/test, frontend/test-e2e]
+  nonexistent-keys:
+    search-dirs: [frontend/test, frontend/test-e2e]
