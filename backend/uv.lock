@@ -120,7 +120,7 @@ requires-dist = [
 [package.metadata.requires-dev]
 dev = [
     { name = "factory-boy", specifier = ">=3.3.3" },
-    { name = "i18n-check", specifier = ">=1.18.1" },
+    { name = "i18n-check", specifier = ">=1.19.1" },
     { name = "mypy", specifier = ">=1.20.2" },
     { name = "numpydoc", specifier = ">=1.10.0" },
     { name = "prek", specifier = ">=0.3.10" },
@@ -532,7 +532,7 @@ wheels = [
 
 [[package]]
 name = "i18n-check"
-version = "1.18.1"
+version = "1.19.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "packaging" },
@@ -540,9 +540,9 @@ dependencies = [
     { name = "requests" },
     { name = "rich" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/df/13/c8b9cf742b7a39504edbacb81a35f9a1721e8b689174f69e934a6efb39a1/i18n_check-1.18.1.tar.gz", hash = "sha256:42668bf6b4f18c42cbb64a8cfa07658d006c69f0c9f8c470cffe2a3990e767bb", size = 152888, upload-time = "2026-02-11T21:38:23.101Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/b5/ad/2c8f144730d33dfadb9f3b1a4b10af8dee332c97d6f6aede9b4612dffc8a/i18n_check-1.19.1.tar.gz", hash = "sha256:dcf7b31fb0bd30b4a5f7171f3475a15768026d88c917ee164b90e2168e875508", size = 157258, upload-time = "2026-04-25T12:53:21.499Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d9/06/fee3428062e326fd386a00b1402c060a694a40df4b58c1733df53b847f73/i18n_check-1.18.1-py3-none-any.whl", hash = "sha256:c2261af9761572fe38381f787df65c022e6692d7e9df030fcfd0355da5a6f4bf", size = 66657, upload-time = "2026-02-11T21:38:16.233Z" },
+    { url = "https://files.pythonhosted.org/packages/2d/e1/7024a32bf2e6ae0366b4c135c139725acb7a6dc316d6e5c4f36f0cee34e0/i18n_check-1.19.1-py3-none-any.whl", hash = "sha256:cf9cb3558b7e0e52ccca0f605d3a1d06802685d0312db745448c51ba6b274236", size = 71205, upload-time = "2026-04-25T12:53:22.877Z" },
 ]
 
 [[package]]
@@ -844,11 +844,11 @@ wheels = [
 
 [[package]]
 name = "packaging"
-version = "26.0"
+version = "26.2"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/65/ee/299d360cdc32edc7d2cf530f3accf79c4fca01e96ffc950d8a52213bd8e4/packaging-26.0.tar.gz", hash = "sha256:00243ae351a257117b6a241061796684b084ed1c516a08c48a3f7e147a9d80b4", size = 143416, upload-time = "2026-01-21T20:50:39.064Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/d7/f1/e7a6dd94a8d4a5626c03e4e99c87f241ba9e350cd9e6d75123f992427270/packaging-26.2.tar.gz", hash = "sha256:ff452ff5a3e828ce110190feff1178bb1f2ea2281fa2075aadb987c2fb221661", size = 228134, upload-time = "2026-04-24T20:15:23.917Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/b7/b9/c538f279a4e237a006a2c98387d081e9eb060d203d8ed34467cc0f0b9b53/packaging-26.0-py3-none-any.whl", hash = "sha256:b36f1fef9334a5588b4166f8bcd26a14e521f2b55e6b9de3aaa80d3ff7a37529", size = 74366, upload-time = "2026-01-21T20:50:37.788Z" },
+    { url = "https://files.pythonhosted.org/packages/df/b2/87e62e8c3e2f4b32e5fe99e0b86d576da1312593b39f47d8ceef365e95ed/packaging-26.2-py3-none-any.whl", hash = "sha256:5fc45236b9446107ff2415ce77c807cee2862cb6fac22b8a73826d0693b0980e", size = 100195, upload-time = "2026-04-24T20:15:22.081Z" },
 ]
 
 [[package]]
@@ -1161,15 +1161,15 @@ wheels = [
 
 [[package]]
 name = "rich"
-version = "14.3.3"
+version = "15.0.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "markdown-it-py" },
     { name = "pygments" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/b3/c6/f3b320c27991c46f43ee9d856302c70dc2d0fb2dba4842ff739d5f46b393/rich-14.3.3.tar.gz", hash = "sha256:b8daa0b9e4eef54dd8cf7c86c03713f53241884e814f4e2f5fb342fe520f639b", size = 230582, upload-time = "2026-02-19T17:23:12.474Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/c0/8f/0722ca900cc807c13a6a0c696dacf35430f72e0ec571c4275d2371fca3e9/rich-15.0.0.tar.gz", hash = "sha256:edd07a4824c6b40189fb7ac9bc4c52536e9780fbbfbddf6f1e2502c31b068c36", size = 230680, upload-time = "2026-04-12T08:24:00.75Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/14/25/b208c5683343959b670dc001595f2f3737e051da617f66c31f7c4fa93abc/rich-14.3.3-py3-none-any.whl", hash = "sha256:793431c1f8619afa7d3b52b2cdec859562b950ea0d4b6b505397612db8d5362d", size = 310458, upload-time = "2026-02-19T17:23:13.732Z" },
+    { url = "https://files.pythonhosted.org/packages/82/3b/64d4899d73f91ba49a8c18a8ff3f0ea8f1c1d75481760df8c68ef5235bf5/rich-15.0.0-py3-none-any.whl", hash = "sha256:33bd4ef74232fb73fe9279a257718407f169c09b78a87ad3d296f548e27de0bb", size = 310654, upload-time = "2026-04-12T08:24:02.83Z" },
 ]
 
 [[package]]
