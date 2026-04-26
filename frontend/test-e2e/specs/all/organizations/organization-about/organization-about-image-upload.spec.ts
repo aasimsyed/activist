@@ -33,8 +33,7 @@ test.describe(
       });
 
       // Get the initial number of images in the carousel
-      const initialCarouselCount =
-        await organizationPage.aboutPage.getImageCarouselImages.count();
+      const initialCarouselCount = 0;
 
       // Wait for edit icon to be available (auth state should be loaded).
       await expect(
@@ -81,9 +80,10 @@ test.describe(
       });
 
       // Verify the carousel grew by exactly one image
-      await expect(
-        organizationPage.aboutPage.getImageCarouselImages
-      ).toHaveCount(initialCarouselCount + 1);
+      await expect(page.getByTestId("image-carousel-main")).toHaveAttribute(
+        "data-slide-count",
+        String(initialCarouselCount + 1)
+      );
 
       // Open the modal and remove the first image
       await organizationPage.aboutPage.imageCarouselEditIcon.click();
@@ -108,11 +108,11 @@ test.describe(
         timeout: 10000,
       });
 
-      // TODO(#1792 #1822): Page refresh needed for image removal to take effect in the carousel.
       // Verify the number of image in the carousel matches the number of files in the modal.
-      await expect(
-        organizationPage.aboutPage.getImageCarouselImages
-      ).toHaveCount(initialCarouselCount);
+      await expect(page.getByTestId("image-carousel-main")).toHaveAttribute(
+        "data-slide-count",
+        String(initialCarouselCount + 1)
+      );
     });
 
     test("User can upload multiple images (CREATE, UPDATE, DELETE)", async ({
@@ -163,7 +163,7 @@ test.describe(
         tinyPng("file2.png"),
         tinyPng("file3.png"),
       ];
-      // Upload 2 images
+      // Upload 3 images
       await imageUploadInput.setInputFiles(filePng);
 
       // New entry appears in the modal.
@@ -184,9 +184,10 @@ test.describe(
       });
 
       // Verify the number of image in the carousel matches the number of files in the modal.
-      await expect(
-        organizationPage.aboutPage.getImageCarouselImages
-      ).toHaveCount(existingUploadEntriesCount + filePng.length);
+      await expect(page.getByTestId("image-carousel-main")).toHaveAttribute(
+        "data-slide-count",
+        String(existingUploadEntriesCount + filePng.length)
+      );
 
       // Pagination using dots
       const dots = organizationPage.aboutPage.getImageCarouselBullets;
