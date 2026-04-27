@@ -10,6 +10,24 @@ test.beforeEach(async ({ page }) => {
   await page.waitForLoadState("networkidle");
 });
 
+test.beforeEach(async ({ page }) => {
+  const { organizationId } = await navigateToFirstOrganization(page);
+  await page.waitForLoadState("networkidle");
+
+  const res = await page.request.get(
+    `/api/public/communities/organization/${organizationId}/images`
+  );
+  const images: { id: string }[] = await res.json();
+  await Promise.all(
+    images.map((img) =>
+      page.request.delete(`/api/auth/content/images/${img.id}`)
+    )
+  );
+
+  // Reload so the carousel reflects the purged state before tests read initialCarouselCount.
+  await page.reload({ waitUntil: "networkidle" });
+});
+
 test.describe(
   "Organization About Page - Image Carousel",
   { tag: ["@desktop", "@mobile"] },
@@ -33,7 +51,11 @@ test.describe(
       });
 
       // Get the initial number of images in the carousel
-      const initialCarouselCount = 0;
+      const initialCarouselCount = parseInt(
+        (await page
+          .getByTestId("image-carousel-main")
+          .getAttribute("data-slide-count")) ?? "0"
+      );
 
       // Wait for edit icon to be available (auth state should be loaded).
       await expect(
@@ -82,7 +104,7 @@ test.describe(
       // Verify the carousel grew by exactly one image
       await expect(page.getByTestId("image-carousel-main")).toHaveAttribute(
         "data-slide-count",
-        String(initialCarouselCount + 1)
+        String(1)
       );
 
       // Open the modal and remove the first image
@@ -111,7 +133,7 @@ test.describe(
       // Verify the number of image in the carousel matches the number of files in the modal.
       await expect(page.getByTestId("image-carousel-main")).toHaveAttribute(
         "data-slide-count",
-        String(initialCarouselCount + 1)
+        String(initialCarouselCount)
       );
     });
 
