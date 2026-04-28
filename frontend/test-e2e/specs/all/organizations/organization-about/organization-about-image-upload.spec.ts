@@ -5,6 +5,7 @@ import { navigateToFirstOrganization } from "~/test-e2e/actions/navigation";
 import { tinyPng } from "~/test-e2e/fixtures/images";
 import { expect, test } from "~/test-e2e/global-fixtures";
 import { newOrganizationPage } from "~/test-e2e/page-objects/organization/OrganizationPage";
+import { uploadResponsePromise } from "~/test-e2e/utils/file-upload-helpers";
 
 test.beforeEach(async ({ page }) => {
   const organizationId = await pageSetup(page);
@@ -111,11 +112,19 @@ test.describe(
         timeout: 10000,
       });
 
+      // Guard to capture the response whether the upload is successful.
+      const { uploadResponse, status, body } = await uploadResponsePromise(page);
+
       // Verify the carousel grew by exactly one image
       await expect(page.getByTestId("image-carousel-main")).toHaveAttribute(
         "data-slide-count",
         String(1)
       );
+
+      expect(
+        uploadResponse.ok(),
+        `Upload failed: HTTP ${status} - ${body}`
+      ).toBeTruthy();
 
       // Open the modal and remove the first image
       await organizationPage.aboutPage.imageCarouselEditIcon.click();
