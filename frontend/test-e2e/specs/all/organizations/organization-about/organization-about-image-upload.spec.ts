@@ -1,19 +1,29 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
+import type { Page } from "playwright-core";
+
 import { navigateToFirstOrganization } from "~/test-e2e/actions/navigation";
 import { tinyPng } from "~/test-e2e/fixtures/images";
 import { expect, test } from "~/test-e2e/global-fixtures";
 import { newOrganizationPage } from "~/test-e2e/page-objects/organization/OrganizationPage";
 
 test.beforeEach(async ({ page }) => {
-  // Already authenticated via global storageState.
-  await navigateToFirstOrganization(page);
-  await page.waitForLoadState("networkidle");
+  const organizationId = await pageSetup(page);
+  await purgeImages(page, organizationId);
 });
 
-test.beforeEach(async ({ page }) => {
+test.afterEach(async ({ page }) => {
+  const organizationId = await pageSetup(page);
+  await purgeImages(page, organizationId);
+});
+
+const pageSetup = async (page: Page) => {
   const { organizationId } = await navigateToFirstOrganization(page);
   await page.waitForLoadState("networkidle");
 
+  return organizationId;
+};
+
+const purgeImages = async (page: Page, organizationId: string) => {
   const res = await page.request.get(
     `/api/public/communities/organization/${organizationId}/images`
   );
@@ -26,7 +36,7 @@ test.beforeEach(async ({ page }) => {
 
   // Reload so the carousel reflects the purged state before tests read initialCarouselCount.
   await page.reload({ waitUntil: "networkidle" });
-});
+};
 
 test.describe(
   "Organization About Page - Image Carousel",
