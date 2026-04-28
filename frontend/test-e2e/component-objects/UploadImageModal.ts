@@ -9,5 +9,6 @@ export const newUploadImageModal = (page: Page) => ({
     modal.getByTestId("upload-image-upload-button"),
   removeButton: (modal: Locator, index: number) =>
     modal.getByTestId(`upload-image-remove-${index}`),
-  getUploadedImages: (modal: Locator) => modal.getByRole("img"),
+  getUploadedImages: (modal: Locator) =>
+    modal.locator('[data-testid^="upload-image-remove-"]'),
 });
