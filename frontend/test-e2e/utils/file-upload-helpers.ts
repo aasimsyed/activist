@@ -1,11 +1,12 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
 import type { Page } from "playwright-core";
 
 /**
  * Guard for capturing the response from a file upload.
- * 
+ *
  * @param page - Playwright Page object
  * @param urlString - content that matches part of the url
- * @returns 
+ * @returns
  */
 export const uploadResponsePromise = async (
   page: Page,

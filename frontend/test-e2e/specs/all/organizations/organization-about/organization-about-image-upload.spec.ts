@@ -113,7 +113,8 @@ test.describe(
       });
 
       // Guard to capture the response whether the upload is successful.
-      const { uploadResponse, status, body } = await uploadResponsePromise(page);
+      const { uploadResponse, status, body } =
+        await uploadResponsePromise(page);
 
       // Verify the carousel grew by exactly one image
       await expect(page.getByTestId("image-carousel-main")).toHaveAttribute(
