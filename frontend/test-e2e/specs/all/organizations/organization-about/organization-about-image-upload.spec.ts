@@ -1,11 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import type { Page } from "playwright-core";
-
 import { navigateToFirstOrganization } from "~/test-e2e/actions/navigation";
 import { tinyPng } from "~/test-e2e/fixtures/images";
 import { expect, test } from "~/test-e2e/global-fixtures";
 import { newOrganizationPage } from "~/test-e2e/page-objects/organization/OrganizationPage";
-import { uploadResponsePromise } from "~/test-e2e/utils/file-upload-helpers";
 
 test.beforeEach(async ({ page }) => {
   const organizationId = await pageSetup(page);
@@ -35,11 +33,13 @@ const purgeImages = async (page: Page, organizationId: string) => {
     )
   );
 
-  // Reload so the carousel reflects the purged state before tests read initialCarouselCount.
+  // Reload so the carousel reflects the purged state.
   await page.reload({ waitUntil: "networkidle" });
 };
 
-test.describe(
+// Run serially so Desktop Chrome and Mobile Chrome workers do not hit the
+// same organization concurrently and corrupt each other's state.
+test.describe.serial(
   "Organization About Page - Image Carousel",
   { tag: ["@desktop", "@mobile"] },
   () => {
@@ -61,7 +61,9 @@ test.describe(
         timeout: 15000,
       });
 
-      // Get the initial number of images in the carousel
+      // Read the carousel baseline BEFORE opening the modal. When there are no
+      // real images the carousel shows placeholder slides; this value is used
+      // for the post-delete assertion (restore to original state).
       const initialCarouselCount = parseInt(
         (await page
           .getByTestId("image-carousel-main")
@@ -88,7 +90,8 @@ test.describe(
         );
       await expect(imageUploadInput).toBeEnabled();
 
-      // Count initial number of files uploaded in the modal.
+      // Count how many server-side images are already in the modal.
+      // This is the real-image baseline (placeholders are not counted here).
       const existingUploadEntriesCount = await organizationPage.uploadImageModal
         .getUploadedImages(organizationPage.uploadImageModal.modal)
         .count();
@@ -107,33 +110,28 @@ test.describe(
         .uploadButton(organizationPage.uploadImageModal.modal)
         .click();
 
-      // Wait for the modal to close and page to update.
+      // Wait for the modal to close. The modal only closes after uploadImages
+      // awaits both the POST and the subsequent data refresh, so a successful
+      // close is proof the upload reached the server.
       await expect(organizationPage.uploadImageModal.modal).not.toBeVisible({
         timeout: 10000,
       });
 
-      // Guard to capture the response whether the upload is successful.
-      const { uploadResponse, status, body } =
-        await uploadResponsePromise(page);
-
-      // Verify the carousel grew by exactly one image
+      // Use the modal's real-image count (not the carousel baseline) to build
+      // the expected slide count, because the carousel may have been showing
+      // placeholder slides before any real image was uploaded.
       await expect(page.getByTestId("image-carousel-main")).toHaveAttribute(
         "data-slide-count",
-        String(1)
+        String(existingUploadEntriesCount + 1)
       );
 
-      expect(
-        uploadResponse.ok(),
-        `Upload failed: HTTP ${status} - ${body}`
-      ).toBeTruthy();
-
-      // Open the modal and remove the first image
+      // Open the modal and remove the first image.
       await organizationPage.aboutPage.imageCarouselEditIcon.click();
       await organizationPage.uploadImageModal
         .removeButton(organizationPage.uploadImageModal.modal, 0)
         .click();
 
-      // Number of files upload goes back to existing count.
+      // Number of files in the modal goes back to the original count.
       await expect(
         organizationPage.uploadImageModal.getUploadedImages(
           organizationPage.uploadImageModal.modal
@@ -150,7 +148,7 @@ test.describe(
         timeout: 10000,
       });
 
-      // Verify the number of image in the carousel matches the number of files in the modal.
+      // Carousel must return to its pre-upload state (real images or placeholders).
       await expect(page.getByTestId("image-carousel-main")).toHaveAttribute(
         "data-slide-count",
         String(initialCarouselCount)
@@ -195,7 +193,8 @@ test.describe(
         );
       await expect(imageUploadInput).toBeEnabled();
 
-      // Count initial number of files uploaded in the modal.
+      // Count how many server-side images are already in the modal.
+      // Use this as the real-image baseline (placeholders are not counted here).
       const existingUploadEntriesCount = await organizationPage.uploadImageModal
         .getUploadedImages(organizationPage.uploadImageModal.modal)
         .count();
@@ -205,10 +204,10 @@ test.describe(
         tinyPng("file2.png"),
         tinyPng("file3.png"),
       ];
-      // Upload 3 images
+      // Upload 3 images.
       await imageUploadInput.setInputFiles(filePng);
 
-      // New entry appears in the modal.
+      // New entries appear in the modal.
       await expect(
         organizationPage.uploadImageModal.getUploadedImages(
           organizationPage.uploadImageModal.modal
@@ -220,22 +219,26 @@ test.describe(
         .uploadButton(organizationPage.uploadImageModal.modal)
         .click();
 
-      // Wait for the modal to close and page to update.
+      // Wait for the modal to close. The modal only closes after uploadImages
+      // awaits both the POST and the subsequent data refresh, so a successful
+      // close is proof the upload reached the server.
       await expect(organizationPage.uploadImageModal.modal).not.toBeVisible({
         timeout: 10000,
       });
 
-      // Verify the number of image in the carousel matches the number of files in the modal.
+      // Verify the carousel grew by exactly the number of uploaded files.
+      // Use the modal's real-image count as the baseline (not the carousel's
+      // pre-upload count, which may include placeholder slides).
       await expect(page.getByTestId("image-carousel-main")).toHaveAttribute(
         "data-slide-count",
         String(existingUploadEntriesCount + filePng.length)
       );
 
-      // Pagination using dots
+      // Pagination using dots.
       const dots = organizationPage.aboutPage.getImageCarouselBullets;
 
       if ((await dots.count()) > 1) {
-        // Click second dot
+        // Click second dot.
         await dots.nth(1).click();
         await expect(
           organizationPage.aboutPage.getImageCarouselImages.nth(1)

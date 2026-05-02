@@ -8,17 +8,18 @@ import type { Page } from "playwright-core";
  * @param urlString - content that matches part of the url
  * @returns
  */
-export const uploadResponsePromise = async (
+export const uploadResponsePromise = (
   page: Page,
   urlString = "/content/images"
-) => {
-  const uploadResponse = await page.waitForResponse(
-    (res) => res.request().method() === "POST" && res.url().includes(urlString),
-    { timeout: 15000 }
-  );
-
-  const status = uploadResponse.status();
-  const body = await uploadResponse.text().catch(() => "<unreadable>");
-
-  return { uploadResponse, status, body };
-};
+): Promise<{ uploadResponse: Awaited<ReturnType<Page["waitForResponse"]>>; status: number; body: string }> =>
+  page
+    .waitForResponse(
+      (res) =>
+        res.request().method() === "POST" && res.url().includes(urlString),
+      { timeout: 15000 }
+    )
+    .then(async (uploadResponse) => {
+      const status = uploadResponse.status();
+      const body = await uploadResponse.text().catch(() => "<unreadable>");
+      return { uploadResponse, status, body };
+    });
