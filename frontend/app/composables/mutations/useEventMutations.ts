@@ -20,11 +20,9 @@ export const useEventMutations = () => {
     }
   };
   const refreshEventList = async () => {
-    // Invalidate and refetch event list data.
-    // Invalidate the useAsyncData cache so next read will refetch.
-    await refreshNuxtData(getKeyForGetEvents());
-    // Clear cached events to force refetch with new data.
     store.setItems([]);
+    store.setIsLastPage(false);
+    await refreshNuxtData(getKeyForGetEvents());
   };
 
   return {
