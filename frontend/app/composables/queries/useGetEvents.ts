@@ -14,10 +14,17 @@ export function useGetEvents(
     () => getKeyForGetEvents(),
     async () => {
       try {
-        if (
+        const filtersMatch =
           JSON.stringify(store.getFilters()) ===
-            JSON.stringify(eventFilters.value) &&
-          store.getIsLastPage()
+          JSON.stringify(eventFilters.value);
+
+        if (filtersMatch && store.getIsLastPage()) {
+          return store.getItems();
+        }
+        if (
+          filtersMatch &&
+          store.getItems().length > 0 &&
+          page.value === store.getPage()
         ) {
           return store.getItems();
         }
@@ -36,34 +43,26 @@ export function useGetEvents(
         }
         const { data: events, isLastPage } = await listEvents({
           ...eventFilters.value,
-          page:
-            JSON.stringify(store.getFilters()) ===
-            JSON.stringify(eventFilters.value)
-              ? page.value
-              : 1,
+          page: filtersMatch ? page.value : 1,
           page_size: 10,
         });
         const eventsCached = store.getItems();
         const pageCached = store.getPage();
 
-        // Append new events to cached events if page > 1.
         if (
+          filtersMatch &&
           eventsCached.length > 0 &&
-          JSON.stringify(store.getFilters()) ===
-            JSON.stringify(eventFilters.value) &&
-          (page.value > pageCached || (page.value === 1 && pageCached === 1))
+          page.value > pageCached
         ) {
           store.setItems([...eventsCached, ...events]);
           store.setIsLastPage(isLastPage);
+          store.setPage(page.value);
           return [...eventsCached, ...events] as CommunityEvent[];
         }
         store.setItems(events);
         store.setIsLastPage(isLastPage);
         // Reset to page 1 if filters changed.
-        if (
-          JSON.stringify(store.getFilters()) !==
-          JSON.stringify(eventFilters.value)
-        ) {
+        if (!filtersMatch) {
           store.setPage(1);
           page.value = 1;
         } else {
