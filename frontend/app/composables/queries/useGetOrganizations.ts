@@ -14,11 +14,21 @@ export function useGetOrganizations(
     () => getKeyForGetOrganizations(),
     async () => {
       try {
-        if (
-          store.getItems().length > 0 &&
+        const filtersMatch =
           JSON.stringify(store.getFilters()) ===
-            JSON.stringify(orgFilters.value) &&
+          JSON.stringify(orgFilters.value);
+
+        if (
+          filtersMatch &&
+          store.getItems().length > 0 &&
           store.getIsLastPage()
+        ) {
+          return store.getItems();
+        }
+        if (
+          filtersMatch &&
+          store.getItems().length > 0 &&
+          page.value === store.getPage()
         ) {
           return store.getItems();
         }
@@ -37,33 +47,25 @@ export function useGetOrganizations(
         }
         const { data: organizations, isLastPage } = await listOrganizations({
           ...orgFilters.value,
-          page:
-            JSON.stringify(store.getFilters()) ===
-            JSON.stringify(orgFilters.value)
-              ? page.value
-              : 1,
+          page: filtersMatch ? page.value : 1,
           page_size: 10,
         });
         const organizationsCached = store.getItems();
         const pageCached = store.getPage();
         store.setIsLastPage(isLastPage);
 
-        // Append new events to cached events if page > 1.
         if (
+          filtersMatch &&
           organizationsCached.length > 0 &&
-          JSON.stringify(store.getFilters()) ===
-            JSON.stringify(orgFilters.value) &&
-          (page.value > pageCached || (page.value === 1 && pageCached === 1))
+          page.value > pageCached
         ) {
           store.setItems([...organizationsCached, ...organizations]);
+          store.setPage(page.value);
           return [...organizationsCached, ...organizations] as Organization[];
         }
 
         store.setItems(organizations);
-        if (
-          JSON.stringify(store.getFilters()) !==
-          JSON.stringify(orgFilters.value)
-        ) {
+        if (!filtersMatch) {
           store.setPage(1);
           page.value = 1;
         } else {
@@ -71,7 +73,6 @@ export function useGetOrganizations(
         }
 
         store.setFilters(orgFilters.value);
-        store.setPage(page.value);
         return organizations as Organization[];
       } catch (error) {
         handleError(error);
