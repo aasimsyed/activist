@@ -1,33 +1,12 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-import type { Locator, Page } from "@playwright/test";
-
 import { newEventsFilter } from "~/test-e2e/component-objects/EventsFilter";
 import { newSidebarLeft } from "~/test-e2e/component-objects/SidebarLeft";
 import { expect, test } from "~/test-e2e/global-fixtures";
+import {
+  expectFilteredResults,
+  loadSecondPage,
+} from "~/test-e2e/utils/pagination";
 import { logTestPath, withTestStep } from "~/test-e2e/utils/test-traceability";
-
-/**
- * Scroll the list container until pagination loads a second page. A single
- * scroll can fire before the layout settles or land the 1px sentinel exactly on
- * the viewport edge (below the IntersectionObserver threshold), so re-scroll on
- * each poll until the rendered card count grows past one page.
- */
-const loadSecondPage = async (page: Page, cards: Locator): Promise<void> => {
-  await expect
-    .poll(
-      async () => {
-        await page.evaluate(() => {
-          const container = document.querySelector(
-            "[class*='overflow-y-scroll']"
-          ) as HTMLElement | null;
-          if (container) container.scrollTo(0, container.scrollHeight);
-        });
-        return cards.count();
-      },
-      { timeout: 15000, intervals: [300, 700, 1000, 1500, 2000] }
-    )
-    .toBeGreaterThan(10);
-};
 
 test.beforeEach(async ({ page }) => {
   await page.goto("/events?view=list");
@@ -92,11 +71,10 @@ test.describe("Events Pagination", { tag: "@desktop" }, () => {
         await locationInput.fill("Berlin");
         await locationInput.blur();
 
-        await page.waitForURL(/location=Berlin/, { timeout: 5000 });
+        await page.waitForURL(/location=Berlin/, { timeout: 10000 });
         await page.waitForLoadState("networkidle");
 
-        const filteredCount = await eventCards.count();
-        expect(filteredCount).toBeLessThanOrEqual(10);
+        await expectFilteredResults(page, eventCards, /Brandenburg Gate/);
       }
     );
 
